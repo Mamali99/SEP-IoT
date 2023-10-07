@@ -1,0 +1,17 @@
+{
+  "frontendFolder": "D:/Uni/Software Engineering (WS2324)/Serien/Serie_0/lab/vaadin-demo-main/./frontend",
+  "themeFolder": "themes",
+  "themeResourceFolder": "D:/Uni/Software Engineering (WS2324)/Serien/Serie_0/lab/vaadin-demo-main/./frontend/generated/jar-resources",
+  "staticOutput": "D:/Uni/Software Engineering (WS2324)/Serien/Serie_0/lab/vaadin-demo-main/target/classes/META-INF/VAADIN/webapp/VAADIN/static",
+  "generatedFolder": "generated",
+  "statsOutput": "D:\\Uni\\Software Engineering (WS2324)\\Serien\\Serie_0\\lab\\vaadin-demo-main\\target\\classes\\META-INF\\VAADIN\\config",
+  "frontendBundleOutput": "D:\\Uni\\Software Engineering (WS2324)\\Serien\\Serie_0\\lab\\vaadin-demo-main\\target\\classes\\META-INF\\VAADIN\\webapp",
+  "devBundleOutput": "D:/Uni/Software Engineering (WS2324)/Serien/Serie_0/lab/vaadin-demo-main/src/main/dev-bundle/webapp",
+  "devBundleStatsOutput": "D:/Uni/Software Engineering (WS2324)/Serien/Serie_0/lab/vaadin-demo-main/src/main/dev-bundle/config",
+  "jarResourcesFolder": "D:/Uni/Software Engineering (WS2324)/Serien/Serie_0/lab/vaadin-demo-main/./frontend/generated/jar-resources",
+  "themeName": "",
+  "clientServiceWorkerSource": "D:\\Uni\\Software Engineering (WS2324)\\Serien\\Serie_0\\lab\\vaadin-demo-main\\target\\sw.ts",
+  "pwaEnabled": false,
+  "offlineEnabled": false,
+  "offlinePath": "'offline.html'"
+}
