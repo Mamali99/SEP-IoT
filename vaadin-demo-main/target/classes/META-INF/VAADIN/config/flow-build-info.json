@@ -1,0 +1,16 @@
+{
+  "productionMode": false,
+  "eagerServerLoad": false,
+  "npmFolder": "D:\\Uni\\Software Engineering (WS2324)\\Serien\\Serie_0\\lab\\vaadin-demo-main",
+  "node.version": "v18.16.1",
+  "node.download.root": "https://nodejs.org/dist/",
+  "frontendFolder": "D:\\Uni\\Software Engineering (WS2324)\\Serien\\Serie_0\\lab\\vaadin-demo-main\\frontend",
+  "connect.javaSourceFolder": "D:\\Uni\\Software Engineering (WS2324)\\Serien\\Serie_0\\lab\\vaadin-demo-main\\src\\main\\java",
+  "javaResourceFolder": "D:\\Uni\\Software Engineering (WS2324)\\Serien\\Serie_0\\lab\\vaadin-demo-main\\src\\main\\resources",
+  "connect.applicationProperties": "D:\\Uni\\Software Engineering (WS2324)\\Serien\\Serie_0\\lab\\vaadin-demo-main\\src\\main\\resources\\application.properties",
+  "connect.openApiFile": "D:\\Uni\\Software Engineering (WS2324)\\Serien\\Serie_0\\lab\\vaadin-demo-main\\target\\generated-resources\\openapi.json",
+  "project.frontend.generated": "D:\\Uni\\Software Engineering (WS2324)\\Serien\\Serie_0\\lab\\vaadin-demo-main\\frontend\\generated",
+  "pnpm.enable": false,
+  "require.home.node": false,
+  "build.folder": "target"
+}
