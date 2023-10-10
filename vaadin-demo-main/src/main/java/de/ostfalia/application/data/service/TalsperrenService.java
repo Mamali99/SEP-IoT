@@ -35,4 +35,10 @@ public class TalsperrenService {
         return datenRepo.findDataByIdLimit(id, pageable);
     }
 
+    public List<Talsperrendaten> getDatenByIDLast21Days(Long id) {
+        Pageable pageable = PageRequest.of(0, (4*24)*21);
+        return datenRepo.findDataByIdLimit(id, pageable);
+
+    }
+
 }
