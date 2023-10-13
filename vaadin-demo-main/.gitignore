@@ -6,4 +6,18 @@
 */node_module/*
 */frontend/generated/*
 */src/main/dev-bundle/*
+*.iml
+
+.idea/
+.mvn/
+target/
+node_modules/
+frontend/generated
+src/main/dev-bundle
+
+*.class
+*.log
+*.tmp
+
+
 
