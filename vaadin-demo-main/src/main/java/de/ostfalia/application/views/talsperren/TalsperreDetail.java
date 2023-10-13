@@ -21,7 +21,8 @@ import java.util.List;
 
 @Route(value = "/detail")
 @PageTitle("detailseite")
-public class TalsperreDetail extends BasicLayout implements HasUrlParameter<Long> {
+public class
+TalsperreDetail extends BasicLayout implements HasUrlParameter<Long> {
     private TalsperrenService service;
     private Talsperre talsperre;
 
