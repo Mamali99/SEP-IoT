@@ -1,9 +1,0 @@
-*/Dockerfile
-*/.idea
-*/.mvn
-*/.vscode
-*/target
-*/node_module/*
-*/frontend/generated/*
-*/src/main/dev-bundle/*
-
