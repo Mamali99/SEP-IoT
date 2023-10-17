@@ -1,10 +1,6 @@
 package de.ostfalia.application.views.talsperren;
 
 import com.storedobject.chart.*;
-import com.vaadin.flow.component.charts.Chart;
-import com.vaadin.flow.component.charts.model.ChartType;
-import com.vaadin.flow.component.charts.model.Configuration;
-import com.vaadin.flow.component.charts.model.DataProviderSeries;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
@@ -153,17 +149,5 @@ TalsperreDetail extends BasicLayout implements HasUrlParameter<Long> {
 
         return  soChart;
     }
-    /*
-    wenn pro lizenz aktiviert ist, kann man die vaadin charts nutzen
-    ansonsten chartjs maven dependency hinzufuegen und pro lizenz umgehen
-     */
-    public void proLineplot(Long id){
-        Chart chart = new Chart(ChartType.LINE);
-        Configuration configuration = chart.getConfiguration();
-        DataProvider<Talsperrendaten, ?> dataProvider = new ListDataProvider<>( service.getDatenByIDLast24H(id));
-        DataProviderSeries<Talsperrendaten> series = new DataProviderSeries<>(dataProvider, Talsperrendaten::getAbgabe);
-        configuration.addSeries(series);
-        chart.drawChart();
 
-    }
 }
