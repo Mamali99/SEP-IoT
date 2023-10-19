@@ -3,6 +3,7 @@ package de.ostfalia.application;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.theme.Theme;
 import de.ostfalia.application.data.lamp.adapter.Java2NodeRedLampAdapter;
+import de.ostfalia.application.data.lamp.lampController.LampController;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -27,7 +28,7 @@ import java.io.IOException;
 @Theme(value = "flowcrmtutorial")
 public class Application implements AppShellConfigurator {
     @Autowired
-    private Java2NodeRedLampAdapter lampAdapter;
+    private LampController lampAdapter;
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
@@ -40,7 +41,7 @@ public class Application implements AppShellConfigurator {
             lampAdapter.switchOn();
             Thread.sleep(5000);  // Wait for 5 seconds
             System.out.println("Switching off the lamp...");
-            //lampAdapter.switchOff();
+            lampAdapter.switchOff();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

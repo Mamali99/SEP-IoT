@@ -20,8 +20,7 @@ public class LampController extends AbstractLampController {
 
     @Override
     public void switchOn() throws IOException {
-
-
+        iLamp.switchOn();
     }
 
     @Override
@@ -36,7 +35,7 @@ public class LampController extends AbstractLampController {
 
     @Override
     public void switchOff() throws IOException {
-
+        iLamp.switchOff();
     }
 
     @Override

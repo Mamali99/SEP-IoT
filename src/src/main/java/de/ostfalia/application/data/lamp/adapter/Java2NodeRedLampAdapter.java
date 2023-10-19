@@ -16,14 +16,9 @@ import java.io.IOException;
 public class Java2NodeRedLampAdapter implements ILamp {
 
     private static final String url = "http://172.28.24.10/hue/lights/1/state";
-    //private static final String urlState = "http://172.28.24.10/hue/lights/1";
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
-
-    // lock object for synchronization
-    //private final Object lock = new Object();
-
 
     @Override
     public void switchOn() throws IOException {
