@@ -1,5 +1,6 @@
 package de.ostfalia.application.data.lamp.lampController;
 
+import de.ostfalia.application.data.lamp.adapter.Java2NodeRedLampAdapter;
 import de.ostfalia.application.data.lamp.model.AbstractLampController;
 import de.ostfalia.application.data.lamp.model.ILamp;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,7 @@ import java.io.IOException;
 public class LampController extends AbstractLampController {
 
 
-
+    Java2NodeRedLampAdapter lampAdapter;
     @Autowired
     public LampController(ILamp ilamp) {
         super(ilamp);
@@ -61,6 +62,6 @@ public class LampController extends AbstractLampController {
 
     @Override
     public boolean getState() throws IOException {
-        return false;
+        return lampAdapter.getState();
     }
 }
