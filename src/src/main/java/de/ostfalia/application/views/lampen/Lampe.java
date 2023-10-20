@@ -2,55 +2,71 @@ package de.ostfalia.application.views.lampen;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import de.ostfalia.application.views.BasicLayout;
 
 @Route("/SE/LightAdapter")
 
 public class Lampe extends BasicLayout {
-    private VerticalLayout colorfulBox = new VerticalLayout();
+    private VerticalLayout pageLayout = new VerticalLayout();
+
+    private TextField nameField;
+    private TextField stateField;
+    private Button onOffButton;
     public Lampe(){
-        HorizontalLayout pageLayout = new HorizontalLayout();
-        pageLayout.add(colorfulBox);
-        // gruene box hinzufuegen
-        Button btnGreen = new Button("gruen hinzufuegen");
-        btnGreen.addClickListener(buttonClickEvent -> addGreen());
-        pageLayout.add(btnGreen);
+        //Titel
+        Hr hr = new Hr();
+        H2 h2 = new H2();
+        Hr hr2 = new Hr();
+        // Name mit Icon - Horizontal
+        HorizontalLayout layoutRow = new HorizontalLayout();
+        Icon icon = VaadinIcon.LIGHTBULB.create();
+        H4 nameLabel = new H4();
+        // Rest der GUI
+        stateField = new TextField("State");
+        stateField.setReadOnly(true);
+        stateField.setValue("Off");
+        onOffButton = new Button("ON/OFF", e -> switchState());
+        nameField = new TextField("Namen Ändern");
+        nameField.addValueChangeListener(event -> {
+            String text = event.getValue();
+            nameLabel.setText(text);
+        });
 
-        // rote box hinzufuegen
-        Button btnRed = new Button("rot hinzufuegen");
-        btnRed.addClickListener(buttonClickEvent -> addRed());
-        pageLayout.add(btnRed);
 
-        // clear btn
-        Button clear = new Button("loeschen");
-        clear.addClickListener(buttonClickEvent -> clearBox());
-        pageLayout.add(clear);
+        h2.setText("Lampen Einstellungen");
+        icon.getElement().setAttribute("icon", "vaadin:lightbulb");
+        nameLabel.setText("Meine Lampe");
+        pageLayout.add(h2);
+        pageLayout.add(hr);
+        layoutRow.add(icon);
+        layoutRow.add(nameLabel);
+        pageLayout.add(layoutRow);
+        pageLayout.add(hr2);
+        pageLayout.add(stateField);
+        pageLayout.add(onOffButton);
+        pageLayout.add(nameField);
 
         this.setContent(pageLayout);
-
         this.getTitle().setText("Lampensteuerung");
     }
-    private Div getSmallBox(){
-        Div smallBox = new Div();
-        smallBox.setHeight("50px");
-        smallBox.setWidth("50px");
-        smallBox.getStyle().set("border-radius", "5px");
-        return smallBox;
-    }
-    private void addGreen(){
-        Div smallbox = getSmallBox();
-        smallbox.getStyle().set("background-color", "#00FF00");
-        colorfulBox.add(smallbox);
-    }
-    private void addRed(){
-        Div smallbox = getSmallBox();
-        smallbox.getStyle().set("background-color", "#FF0000");
-        colorfulBox.add(smallbox);
-    }
-    private void clearBox(){
-        this.colorfulBox.removeAll();
+    // Funktionen
+    private void switchState() {
+        if (stateField.getValue().equals("On")) {
+            stateField.setValue("Off");
+            onOffButton.setText("Switch On");
+        } else {
+            stateField.setValue("On");
+            onOffButton.setText("Switch Off");
+        }
+
     }
 }
