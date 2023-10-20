@@ -18,9 +18,12 @@ import de.ostfalia.application.views.BasicLayout;
 public class Lampe extends BasicLayout {
     private VerticalLayout pageLayout = new VerticalLayout();
 
+    private H4 nameLabel;
     private TextField nameField;
     private TextField stateField;
     private Button onOffButton;
+
+    private Button nameButton;
     public Lampe(){
         //Titel
         Hr hr = new Hr();
@@ -29,13 +32,15 @@ public class Lampe extends BasicLayout {
         // Name mit Icon - Horizontal
         HorizontalLayout layoutRow = new HorizontalLayout();
         Icon icon = VaadinIcon.LIGHTBULB.create();
-        H4 nameLabel = new H4();
+        nameLabel = new H4();
         // Rest der GUI
         stateField = new TextField("State");
         stateField.setReadOnly(true);
         stateField.setValue("Off");
         onOffButton = new Button("ON/OFF", e -> switchState());
         nameField = new TextField("Namen Ändern");
+        nameField.setReadOnly(true);
+        nameButton = new Button("Ändern", e -> enableNameChange());
         nameField.addValueChangeListener(event -> {
             String text = event.getValue();
             nameLabel.setText(text);
@@ -54,6 +59,7 @@ public class Lampe extends BasicLayout {
         pageLayout.add(stateField);
         pageLayout.add(onOffButton);
         pageLayout.add(nameField);
+        pageLayout.add(nameButton);
 
         this.setContent(pageLayout);
         this.getTitle().setText("Lampensteuerung");
@@ -69,4 +75,16 @@ public class Lampe extends BasicLayout {
         }
 
     }
+    private void enableNameChange() {
+        if(nameField.isReadOnly()){
+            nameField.setReadOnly(false);
+            nameButton.setText("Speichern");
+        } else {
+            nameField.setReadOnly(true);
+            nameButton.setText("Ändern");
+        }
+
+
+    }
+
 }
