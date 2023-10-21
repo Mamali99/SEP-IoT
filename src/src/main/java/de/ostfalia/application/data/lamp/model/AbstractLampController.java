@@ -42,6 +42,10 @@ public abstract class AbstractLampController {
 
     public abstract boolean getState() throws IOException;
 
+    public abstract String getName() throws IOException;
+
+    public abstract void setName(String name) throws IOException;
+
 
 }
 

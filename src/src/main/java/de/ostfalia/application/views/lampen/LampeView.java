@@ -59,6 +59,8 @@ public class LampeView extends BasicLayout {
             String text = event.getValue();
             try {
                 lampController.setName(text);
+                String name = lampController.getName();
+                System.out.println("NAME ISIT" + name);
                 nameLabel.setText(lampController.getName());
             } catch (IOException e) {
                 throw new RuntimeException(e);
