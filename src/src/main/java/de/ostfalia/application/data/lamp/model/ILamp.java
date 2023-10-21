@@ -73,6 +73,8 @@ public interface ILamp {
      */
     boolean getState() throws IOException;
 
+    String getName() throws IOException;
+
 
 
 }

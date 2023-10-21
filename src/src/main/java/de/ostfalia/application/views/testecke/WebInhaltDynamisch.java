@@ -16,9 +16,9 @@ import java.io.IOException;
 @Route("/dynamisch")
 public class WebInhaltDynamisch extends BasicLayout {
     private VerticalLayout colorfulBox = new VerticalLayout();
-    Java2NodeRedLampAdapter adapter;
-    public WebInhaltDynamisch(Java2NodeRedLampAdapter adapter) {
-        this.adapter = adapter;
+    LampController adapter;
+    public WebInhaltDynamisch(LampController lamp) {
+        this.adapter = lamp;
         Button checkStateButton = new Button("Check Lamp State");
         checkStateButton.addClickListener(e  -> showLampState());
         HorizontalLayout pageLayout = new HorizontalLayout();
@@ -54,7 +54,7 @@ public class WebInhaltDynamisch extends BasicLayout {
                 System.out.println("Prüfe ob die Lampe an ist..");
                 System.out.println("Lamp Name: " + lampName);
             } else {
-                System.out.println("Lamp Name: " + lampName);
+                System.out.println("Lamp Namezzz: " + lampName);
             }
         } catch (IOException e) {
             System.out.println("An error occurred while getting the lamp state: " + e.getMessage());

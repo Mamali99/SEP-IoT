@@ -1,14 +1,15 @@
 package de.ostfalia.application.data.lamp.adapter;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.nimbusds.jose.shaded.gson.JsonObject;
 import com.nimbusds.jose.shaded.gson.stream.JsonReader;
 import de.ostfalia.application.data.lamp.model.ILamp;
-import elemental.json.JsonObject;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -82,8 +83,24 @@ public class Java2NodeRedLampAdapter implements ILamp {
     @Override
     public boolean getState() throws IOException {
 
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<JsonNode> response = restTemplate.getForEntity(baseUrl, JsonNode.class);
+        JsonNode stateNode = response.getBody().get("state");
+
+        if (stateNode != null && stateNode.has("on")) {
+            boolean isOn = stateNode.get("on").asBoolean();
+            if (isOn) {
+                System.out.println("It is on.");
+            } else {
+                System.out.println("It is off.");
+            }
+            return isOn;
+        }
+        return false;
+        /*
+
         try {
-            URL url = new URL(urlState);
+            URL url = new URL(baseUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
 
@@ -110,11 +127,13 @@ public class Java2NodeRedLampAdapter implements ILamp {
             j.printStackTrace();
         }
         return false;
+
+         */
     }
 
     public String getName() throws IOException {
         try {
-            URL url = new URL(urlState);
+            URL url = new URL(baseUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
 

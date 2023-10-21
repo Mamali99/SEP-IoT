@@ -62,4 +62,8 @@ public class LampController extends AbstractLampController {
     public boolean getState() throws IOException {
         return iLamp.getState();
     }
+
+    public String getName() throws IOException {
+        return iLamp.getName();
+    }
 }
