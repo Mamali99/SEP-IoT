@@ -28,7 +28,7 @@ public class LampeView extends BasicLayout {
     private Button onOffButton;
     private Icon icon;
     private Button nameButton;
-    public LampeView(LampController lampController){
+    public LampeView(LampController lampController) throws IOException {
 
         this.lampController = lampController;
         //Titel
@@ -42,8 +42,6 @@ public class LampeView extends BasicLayout {
         // Rest der GUI
         stateField = new TextField("Lampenzustand");
         stateField.setReadOnly(true);
-        // TO DO: .getState()
-        stateField.setValue("Off");
         onOffButton = new Button("ON/OFF", e -> {
             try {
                 switchState();
@@ -56,7 +54,13 @@ public class LampeView extends BasicLayout {
         nameButton = new Button("Ändern", e -> enableNameChange());
         nameField.addValueChangeListener(event -> {
             String text = event.getValue();
-            nameLabel.setText(text);
+            try {
+                lampController.setName(text);
+                nameLabel.setText(lampController.getName());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
         });
 
 
@@ -79,15 +83,14 @@ public class LampeView extends BasicLayout {
     }
     // Funktionen
     private void switchState() throws IOException {
-        // auf lampcontroller.getState()
-        if (stateField.getValue().equals("Angeschaltet")) {
-            //lampController.switchOff();
+        if (lampController.getState()) {
+            lampController.switchOff();
             stateField.setValue("Ausgeschaltet");
             onOffButton.setText("On");
             icon.setColor("black");
 
         } else {
-            //lampController.switchOn();
+            lampController.switchOn();
             stateField.setValue("Angeschaltet");
             onOffButton.setText("Off");
             icon.setColor("orange");
