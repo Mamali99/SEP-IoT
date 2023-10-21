@@ -31,10 +31,12 @@ public class LampeView extends BasicLayout {
     public LampeView(LampController lampController) throws IOException {
 
         this.lampController = lampController;
+
         //Titel
         Hr hr = new Hr();
         H2 h2 = new H2();
         Hr hr2 = new Hr();
+
         // Name mit Icon - Horizontal
         HorizontalLayout layoutRow = new HorizontalLayout();
         icon = VaadinIcon.LIGHTBULB.create();
@@ -42,6 +44,7 @@ public class LampeView extends BasicLayout {
         // Rest der GUI
         stateField = new TextField("Lampenzustand");
         stateField.setReadOnly(true);
+        stateField.setValue(getStateAsString());
         onOffButton = new Button("ON/OFF", e -> {
             try {
                 switchState();
@@ -66,7 +69,7 @@ public class LampeView extends BasicLayout {
 
         h2.setText("Lampen Einstellungen");
         icon.getElement().setAttribute("icon", "vaadin:lightbulb");
-        nameLabel.setText("Meine Lampe");
+        nameLabel.setText(lampController.getName());
         pageLayout.add(h2);
         pageLayout.add(hr);
         layoutRow.add(icon);
@@ -85,18 +88,27 @@ public class LampeView extends BasicLayout {
     private void switchState() throws IOException {
         if (lampController.getState()) {
             lampController.switchOff();
-            stateField.setValue("Ausgeschaltet");
+            stateField.setValue(getStateAsString());
             onOffButton.setText("On");
             icon.setColor("black");
 
         } else {
             lampController.switchOn();
-            stateField.setValue("Angeschaltet");
+            stateField.setValue(getStateAsString());
             onOffButton.setText("Off");
             icon.setColor("orange");
         }
 
     }
+
+    private String getStateAsString() throws IOException {
+        if(lampController.getState()){
+            return "Angeschaltet";
+        } else {
+            return "Ausgeschaltet";
+        }
+    }
+
     private void enableNameChange() {
         if(nameField.isReadOnly()){
             nameField.setReadOnly(false);
