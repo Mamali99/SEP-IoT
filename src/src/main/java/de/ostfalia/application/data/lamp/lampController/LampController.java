@@ -13,7 +13,6 @@ import java.io.IOException;
 public class LampController extends AbstractLampController {
 
 
-    Java2NodeRedLampAdapter lampAdapter;
     @Autowired
     public LampController(ILamp ilamp) {
         super(ilamp);
@@ -62,6 +61,6 @@ public class LampController extends AbstractLampController {
 
     @Override
     public boolean getState() throws IOException {
-        return lampAdapter.getState();
+        return iLamp.getState();
     }
 }

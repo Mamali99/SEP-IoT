@@ -21,7 +21,6 @@ public class WebInhaltDynamisch extends BasicLayout {
         this.adapter = adapter;
         Button checkStateButton = new Button("Check Lamp State");
         checkStateButton.addClickListener(e  -> showLampState());
-
         HorizontalLayout pageLayout = new HorizontalLayout();
         pageLayout.add(checkStateButton);
         pageLayout.add(colorfulBox);
@@ -47,15 +46,22 @@ public class WebInhaltDynamisch extends BasicLayout {
 
     private void showLampState() {
         boolean lampState;
+        String lampName;
         try {
             lampState = adapter.getState();
+            lampName = adapter.getName();
             if (lampState) {
                 System.out.println("Prüfe ob die Lampe an ist..");
+                System.out.println("Lamp Name: " + lampName);
+            } else {
+                System.out.println("Lamp Name: " + lampName);
             }
         } catch (IOException e) {
             System.out.println("An error occurred while getting the lamp state: " + e.getMessage());
         }
     }
+
+
 
 
     private Div getSmallBox() {

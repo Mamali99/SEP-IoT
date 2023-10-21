@@ -101,4 +101,30 @@ public class Java2NodeRedLampAdapter implements ILamp {
         return false;
     }
 
+    public String getName() throws IOException {
+        try {
+            URL url = new URL(urlState);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            //Parse d' j soon
+            JSONObject jsonResponse = new JSONObject(response.toString());
+            String name = jsonResponse.getString("name");
+            return name;
+
+        } catch (JSONException j) {
+            j.printStackTrace();
+        }
+        return null;
+    }
+
 }
