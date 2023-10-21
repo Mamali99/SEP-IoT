@@ -26,7 +26,7 @@ public class LampeView extends BasicLayout {
     private TextField nameField;
     private TextField stateField;
     private Button onOffButton;
-
+    private Icon icon;
     private Button nameButton;
     public LampeView(LampController lampController){
 
@@ -37,7 +37,7 @@ public class LampeView extends BasicLayout {
         Hr hr2 = new Hr();
         // Name mit Icon - Horizontal
         HorizontalLayout layoutRow = new HorizontalLayout();
-        Icon icon = VaadinIcon.LIGHTBULB.create();
+        icon = VaadinIcon.LIGHTBULB.create();
         nameLabel = new H4();
         // Rest der GUI
         stateField = new TextField("Lampenzustand");
@@ -84,10 +84,13 @@ public class LampeView extends BasicLayout {
             //lampController.switchOff();
             stateField.setValue("Ausgeschaltet");
             onOffButton.setText("On");
+            icon.setColor("black");
+
         } else {
             //lampController.switchOn();
             stateField.setValue("Angeschaltet");
             onOffButton.setText("Off");
+            icon.setColor("orange");
         }
 
     }
