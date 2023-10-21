@@ -132,6 +132,17 @@ public class Java2NodeRedLampAdapter implements ILamp {
     }
 
     public String getName() throws IOException {
+
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<JsonNode> response = restTemplate.getForEntity(baseUrl, JsonNode.class);
+        JsonNode nameNode = response.getBody().get("name");
+
+        if (nameNode != null) {
+            String name = nameNode.asText();
+            return name;
+        }
+        return null;
+        /*
         try {
             URL url = new URL(baseUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -157,4 +168,13 @@ public class Java2NodeRedLampAdapter implements ILamp {
         return null;
     }
 
+         */
+    }
+
+    @Override
+    public void setName(String name) throws IOException {
+        ObjectNode jsonObject = objectMapper.createObjectNode();
+        jsonObject.put("name", name);
+        restTemplate.put(url, jsonObject.toString());
+    }
 }

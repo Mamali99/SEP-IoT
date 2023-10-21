@@ -73,7 +73,19 @@ public interface ILamp {
      */
     boolean getState() throws IOException;
 
+    /**
+     * Methode die den Namen vom Lampe bekommt
+     * @return
+     * @throws IOException
+     */
     String getName() throws IOException;
+
+    /**
+     * Die Methode die neuen Namen setzt
+     * @param name
+     * @throws IOException
+     */
+    void setName(String name) throws IOException;
 
 
 

@@ -66,4 +66,8 @@ public class LampController extends AbstractLampController {
     public String getName() throws IOException {
         return iLamp.getName();
     }
+
+    public void setName(String name) throws IOException {
+        iLamp.setName(name);
+    }
 }

@@ -5,6 +5,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import de.ostfalia.application.data.lamp.adapter.Java2NodeRedLampAdapter;
 import de.ostfalia.application.data.lamp.lampController.LampController;
@@ -19,6 +20,7 @@ public class WebInhaltDynamisch extends BasicLayout {
     LampController adapter;
     public WebInhaltDynamisch(LampController lamp) {
         this.adapter = lamp;
+        TextField field = new TextField();
         Button checkStateButton = new Button("Check Lamp State");
         checkStateButton.addClickListener(e  -> showLampState());
         HorizontalLayout pageLayout = new HorizontalLayout();
