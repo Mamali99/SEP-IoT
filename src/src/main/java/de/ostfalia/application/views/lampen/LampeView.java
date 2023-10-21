@@ -56,6 +56,8 @@ public class LampeView extends BasicLayout {
             String text = event.getValue();
             try {
                 lampController.setName(text);
+                String name = lampController.getName();
+                System.out.println("NAME ISIT" + name);
                 nameLabel.setText(lampController.getName());
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -66,7 +68,7 @@ public class LampeView extends BasicLayout {
 
         h2.setText("Lampen Einstellungen");
         icon.getElement().setAttribute("icon", "vaadin:lightbulb");
-        nameLabel.setText("Meine Lampe");
+        nameLabel.setText(lampController.getName());
         pageLayout.add(h2);
         pageLayout.add(hr);
         layoutRow.add(icon);

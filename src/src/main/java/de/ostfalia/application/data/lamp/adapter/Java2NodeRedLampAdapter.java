@@ -9,6 +9,9 @@ import de.ostfalia.application.data.lamp.model.ILamp;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -173,8 +176,13 @@ public class Java2NodeRedLampAdapter implements ILamp {
 
     @Override
     public void setName(String name) throws IOException {
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
         ObjectNode jsonObject = objectMapper.createObjectNode();
         jsonObject.put("name", name);
-        restTemplate.put(url, jsonObject.toString());
+        HttpEntity<String> requestEntity = new HttpEntity<>(jsonObject.toString(), headers);
+        restTemplate.put(baseUrl, requestEntity);
     }
 }
