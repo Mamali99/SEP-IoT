@@ -1,7 +1,6 @@
 package de.ostfalia.application.views.lampen;
 
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Hr;
@@ -11,11 +10,16 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import de.ostfalia.application.data.lamp.lampController.LampController;
 import de.ostfalia.application.views.BasicLayout;
+
+import java.io.IOException;
 
 @Route("/SE/LightAdapter")
 
-public class Lampe extends BasicLayout {
+public class LampeView extends BasicLayout {
+
+    private LampController lampController;
     private VerticalLayout pageLayout = new VerticalLayout();
 
     private H4 nameLabel;
@@ -24,7 +28,9 @@ public class Lampe extends BasicLayout {
     private Button onOffButton;
 
     private Button nameButton;
-    public Lampe(){
+    public LampeView(LampController lampController){
+
+        this.lampController = lampController;
         //Titel
         Hr hr = new Hr();
         H2 h2 = new H2();
@@ -34,10 +40,17 @@ public class Lampe extends BasicLayout {
         Icon icon = VaadinIcon.LIGHTBULB.create();
         nameLabel = new H4();
         // Rest der GUI
-        stateField = new TextField("State");
+        stateField = new TextField("Lampenzustand");
         stateField.setReadOnly(true);
+        // TO DO: .getState()
         stateField.setValue("Off");
-        onOffButton = new Button("ON/OFF", e -> switchState());
+        onOffButton = new Button("ON/OFF", e -> {
+            try {
+                switchState();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
         nameField = new TextField("Namen Ändern");
         nameField.setReadOnly(true);
         nameButton = new Button("Ändern", e -> enableNameChange());
@@ -65,13 +78,16 @@ public class Lampe extends BasicLayout {
         this.getTitle().setText("Lampensteuerung");
     }
     // Funktionen
-    private void switchState() {
-        if (stateField.getValue().equals("On")) {
-            stateField.setValue("Off");
-            onOffButton.setText("Switch On");
+    private void switchState() throws IOException {
+        // auf lampcontroller.getState()
+        if (stateField.getValue().equals("Angeschaltet")) {
+            //lampController.switchOff();
+            stateField.setValue("Ausgeschaltet");
+            onOffButton.setText("On");
         } else {
-            stateField.setValue("On");
-            onOffButton.setText("Switch Off");
+            //lampController.switchOn();
+            stateField.setValue("Angeschaltet");
+            onOffButton.setText("Off");
         }
 
     }
