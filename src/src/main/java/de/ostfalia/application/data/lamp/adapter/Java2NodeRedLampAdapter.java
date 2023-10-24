@@ -32,6 +32,9 @@ public class Java2NodeRedLampAdapter implements ILamp {
     @Override
     public void switchOn(float intensity) throws IOException {
         // ein Wert zwischen 0 - 254
+        if (intensity < 0 || intensity > 254) {
+            throw new IllegalArgumentException("Intensität muss zwischen 0 und 254 liegen.");
+        }
         ObjectNode jsonObject = objectMapper.createObjectNode();
         jsonObject.put("on", true);
         jsonObject.put("bri", (int) (intensity));
