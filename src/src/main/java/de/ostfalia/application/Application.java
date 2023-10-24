@@ -14,6 +14,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import java.awt.*;
 import java.io.IOException;
 
 /**
@@ -35,16 +36,10 @@ public class Application implements AppShellConfigurator {
     }
     /*
     @PostConstruct
-    public void testLampMethods() {
-        try {
-            System.out.println("Switching on the lamp...");
-            lampAdapter.switchOn();
-            Thread.sleep(5000);  // Wait for 5 seconds
-            System.out.println("Switching off the lamp...");
-            lampAdapter.switchOff();
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
+    public void testLampMethods() throws IOException {
+
+        //Color color = new Color(255, 0, 0);
+        lampAdapter.switchOff();
     }
 
      */
