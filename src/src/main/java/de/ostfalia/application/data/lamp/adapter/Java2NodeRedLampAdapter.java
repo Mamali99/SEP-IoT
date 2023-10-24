@@ -31,12 +31,24 @@ public class Java2NodeRedLampAdapter implements ILamp {
 
     @Override
     public void switchOn(float intensity) throws IOException {
+        // ein Wert zwischen 0 - 254
+        ObjectNode jsonObject = objectMapper.createObjectNode();
+        jsonObject.put("on", true);
+        jsonObject.put("bri", (int) (intensity));
+        restTemplate.put(url, jsonObject.toString());
 
     }
 
     @Override
     public void switchOn(Color color) throws IOException {
 
+        float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
+        ObjectNode jsonObject = objectMapper.createObjectNode();
+        jsonObject.put("on", true);
+        jsonObject.put("hue", (int) (hsb[0] * 65535));
+        jsonObject.put("sat", (int) (hsb[1] * 254));
+        jsonObject.put("bri", (int) (hsb[2] * 254));
+        restTemplate.put(url, jsonObject.toString());
     }
 
     @Override

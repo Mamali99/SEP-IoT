@@ -35,16 +35,9 @@ public class Application implements AppShellConfigurator {
     }
 
     @PostConstruct
-    public void testLampMethods() {
-        try {
-            System.out.println("Switching on the lamp...");
-            lampAdapter.switchOn();
-            Thread.sleep(5000);  // Wait for 5 seconds
-            System.out.println("Switching off the lamp...");
-            lampAdapter.switchOff();
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
+    public void testLampMethods() throws IOException {
+
+        lampAdapter.switchOn(2);
     }
 
 }
