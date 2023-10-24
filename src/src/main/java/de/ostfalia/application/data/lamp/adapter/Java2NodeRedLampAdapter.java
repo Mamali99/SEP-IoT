@@ -3,7 +3,6 @@ package de.ostfalia.application.data.lamp.adapter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.ostfalia.application.data.lamp.model.ILamp;
-import elemental.json.JsonObject;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
