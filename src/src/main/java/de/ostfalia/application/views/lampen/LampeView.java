@@ -36,6 +36,8 @@ public class LampeView extends BasicLayout {
     private Icon icon;
     private final Button nameButton;
 
+    // test
+
     public LampeView(LampController lampController) throws IOException {
 
         this.lampController = lampController;
