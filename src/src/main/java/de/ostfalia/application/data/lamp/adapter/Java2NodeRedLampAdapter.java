@@ -90,6 +90,16 @@ public class Java2NodeRedLampAdapter implements ILamp {
 
     @Override
     public Color getColor() throws IOException {
+        ResponseEntity<JsonNode> response = restTemplate.getForEntity(baseUrl, JsonNode.class);
+        JsonNode stateNode = response.getBody().get("state");
+        if (stateNode != null) {
+            int red = stateNode.get("hue").asInt();
+            int green = stateNode.get("sat").asInt();
+            int blue = stateNode.get("bri").asInt();
+            System.out.println("lol");
+            return new Color(red, green, blue);
+
+        }
         return null;
     }
 
@@ -101,57 +111,17 @@ public class Java2NodeRedLampAdapter implements ILamp {
     @Override
     public boolean getState() throws IOException {
 
-        RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<JsonNode> response = restTemplate.getForEntity(baseUrl, JsonNode.class);
         JsonNode stateNode = response.getBody().get("state");
 
         if (stateNode != null && stateNode.has("on")) {
-            boolean isOn = stateNode.get("on").asBoolean();
-            if (isOn) {
-                System.out.println("It is on.");
-            } else {
-                System.out.println("It is off.");
-            }
-            return isOn;
+            return stateNode.get("on").asBoolean();
         }
         return false;
-        /*
-
-        try {
-            URL url = new URL(baseUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-            //Parse d' j soon
-            JSONObject jsonResponse = new JSONObject(response.toString());
-            JSONObject state = jsonResponse.getJSONObject("state");
-            boolean isOn = state.getBoolean("on");
-
-            //state check
-            if (isOn) {
-                System.out.println("It is on.");
-            } else {
-                System.out.println("It is off.");
-            }
-        } catch (JSONException j) {
-            j.printStackTrace();
-        }
-        return false;
-
-         */
     }
 
     public String getName() throws IOException {
 
-        RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<JsonNode> response = restTemplate.getForEntity(baseUrl, JsonNode.class);
         JsonNode nameNode = response.getBody().get("name");
 
@@ -160,44 +130,17 @@ public class Java2NodeRedLampAdapter implements ILamp {
             return name;
         }
         return null;
-        /*
-        try {
-            URL url = new URL(baseUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-            //Parse d' j soon
-            JSONObject jsonResponse = new JSONObject(response.toString());
-            String name = jsonResponse.getString("name");
-            return name;
-
-        } catch (JSONException j) {
-            j.printStackTrace();
-        }
-        return null;
-    }
-
-         */
     }
 
     @Override
     public void setName(String name) throws IOException {
 
-        RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         ObjectNode jsonObject = objectMapper.createObjectNode();
         jsonObject.put("name", name);
         HttpEntity<String> requestEntity = new HttpEntity<>(jsonObject.toString(), headers);
         restTemplate.put(baseUrl, requestEntity);
+
     }
 }
