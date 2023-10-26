@@ -42,22 +42,22 @@ public class LampController extends AbstractLampController {
 
     @Override
     public void setColor(Color color) throws IOException {
-
+        iLamp.setColor(color);
     }
 
     @Override
     public void setIntensity(float intensity) throws IOException {
-
+        iLamp.setIntensity(intensity);
     }
 
     @Override
     public Color getColor() throws IOException {
-        return null;
+        return iLamp.getColor();
     }
 
     @Override
     public float getIntensity() throws IOException {
-        return 0;
+        return iLamp.getIntensity();
     }
 
     @Override

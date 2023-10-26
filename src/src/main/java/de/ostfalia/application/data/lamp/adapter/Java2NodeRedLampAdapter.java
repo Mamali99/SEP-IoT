@@ -1,5 +1,6 @@
 package de.ostfalia.application.data.lamp.adapter;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -80,12 +81,26 @@ public class Java2NodeRedLampAdapter implements ILamp {
 
     @Override
     public void setColor(Color color) throws IOException {
-
+        float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
+        ObjectNode jsonObject = objectMapper.createObjectNode();
+        jsonObject.put("on", true);
+        jsonObject.put("hue", (int) (hsb[0] * 65535));
+        jsonObject.put("sat", (int) (hsb[1] * 254));
+        jsonObject.put("bri", (int) (hsb[2] * 254));
+        restTemplate.put(url, jsonObject.toString());
     }
 
     @Override
     public void setIntensity(float intensity) throws IOException {
+        if (intensity < 0 || intensity > 254) {
+            throw new IllegalArgumentException("Intensity must be between 0 and 254.");
+        }
 
+        ObjectNode jsonObject = objectMapper.createObjectNode();
+        jsonObject.put("on", true);
+        jsonObject.put("bri", (int) intensity);
+
+        restTemplate.put(url, jsonObject.toString());
     }
 
     @Override
@@ -93,18 +108,28 @@ public class Java2NodeRedLampAdapter implements ILamp {
         ResponseEntity<JsonNode> response = restTemplate.getForEntity(baseUrl, JsonNode.class);
         JsonNode stateNode = response.getBody().get("state");
         if (stateNode != null) {
-            int red = stateNode.get("hue").asInt();
-            int green = stateNode.get("sat").asInt();
-            int blue = stateNode.get("bri").asInt();
-            System.out.println("lol");
-            return new Color(red, green, blue);
+            int hue = stateNode.get("hue").intValue();
+            int sat = stateNode.get("sat").intValue();
+            int bri = stateNode.get("bri").intValue();
 
+            // Convert HSB values to RGB
+            Color color = Color.getHSBColor(hue / 65535.0f, sat / 254.0f, bri / 254.0f);
+            return color;
         }
         return null;
     }
 
+
     @Override
     public float getIntensity() throws IOException {
+        String response = restTemplate.getForObject(url, String.class);
+        try {
+            JsonNode jsonNode = objectMapper.readTree(response);
+            return jsonNode.get("bri").floatValue();
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
