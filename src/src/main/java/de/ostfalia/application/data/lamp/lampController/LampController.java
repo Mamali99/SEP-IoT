@@ -25,11 +25,13 @@ public class LampController extends AbstractLampController {
 
     @Override
     public void switchOn(float intensity) throws IOException {
+        iLamp.switchOn(intensity);
 
     }
 
     @Override
     public void switchOn(Color color) throws IOException {
+        iLamp.switchOn(color);
 
     }
 
