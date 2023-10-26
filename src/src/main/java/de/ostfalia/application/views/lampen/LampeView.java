@@ -2,7 +2,6 @@ package de.ostfalia.application.views.lampen;
 
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.icon.Icon;
@@ -17,8 +16,6 @@ import com.vaadin.flow.router.Route;
 import de.ostfalia.application.data.lamp.lampController.LampController;
 import de.ostfalia.application.views.BasicLayout;
 import org.vaadin.addons.tatu.ColorPicker;
-import org.vaadin.addons.tatu.ColorPicker;
-import org.vaadin.addons.tatu.ColorPickerVariant;
 
 import java.awt.*;
 import java.io.IOException;
@@ -67,7 +64,7 @@ public class LampeView extends BasicLayout {
         integerField.setMin(0);
         integerField.setMax(100);
         integerField.setStep(5);
-        integerField.setValue(50);
+        integerField.setValue(mapIntToPercentage(lampController.getIntensity()));
         // soll nacher mit getter gemacht werden
 
         intensity = integerField.getValue();
@@ -81,11 +78,10 @@ public class LampeView extends BasicLayout {
             intensity = event.getValue();
             int intensityValue = mapPercentageToInt(intensity);
             try {
-                lampController.setIntensity(intensityValue);
+                changeIntensity(intensityValue);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            // can set hier benutzen mit INT
         });
 
 
@@ -148,8 +144,6 @@ public class LampeView extends BasicLayout {
             String text = event.getValue();
             try {
                 lampController.setName(text);
-                String name = lampController.getName();
-                System.out.println("NAME ISIT" + name);
                 nameLabel.setText(lampController.getName());
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -189,15 +183,18 @@ public class LampeView extends BasicLayout {
                 Integer.valueOf(colorStr.substring(5, 7), 16)
         );
     }
+
     private String rgb2Hex(Color color) {
         return String.format("#%02X%02X%02X", color.getRed(), color.getGreen(), color.getBlue());
     }
 
 
-
-
     private int mapPercentageToInt(int percentage) {
         return (int) Math.round(percentage * 2.54); // Umrechnung von Prozent in den Bereich von 0 bis 254
+    }
+
+    private int mapIntToPercentage(float intensity) {
+        return (int) (intensity / 254) * 100;
     }
 
     private String getStateAsString() throws IOException {
@@ -214,6 +211,12 @@ public class LampeView extends BasicLayout {
             lampController.setColor(color);
         }
 
+    }
+
+    private void changeIntensity(float intensity) throws IOException {
+        if (lampController.getState()) {
+            lampController.setIntensity(intensity);
+        }
     }
 
     private void enableNameChange() {

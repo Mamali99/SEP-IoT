@@ -122,15 +122,14 @@ public class Java2NodeRedLampAdapter implements ILamp {
 
     @Override
     public float getIntensity() throws IOException {
-        String response = restTemplate.getForObject(url, String.class);
-        try {
-            JsonNode jsonNode = objectMapper.readTree(response);
-            return jsonNode.get("bri").floatValue();
 
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return 0;
+        ResponseEntity<JsonNode> response = restTemplate.getForEntity(baseUrl, JsonNode.class);
+            JsonNode jsonNode = response.getBody().get("state");
+            if (jsonNode != null) {
+                return jsonNode.get("bri").floatValue();
+            }
+           return 0;
+
     }
 
     @Override
