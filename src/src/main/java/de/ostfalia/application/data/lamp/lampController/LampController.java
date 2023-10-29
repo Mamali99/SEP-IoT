@@ -1,6 +1,5 @@
 package de.ostfalia.application.data.lamp.lampController;
 
-import de.ostfalia.application.data.lamp.adapter.Java2NodeRedLampAdapter;
 import de.ostfalia.application.data.lamp.model.AbstractLampController;
 import de.ostfalia.application.data.lamp.model.ILamp;
 import org.springframework.beans.factory.annotation.Autowired;

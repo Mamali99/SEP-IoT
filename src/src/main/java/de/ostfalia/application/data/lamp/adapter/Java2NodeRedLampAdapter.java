@@ -1,14 +1,10 @@
 package de.ostfalia.application.data.lamp.adapter;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.nimbusds.jose.shaded.gson.JsonObject;
-import com.nimbusds.jose.shaded.gson.stream.JsonReader;
 import de.ostfalia.application.data.lamp.model.ILamp;
-import org.springframework.boot.configurationprocessor.json.JSONException;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -18,11 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.awt.*;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 @Component
 @Primary
@@ -75,7 +67,7 @@ public class Java2NodeRedLampAdapter implements ILamp {
     public void switchOff() throws IOException {
         ObjectNode jsonObject = objectMapper.createObjectNode();
         jsonObject.put("on", false);
-        restTemplate.put(url , jsonObject.toString());
+        restTemplate.put(url, jsonObject.toString());
 
     }
 
@@ -124,11 +116,11 @@ public class Java2NodeRedLampAdapter implements ILamp {
     public float getIntensity() throws IOException {
 
         ResponseEntity<JsonNode> response = restTemplate.getForEntity(baseUrl, JsonNode.class);
-            JsonNode jsonNode = response.getBody().get("state");
-            if (jsonNode != null) {
-                return jsonNode.get("bri").floatValue();
-            }
-           return 0;
+        JsonNode jsonNode = response.getBody().get("state");
+        if (jsonNode != null) {
+            return jsonNode.get("bri").floatValue();
+        }
+        return 0;
 
     }
 
