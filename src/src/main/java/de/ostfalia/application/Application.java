@@ -2,8 +2,10 @@ package de.ostfalia.application;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.theme.Theme;
+import de.ostfalia.application.data.entity.Bicycle;
 import de.ostfalia.application.data.lamp.adapter.Java2NodeRedLampAdapter;
 import de.ostfalia.application.data.lamp.lampController.LampController;
+import de.ostfalia.application.data.service.BikeService;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -15,6 +17,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * The entry point of the Spring Boot application.
@@ -28,10 +33,27 @@ import java.io.IOException;
 @Theme(value = "flowcrmtutorial")
 public class Application implements AppShellConfigurator {
     @Autowired
-    private LampController lampAdapter;
+    private BikeService bikeService;
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
+    }
+
+    @PostConstruct
+    public void bike(){
+
+        LocalDateTime startTime = LocalDateTime.parse("2023-08-09T16:08:07", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+        LocalDateTime endTime = LocalDateTime.parse("2023-08-09T16:08:31", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+
+
+        List<Bicycle> bicycleList = bikeService.getDataWithTimeSpan(1, startTime, endTime);
+
+
+        for (Bicycle bicycle : bicycleList) {
+            System.out.println("Channel: " + bicycle.getChannel() +
+                    ", Timestamp: " + bicycle.getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) +
+                    ", Rotations per second: " + bicycle.getRotations());
+        }
     }
 
 
