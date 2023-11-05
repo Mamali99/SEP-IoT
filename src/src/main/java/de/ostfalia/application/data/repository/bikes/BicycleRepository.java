@@ -15,4 +15,6 @@ public interface BicycleRepository extends JpaRepository<Bicycle, Long> {
     List<Integer> getAllBicycles();
      @Query ("Select b from Bicycle b where b.channel=:id and  b.time between :max and  :min")
     List<Bicycle> getBicycleByChannelAndAndTimeSpan(@Param("id") int id, @Param("min") LocalDateTime min, @Param("max") LocalDateTime max);
+
+
 }
