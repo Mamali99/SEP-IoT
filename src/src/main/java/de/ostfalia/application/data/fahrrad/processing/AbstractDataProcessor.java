@@ -9,6 +9,9 @@ import java.util.List;
 public abstract class AbstractDataProcessor {
 
     // Diese Methode dient als Template-Methode und ruft die anderen Methoden in der richtigen Reihenfolge auf.
+    // Bei dieser klasse werden die anderen Abstrakten gerufen → soll final sein so das man die in anderen Implementationen nicht ändern kann
+    // alle anderen Abstrakten werden dann individuell implementiert
+    // wollen wir das mit der displayData machen oder an contorller ?
     public final void process() {
         List<Bicycle> bicycles = fetchData();
         List<ProcessedData> processedData = calculateData(bicycles);
@@ -45,7 +48,8 @@ public abstract class AbstractDataProcessor {
         private int channel;
         private BigDecimal value; // Dies könnte Distanz, Geschwindigkeit oder Umdrehungen sein
         private LocalDateTime timestamp;
-        public ProcessedData(int c, BigDecimal b, LocalDateTime l){
+
+        public ProcessedData(int c, BigDecimal b, LocalDateTime l) {
             this.channel = c;
             this.value = b;
             this.timestamp = l;
