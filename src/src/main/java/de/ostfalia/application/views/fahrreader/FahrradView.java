@@ -7,15 +7,22 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
-import de.ostfalia.application.data.fahrrad.controller.BikeDashboardController;
 import de.ostfalia.application.views.BasicLayout;
+import de.ostfalia.application.views.fahrreader.strategy.FahrradStrategy;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.io.IOException;
 
 @Route("/SE/BikeDashboard")
 
 public class FahrradView extends BasicLayout {
-    public FahrradView(BikeDashboardController bikecontroller1) throws IOException {
+
+    FahrradStrategy fahrradStrategy;
+
+    // jetzt ist Single bei default inject → muss dan zu Laufzeit neuer Bean injiziert werden
+    // mit einem Setter oder irgendwann
+    public FahrradView(@Qualifier("singleFahrradStrategy") FahrradStrategy fahrradStrategy) throws IOException {
+        this.fahrradStrategy = fahrradStrategy;
         //Titel
         Hr hr = new Hr();
         Hr hr2 = new Hr();
