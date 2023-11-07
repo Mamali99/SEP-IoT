@@ -22,15 +22,13 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
         super(bikeService);
     }
 
-
     @Override
-    protected List<Bicycle> fetchData() {
+    protected List<Bicycle> fetchData(int channel, LocalDateTime startTime, LocalDateTime endTime) {
         return null;
     }
 
     @Override
     protected List<ProcessedData> calculateData(List<Bicycle> bicycles) {
-
         return null;
     }
 

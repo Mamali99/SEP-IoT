@@ -43,7 +43,7 @@ public class BasicLayout extends AppLayout {
         verticalLayout.add(new RouterLink("Talsperren", ListTalsperren.class));
         verticalLayout.add(new RouterLink("Testecke", WebInhaltDynamisch.class));
         verticalLayout.add(new RouterLink("Lampen", LampeView.class));
-        //verticalLayout.add(new RouterLink("Fahrrad", DashboardView.class));
+        verticalLayout.add(new RouterLink("Fahrrad", DashboardView.class));
 
         return verticalLayout;
     }

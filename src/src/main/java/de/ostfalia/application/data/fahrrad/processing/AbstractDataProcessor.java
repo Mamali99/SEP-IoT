@@ -3,6 +3,7 @@ package de.ostfalia.application.data.fahrrad.processing;
 import de.ostfalia.application.data.entity.Bicycle;
 import de.ostfalia.application.data.service.BikeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,14 +21,13 @@ public abstract class AbstractDataProcessor {
     }
 
     // Diese Methode dient als Template-Methode und ruft die anderen Methoden in der richtigen Reihenfolge auf.
-    public final void process() {
-        List<Bicycle> bicycles = fetchData();
+    public final void process(int channel, LocalDateTime startTime, LocalDateTime endTime) {
+        List<Bicycle> bicycles = fetchData(channel, startTime, endTime);
         processedData = calculateData(bicycles);
-
     }
 
     // Methode zum Abrufen der Daten aus der Datenbank.
-    protected abstract List<Bicycle> fetchData();
+    protected abstract List<Bicycle> fetchData(int channel, LocalDateTime startTime, LocalDateTime endTime);
 
     // Methode zur Berechnung der gewünschten Metriken (Distanz, Geschwindigkeit, Umdrehungen).
     protected abstract List<ProcessedData> calculateData(List<Bicycle> bicycles);
@@ -36,6 +36,13 @@ public abstract class AbstractDataProcessor {
         return processedData;
     }
 
+    public BikeService getBikeService() {
+        return bikeService;
+    }
+
+    public void setBikeService(BikeService bikeService) {
+        this.bikeService = bikeService;
+    }
 
     // Hilfsklassen oder -methoden, um die Verarbeitung zu unterstützen
     // Beispiel für eine Hilfsklasse zur Repräsentation der verarbeiteten Daten

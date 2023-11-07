@@ -3,6 +3,7 @@ package de.ostfalia.application.views.fahrrad;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.Route;
 import de.ostfalia.application.data.fahrrad.controller.BikeDashboardController;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
 import de.ostfalia.application.data.fahrrad.strategies.DashboardViewContext;
@@ -14,7 +15,7 @@ import de.ostfalia.application.views.BasicLayout;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
-
+@Route("/SE/BikeDashboard")
 public class DashboardView extends BasicLayout {
 
     private DashboardViewContext context;
@@ -37,12 +38,11 @@ public class DashboardView extends BasicLayout {
         strategySelector = new ComboBox<>("View Strategy");
         strategySelector.setItems("Single Bike", "Compare Bikes", "Metric", "Time Interval");
         strategySelector.addValueChangeListener(event -> switchStrategy(event.getValue()));
-
         updateButton = new Button("Update Dashboard", event -> updateDashboard());
     }
 
     private void buildUI() {
-        VerticalLayout layout = new VerticalLayout(strategySelector, updateButton);
+       VerticalLayout layout = new VerticalLayout(strategySelector, updateButton);
         layout.setSizeFull();
         setContent(layout); // Verwenden Sie setContent, um das Layout im BasicLayout zu setzen
 
