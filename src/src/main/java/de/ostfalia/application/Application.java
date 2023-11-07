@@ -40,7 +40,7 @@ public class Application implements AppShellConfigurator {
 
     @PostConstruct
     public void bike(){
-
+/*
         LocalDateTime startTime = LocalDateTime.parse("2023-08-09T16:08:07", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
         LocalDateTime endTime = LocalDateTime.parse("2023-08-09T16:08:31", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
 
@@ -57,6 +57,8 @@ public class Application implements AppShellConfigurator {
         }
 
 
+
+ */
 
     }
 

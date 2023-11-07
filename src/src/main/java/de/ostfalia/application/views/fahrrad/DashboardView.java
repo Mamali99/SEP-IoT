@@ -5,12 +5,14 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import de.ostfalia.application.data.fahrrad.controller.BikeDashboardController;
+import de.ostfalia.application.data.fahrrad.impl.SpeedDataProcessor;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
 import de.ostfalia.application.data.fahrrad.strategies.DashboardViewContext;
 import de.ostfalia.application.data.fahrrad.strategies.impl.CompareBikesViewStrategy;
 import de.ostfalia.application.data.fahrrad.strategies.impl.MetricViewStrategy;
 import de.ostfalia.application.data.fahrrad.strategies.impl.SingleBikeViewStrategie;
 import de.ostfalia.application.data.fahrrad.strategies.impl.TimeIntervalViewStrategy;
+import de.ostfalia.application.data.service.BikeService;
 import de.ostfalia.application.views.BasicLayout;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -22,6 +24,8 @@ public class DashboardView extends BasicLayout {
 
 
     private BikeDashboardController controller;
+    @Autowired
+    private BikeService bikeService;
     private ComboBox<String> strategySelector;
     private Button updateButton;
 
@@ -30,6 +34,7 @@ public class DashboardView extends BasicLayout {
         this.context = new DashboardViewContext(new SingleBikeViewStrategie()); // Standardstrategie setzen
         //this.controller = new BikeDashboardController(context);
         this.controller.setViewContext(context);
+        this.controller.setDataProcessor(new SpeedDataProcessor(bikeService));
         initializeComponents();
         buildUI();
     }

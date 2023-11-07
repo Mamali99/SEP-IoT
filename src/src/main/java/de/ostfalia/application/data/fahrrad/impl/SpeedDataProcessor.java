@@ -23,7 +23,8 @@ public class SpeedDataProcessor extends AbstractDataProcessor {
     @Override
     protected List<Bicycle> fetchData(int channel, LocalDateTime startTime, LocalDateTime endTime) {
 
-        return this.getBikeService().getDataWithTimeSpan(channel, startTime,endTime);
+       return bikeService.getDataWithTimeSpan(channel, startTime,endTime);
+        //return this.getBikeService().getDataWithTimeSpan(channel, startTime,endTime);
     }
 
     @Override

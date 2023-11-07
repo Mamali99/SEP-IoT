@@ -12,7 +12,7 @@ import java.util.List;
 public abstract class AbstractDataProcessor {
 
     @Autowired
-    BikeService bikeService;
+    public BikeService bikeService;
 
     private List<ProcessedData> processedData;
 
