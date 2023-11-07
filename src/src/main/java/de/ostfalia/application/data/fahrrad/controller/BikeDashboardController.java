@@ -1,59 +1,41 @@
 package de.ostfalia.application.data.fahrrad.controller;
 
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
-import de.ostfalia.application.data.fahrrad.strategies.DashboardViewContext;
-import jakarta.persistence.Column;
+
+import de.ostfalia.application.views.fahrrad.strategies.DashboardViewContext;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
+
 
 @Component
 public class BikeDashboardController {
 
 
+    @Autowired
+    private AbstractDataProcessor abstractDataProcessor;
 
-    private AbstractDataProcessor dataProcessor;
-
+    @Autowired
     private DashboardViewContext viewContext;
 
 
-
-
-
-    public void setDataProcessor(AbstractDataProcessor dataProcessor) {
-        this.dataProcessor = dataProcessor;
+    public void setDataProcessor(AbstractDataProcessor abstractDataProcessor) {
+        this.abstractDataProcessor = abstractDataProcessor;
     }
 
-    public AbstractDataProcessor getDataProcessor() {
-        return dataProcessor;
-    }
 
-    public DashboardViewContext getViewContext() {
-        return viewContext;
-    }
-
-    public void setViewContext(DashboardViewContext viewContext) {
-        this.viewContext = viewContext;
-    }
-
-    public void updateDashboard(){
-        LocalDateTime startTime = LocalDateTime.parse("2023-08-09T16:08:07", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
-        LocalDateTime endTime = LocalDateTime.parse("2023-08-09T16:08:31", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
-       dataProcessor.process(1, startTime, endTime);
-       List<AbstractDataProcessor.ProcessedData> processedDataList = dataProcessor.getResults();
-        for (AbstractDataProcessor.ProcessedData data : processedDataList) {
-            System.out.println("Channel: " + data.getChannel() +
-                    ", Timestamp: " + data.getTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) +
-                    ", speed per second: " + data.getValue());
+    // Diese Methode wird aufgerufen, um das Dashboard zu aktualisieren.
+    public void updateDashboard(int channel, LocalDateTime startTime, LocalDateTime endTime) {
+        if(abstractDataProcessor != null) {
+            abstractDataProcessor.process(channel, startTime, endTime);
+            List<AbstractDataProcessor.ProcessedData> results = abstractDataProcessor.getResults();
+            viewContext.buildView(results);
+        } else {
+            throw new IllegalStateException("DataProcessor has not been set");
         }
-
-
-
-
     }
 
 

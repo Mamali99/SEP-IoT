@@ -3,7 +3,9 @@ package de.ostfalia.application.data.fahrrad.impl;
 import de.ostfalia.application.data.entity.Bicycle;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
 import de.ostfalia.application.data.service.BikeService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -12,19 +14,25 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-@Service
+@Component
 @Qualifier("speedDataProcessor")
 public class SpeedDataProcessor extends AbstractDataProcessor {
 
+    private final BikeService bikeService;
+
+    @Autowired
     public SpeedDataProcessor(BikeService bikeService) {
-        super(bikeService);
+        this.bikeService = bikeService;
     }
+
+
+
+
 
     @Override
     protected List<Bicycle> fetchData(int channel, LocalDateTime startTime, LocalDateTime endTime) {
-
-       return bikeService.getDataWithTimeSpan(channel, startTime,endTime);
-        //return this.getBikeService().getDataWithTimeSpan(channel, startTime,endTime);
+        List<Bicycle> bicycleList =  bikeService.getDataWithTimeSpan(channel, startTime, endTime);
+        return bicycleList;
     }
 
     @Override

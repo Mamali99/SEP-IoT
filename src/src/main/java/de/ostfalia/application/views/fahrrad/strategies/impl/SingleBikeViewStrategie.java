@@ -1,10 +1,9 @@
-package de.ostfalia.application.data.fahrrad.strategies.impl;
+package de.ostfalia.application.views.fahrrad.strategies.impl;
 
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.spring.annotation.UIScope;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
-import de.ostfalia.application.data.fahrrad.strategies.DashboardViewStrategy;
+import de.ostfalia.application.views.fahrrad.strategies.DashboardViewStrategy;
 import org.springframework.stereotype.Component;
 
 import java.time.format.DateTimeFormatter;
