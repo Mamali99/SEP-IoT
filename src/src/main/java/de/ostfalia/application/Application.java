@@ -3,12 +3,18 @@ package de.ostfalia.application;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.theme.Theme;
 import de.ostfalia.application.data.fahrrad.impl.DistanceDataProcessor;
+import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
 import de.ostfalia.application.data.service.BikeService;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * The entry point of the Spring Boot application.
@@ -25,7 +31,8 @@ public class Application implements AppShellConfigurator {
     private BikeService bikeService;
 
     @Autowired
-    private DistanceDataProcessor distanceDataProcessor;
+    @Qualifier("speedDataProcessor")
+    private AbstractDataProcessor speed;
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
@@ -33,23 +40,24 @@ public class Application implements AppShellConfigurator {
 
     @PostConstruct
     public void bike(){
-/*
+
         LocalDateTime startTime = LocalDateTime.parse("2023-08-09T16:08:07", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
         LocalDateTime endTime = LocalDateTime.parse("2023-08-09T16:08:31", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
 
 
-        List<Bicycle> bicycleList = bikeService.getDataWithTimeSpan(1, startTime, endTime);
+        //List<Bicycle> bicycleList = bikeService.getDataWithTimeSpan(1, startTime, endTime);
+        speed.process(1, startTime, endTime);
 
+        List<AbstractDataProcessor.ProcessedData> processedDataList = speed.getResults();
 
-
-        for (Bicycle bicycle : bicycleList) {
-            System.out.println("Channel: " + bicycle.getChannel() +
-                    ", Timestamp: " + bicycle.getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) +
-                    ", Rotations per second: " + bicycle.getRotations());
+        for (AbstractDataProcessor.ProcessedData data : processedDataList) {
+            System.out.println("Channel: " + data.getChannel() +
+                    ", Timestamp: " + data.getTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) +
+                    ", speed per second: " + data.getValue());
         }
 
- */
-        distanceDataProcessor.process();
+
+
     }
 
 

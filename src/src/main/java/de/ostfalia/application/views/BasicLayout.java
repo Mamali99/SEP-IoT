@@ -4,11 +4,12 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.html.H1;
+
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.RouterLink;
-import de.ostfalia.application.views.fahrreader.FahrradView;
+import de.ostfalia.application.views.fahrrad.DashboardView;
 import de.ostfalia.application.views.lampen.LampeView;
 import de.ostfalia.application.views.talsperren.ListTalsperren;
 import de.ostfalia.application.views.testecke.WebInhaltDynamisch;
@@ -19,7 +20,7 @@ public class BasicLayout extends AppLayout {
     H1 title = new H1("Seitentitel");
 
 
-    public BasicLayout() {
+    public BasicLayout(){
         this.addToDrawer(createNav());
 
         DrawerToggle toggle = new DrawerToggle();
@@ -35,20 +36,22 @@ public class BasicLayout extends AppLayout {
     }
 
 
-    public Component createNav() {
+
+    public Component createNav(){
         VerticalLayout verticalLayout = new VerticalLayout();
 
         verticalLayout.add(new RouterLink("Talsperren", ListTalsperren.class));
         verticalLayout.add(new RouterLink("Testecke", WebInhaltDynamisch.class));
         verticalLayout.add(new RouterLink("Lampen", LampeView.class));
-        verticalLayout.add(new RouterLink("Fahrräder", FahrradView.class));
+        verticalLayout.add(new RouterLink("Fahrrad", DashboardView.class));
 
         return verticalLayout;
     }
-
-    public H1 getTitle() {
+    public H1 getTitle(){
         return this.title;
     }
+
+
 
 
 }
