@@ -10,7 +10,7 @@ public class DashboardViewContext {
 
     private DashboardViewStrategy strategy;
 
-    public DashboardViewContext(DashboardViewStrategy strategy){
+    public DashboardViewContext(DashboardViewStrategy strategy) {
         this.strategy = strategy;
     }
 
@@ -18,7 +18,12 @@ public class DashboardViewContext {
         this.strategy = strategy;
     }
 
-    public void buildView(List<AbstractDataProcessor.ProcessedData> processedDataList) {
-        strategy.buildView(processedDataList);
+    public DashboardViewStrategy getStrategy() {
+        return this.strategy;
+    }
+
+    public List<com.vaadin.flow.component.Component> buildView(List<AbstractDataProcessor.ProcessedData> processedDataList) {
+        //gibt das nur weiter ?
+        return strategy.buildView(processedDataList);
     }
 }
