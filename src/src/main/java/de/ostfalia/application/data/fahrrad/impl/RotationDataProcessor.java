@@ -15,38 +15,22 @@ import java.util.List;
 @Service
 @Qualifier("rotationDataProcessor")
 public class RotationDataProcessor extends AbstractDataProcessor {
-    @Autowired
-    private BikeService bikeService;
-    List<Bicycle> bicycleList;
-    LocalDateTime startTime = LocalDateTime.parse("2023-08-09T16:08:07", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
-    LocalDateTime endTime = LocalDateTime.parse("2023-08-09T16:08:31", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
 
-
+    public RotationDataProcessor(BikeService bikeService) {
+        super(bikeService);
+    }
 
 
     @Override
     protected List<Bicycle> fetchData() {
-         this.bicycleList = bikeService.getDataWithTimeSpan(1, startTime, endTime);
-        return bicycleList;
+        return null;
+
     }
 
     @Override
     protected List<ProcessedData> calculateData(List<Bicycle> bicycles) {
-        List<ProcessedData> p = new ArrayList<>();
-        for(Bicycle b: bicycles){
-            p.add(new ProcessedData(b.getChannel(), b.getRotations(), b.getTime()));
-        }
-        return p;
+
+        return null;
     }
 
-    @Override
-    protected void displayData(List<ProcessedData> processedData) {
-
-        for (ProcessedData bicycle : processedData) {
-            System.out.println("Channel: " + bicycle.getChannel() +
-                    ", Timestamp: " + bicycle.getTimestamp() +
-                    ", Rotations per second: " + bicycle.getValue());
-        }
-
-    }
 }

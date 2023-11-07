@@ -9,6 +9,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.RouterLink;
+import de.ostfalia.application.views.fahrrad.DashboardView;
 import de.ostfalia.application.views.lampen.LampeView;
 import de.ostfalia.application.views.talsperren.ListTalsperren;
 import de.ostfalia.application.views.testecke.WebInhaltDynamisch;
@@ -42,6 +43,7 @@ public class BasicLayout extends AppLayout {
         verticalLayout.add(new RouterLink("Talsperren", ListTalsperren.class));
         verticalLayout.add(new RouterLink("Testecke", WebInhaltDynamisch.class));
         verticalLayout.add(new RouterLink("Lampen", LampeView.class));
+        //verticalLayout.add(new RouterLink("Fahrrad", DashboardView.class));
 
         return verticalLayout;
     }

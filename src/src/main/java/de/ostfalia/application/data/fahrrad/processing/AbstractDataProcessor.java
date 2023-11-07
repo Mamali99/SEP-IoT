@@ -1,6 +1,8 @@
 package de.ostfalia.application.data.fahrrad.processing;
 
 import de.ostfalia.application.data.entity.Bicycle;
+import de.ostfalia.application.data.service.BikeService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -8,11 +10,20 @@ import java.util.List;
 
 public abstract class AbstractDataProcessor {
 
+    @Autowired
+    BikeService bikeService;
+
+    private List<ProcessedData> processedData;
+
+    public AbstractDataProcessor(BikeService bikeService){
+        this.bikeService = bikeService;
+    }
+
     // Diese Methode dient als Template-Methode und ruft die anderen Methoden in der richtigen Reihenfolge auf.
     public final void process() {
         List<Bicycle> bicycles = fetchData();
-        List<ProcessedData> processedData = calculateData(bicycles);
-        displayData(processedData);
+        processedData = calculateData(bicycles);
+
     }
 
     // Methode zum Abrufen der Daten aus der Datenbank.
@@ -21,23 +32,10 @@ public abstract class AbstractDataProcessor {
     // Methode zur Berechnung der gewünschten Metriken (Distanz, Geschwindigkeit, Umdrehungen).
     protected abstract List<ProcessedData> calculateData(List<Bicycle> bicycles);
 
-    // Methode zum Anzeigen der berechneten Daten.
-    protected abstract void displayData(List<ProcessedData> processedData);
-
-    // Je nach Anforderungen kann es sinnvoll sein, zusätzliche Methoden für Vor- und Nachverarbeitungsschritte zu definieren.
-    // Beispielmethoden dafür könnten sein:
-    protected void preprocessData(List<Bicycle> bicycles) {
-        // Standardimplementierung oder abstrakte Methode
+    public List<ProcessedData> getResults(){
+        return processedData;
     }
 
-    protected void postprocessData(List<ProcessedData> processedData) {
-        // Standardimplementierung oder abstrakte Methode
-    }
-
-    // Diese Methode könnte verwendet werden, um Ergebnisse zu speichern, wenn dies erforderlich ist.
-    protected void saveResults(List<ProcessedData> processedData) {
-        // Standardimplementierung oder abstrakte Methode
-    }
 
     // Hilfsklassen oder -methoden, um die Verarbeitung zu unterstützen
     // Beispiel für eine Hilfsklasse zur Repräsentation der verarbeiteten Daten
@@ -74,7 +72,7 @@ public abstract class AbstractDataProcessor {
         public void setTimestamp(LocalDateTime timestamp) {
             this.timestamp = timestamp;
         }
-        // Konstruktor, Getter und Setter hier...
+
     }
 
     // Weitere Hilfsmethoden oder Klassen können hier definiert werden...
