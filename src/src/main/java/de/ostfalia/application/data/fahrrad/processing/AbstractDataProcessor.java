@@ -16,7 +16,6 @@ public abstract class AbstractDataProcessor {
     private List<ProcessedData> processedData;
 
 
-
     // Diese Methode dient als Template-Methode und ruft die anderen Methoden in der richtigen Reihenfolge auf.
     public final void process(int channel, LocalDateTime startTime, LocalDateTime endTime) {
         List<Bicycle> bicycles = fetchData(channel, startTime, endTime);

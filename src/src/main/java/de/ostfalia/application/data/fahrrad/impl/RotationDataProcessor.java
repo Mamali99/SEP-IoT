@@ -16,8 +16,6 @@ import java.util.List;
 @Component
 @Qualifier("rotationDataProcessor")
 public class RotationDataProcessor extends AbstractDataProcessor {
-
-
     @Override
     protected List<Bicycle> fetchData(int channel, LocalDateTime startTime, LocalDateTime endTime) {
         return null;

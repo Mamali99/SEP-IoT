@@ -13,7 +13,6 @@ import java.util.List;
 @Component
 public class SingleBikeViewStrategie extends VerticalLayout implements DashboardViewStrategy {
     private Grid<AbstractDataProcessor.ProcessedData> grid;
-
     public SingleBikeViewStrategie() {
         grid = new Grid<>(AbstractDataProcessor.ProcessedData.class, false);
         grid.addColumn(AbstractDataProcessor.ProcessedData::getChannel).setHeader("Channel");

@@ -11,9 +11,8 @@ public class DashboardViewContext {
 
 
     private DashboardViewStrategy strategy;
+
     public DashboardViewContext() {}
-
-
 
 
     public void setStrategy(DashboardViewStrategy strategy) {

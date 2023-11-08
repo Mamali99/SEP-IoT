@@ -17,8 +17,6 @@ import java.util.List;
 @Component
 @Qualifier("distanceDataProcessor")
 public class DistanceDataProcessor extends AbstractDataProcessor {
-
-
     @Override
     protected List<Bicycle> fetchData(int channel, LocalDateTime startTime, LocalDateTime endTime) {
         return null;

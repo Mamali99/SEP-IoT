@@ -25,10 +25,6 @@ public class SpeedDataProcessor extends AbstractDataProcessor {
         this.bikeService = bikeService;
     }
 
-
-
-
-
     @Override
     protected List<Bicycle> fetchData(int channel, LocalDateTime startTime, LocalDateTime endTime) {
         List<Bicycle> bicycleList =  bikeService.getDataWithTimeSpan(channel, startTime, endTime);
@@ -45,6 +41,14 @@ public class SpeedDataProcessor extends AbstractDataProcessor {
             BigDecimal speed = distance.divide(duration, RoundingMode.HALF_UP); // v_I = dist_I / duration
             speedData.add(new ProcessedData(bike.getChannel(), speed, bike.getTime()));
         }
+
+        for(ProcessedData p: speedData){
+            System.out.println("Channel: " + p.getChannel() +
+                    ", Speed: " + p.getValue() +
+                    ", Timestamp: " + p.getTimestamp());
+        }
+
+
         return speedData;
     }
 
