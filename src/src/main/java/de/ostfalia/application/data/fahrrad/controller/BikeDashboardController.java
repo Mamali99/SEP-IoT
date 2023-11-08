@@ -40,10 +40,10 @@ public class BikeDashboardController {
                 processor = new SpeedDataProcessor(bikeService);
                 break;
             case "Rotation":
-                processor = new RotationDataProcessor();
+                processor = new RotationDataProcessor(bikeService);
                 break;
             case "Distance":
-                processor = new DistanceDataProcessor();
+                processor = new DistanceDataProcessor(bikeService);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown metric: " + metric);
