@@ -23,4 +23,7 @@ public class BikeService {
         return bicycleRepository.getBicycleByChannelAndAndTimeSpan(id, max, min);
     }
 
+    public List<Integer> getAvailableChannels() {
+        return bicycleRepository.getAllBicycles();
+    }
 }

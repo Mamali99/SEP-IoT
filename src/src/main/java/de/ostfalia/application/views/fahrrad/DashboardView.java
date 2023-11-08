@@ -3,74 +3,109 @@ package de.ostfalia.application.views.fahrrad;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+
+import com.vaadin.flow.component.datetimepicker.DateTimePicker;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import de.ostfalia.application.data.fahrrad.controller.BikeDashboardController;
-import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
-import de.ostfalia.application.data.fahrrad.strategies.DashboardViewContext;
-import de.ostfalia.application.data.fahrrad.strategies.impl.CompareBikesViewStrategy;
-import de.ostfalia.application.data.fahrrad.strategies.impl.MetricViewStrategy;
-import de.ostfalia.application.data.fahrrad.strategies.impl.SingleBikeViewStrategie;
-import de.ostfalia.application.data.fahrrad.strategies.impl.TimeIntervalViewStrategy;
-import de.ostfalia.application.views.BasicLayout;
 
+import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
+import de.ostfalia.application.data.service.BikeService;
+import de.ostfalia.application.views.fahrrad.strategies.DashboardViewContext;
+import de.ostfalia.application.views.fahrrad.strategies.impl.CompareBikesViewStrategy;
+
+import de.ostfalia.application.views.fahrrad.strategies.impl.SingleBikeViewStrategie;
+
+import de.ostfalia.application.views.BasicLayout;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Route("/SE/BikeDashboard")
 public class DashboardView extends BasicLayout {
 
-    private DashboardViewContext context;
-    private BikeDashboardController controller;
-    private ComboBox<String> strategySelector;
-    private ComboBox<String> metricSelector;
-    private Button updateButton;
-    VerticalLayout layout;
+    private final DashboardViewContext context;
+    private final BikeDashboardController controller;
+    private final BikeService bikeService;
 
-    public DashboardView(BikeDashboardController bikeDashboardController) {
+    private ComboBox<String> strategySelector;
+    private Button updateButton;
+    private ComboBox<Integer> bikeChannelSelector;
+    private DateTimePicker startDateTimePicker;
+    private DateTimePicker endDateTimePicker;
+    private ComboBox<Integer> startSecondSelector;
+    private ComboBox<Integer> endSecondSelector;
+    private ComboBox<String> metricSelector;
+    private VerticalLayout layout;
+
+    @Autowired
+    public DashboardView(BikeDashboardController bikeDashboardController, DashboardViewContext dashboardViewContext, BikeService bikeService) {
         this.controller = bikeDashboardController;
-        this.context = new DashboardViewContext(new SingleBikeViewStrategie()); // Standardstrategie setzen
-        //this.controller = new BikeDashboardController(context);
-        // hier sagen wir dem Controller was wir wollen
-        this.controller.setViewContext(context);
-        this.controller.setDataProcessor("Speed");
+        this.context = dashboardViewContext;
+        this.bikeService = bikeService;
+
+        bikeChannelSelector = new ComboBox<>("Bike Channel");
+
+        List<Integer> availableChannels = bikeService.getAvailableChannels();
+        bikeChannelSelector.setItems(availableChannels);
+
+        startDateTimePicker = new DateTimePicker("Start Time");
+        endDateTimePicker = new DateTimePicker("End Time");
+
+
+        startDateTimePicker.setStep(Duration.ofMinutes(1));
+        endDateTimePicker.setStep(Duration.ofMinutes(1));
+
+
+        startSecondSelector = new ComboBox<>("Start Second");
+        endSecondSelector = new ComboBox<>("End Second");
+        startSecondSelector.setItems(IntStream.range(0, 60).boxed().collect(Collectors.toList()));
+        endSecondSelector.setItems(IntStream.range(0, 60).boxed().collect(Collectors.toList()));
+        startSecondSelector.setValue(0);
+        endSecondSelector.setValue(0);
+
+        metricSelector = new ComboBox<>("Metric");
+        metricSelector.setItems("Distance", "Rotation", "Speed");
+        metricSelector.addValueChangeListener(event -> updateMetricSelection(event.getValue()));
+
+
+        this.context.setStrategy(new SingleBikeViewStrategie());
+
         initializeComponents();
         buildUI();
     }
 
     private void initializeComponents() {
-        // die Box mit dem Button
         strategySelector = new ComboBox<>("View Strategy");
-        strategySelector.setItems("Single Bike", "Compare Bikes", "Metric", "Time Interval");
-        // hier wird über Switch die neue Strategie gesetzt
+        strategySelector.setItems("Single Bike", "Compare Bikes");
         strategySelector.addValueChangeListener(event -> switchStrategy(event.getValue()));
-        // Änderung der Strategy
         updateButton = new Button("Update Dashboard", event -> updateDashboard());
 
-        // Kennzahlen Selektor
-        metricSelector = new ComboBox<>("Metrics");
-        metricSelector.setItems("Speed", "Distance", "Turns");
-        metricSelector.addValueChangeListener(event -> switchMetric(event.getValue())); // Hier wird der Listener direkt zugewiesen
     }
 
     private void buildUI() {
-        layout = new VerticalLayout(strategySelector, updateButton, metricSelector);
+        layout = new VerticalLayout(
+                strategySelector,
+                bikeChannelSelector,
+                metricSelector,
+                startDateTimePicker, startSecondSelector,
+                endDateTimePicker, endSecondSelector,
+                updateButton
+
+        );
         layout.setSizeFull();
-        setContent(layout); // Verwenden Sie setContent, um das Layout im BasicLayout zu setzen
-    }
+        setContent(layout);
 
-    private void rebuildUI(List<Component> viewComponents) {
-        layout.removeAll(); // Löscht alle vorhandenen Komponenten im Hauptlayout
-        buildUI();
-        for (Component component : viewComponents) {
-            layout.add(component); // Fügt die neuen Komponenten hinzu
-        }
-
-        setContent(layout); // Setzt das Hauptlayout als Inhalt der Seite
     }
 
     private void switchStrategy(String strategyName) {
+
         switch (strategyName) {
             case "Single Bike":
                 context.setStrategy(new SingleBikeViewStrategie());
@@ -78,36 +113,57 @@ public class DashboardView extends BasicLayout {
             case "Compare Bikes":
                 context.setStrategy(new CompareBikesViewStrategy());
                 break;
-            case "Metric":
-                context.setStrategy(new MetricViewStrategy());
-                break;
-            case "Time Interval":
-                context.setStrategy(new TimeIntervalViewStrategy());
-                break;
             default:
                 throw new IllegalArgumentException("Unknown strategy");
         }
+
     }
 
-    private void switchMetric(String value) {
-        controller.setDataProcessor(value);
+
+
+    private void updateMetricSelection(String metric) {
+
+        switch (metric) {
+            case "Distance":
+                break;
+            case "Rotation":
+
+                break;
+            case "Speed":
+
+                break;
+            default:
+                Notification.show("Please select a valid metric.");
+                break;
+        }
     }
+
 
     private void updateDashboard() {
-        int channel = 1; // Beispielkanal
-        LocalDateTime startTime = LocalDateTime.parse("2023-08-09T16:08:07", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
-        LocalDateTime endTime = LocalDateTime.parse("2023-08-09T16:08:31", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+        Integer selectedChannel = bikeChannelSelector.getValue();
 
-        controller.updateDashboard(channel, startTime, endTime);
-        List<AbstractDataProcessor.ProcessedData> processedDataList = controller.getDataProcessor().getResults();
-        List<Component> viewComponents = context.buildView(processedDataList);
+        LocalDateTime startTime = startDateTimePicker.getValue().withSecond(startSecondSelector.getValue());
+        LocalDateTime endTime = endDateTimePicker.getValue().withSecond(endSecondSelector.getValue());
 
-        //TO DO : remove xD ist das ok ?
+        String selectedMetric = metricSelector.getValue();
+        if (selectedMetric == null) {
+            Notification.show("Please select a metric.");
+            return;
+        }
 
-        rebuildUI(viewComponents);
 
-        // Rufen Sie buildUI in Ihrer DashboardView-Klasse auf
-        // buildUI(viewComponents);
+        if (selectedChannel != null && startTime != null && endTime != null && selectedMetric != null) {
+
+            controller.setMetricProcessor(selectedMetric, selectedChannel, startTime, endTime);
+            List<AbstractDataProcessor.ProcessedData> results = controller.getResults();
+            List<Component> components = context.buildView(results);
+            layout.removeAll();
+            buildUI();
+            layout.add(components);
+
+
+        } else {
+            Notification.show("Please select a bike channel, time interval, and metric.");
+        }
     }
-
 }

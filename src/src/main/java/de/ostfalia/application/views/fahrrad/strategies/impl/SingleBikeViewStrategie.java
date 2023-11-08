@@ -1,16 +1,18 @@
-package de.ostfalia.application.data.fahrrad.strategies.impl;
-
-import com.vaadin.flow.component.Component;
+package de.ostfalia.application.views.fahrrad.strategies.impl;
 import com.vaadin.flow.component.grid.Grid;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
-import de.ostfalia.application.data.fahrrad.strategies.DashboardViewStrategy;
+import de.ostfalia.application.views.BasicLayout;
+import de.ostfalia.application.views.fahrrad.strategies.DashboardViewStrategy;
+
+import com.vaadin.flow.component.Component;
+
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-@org.springframework.stereotype.Component
-public class SingleBikeViewStrategie implements DashboardViewStrategy {
+public class SingleBikeViewStrategie implements DashboardViewStrategy{
+
     @Override
     public List<Component> buildView(List<AbstractDataProcessor.ProcessedData> dataList) {
         List<Component> components = new ArrayList<>();
@@ -29,6 +31,6 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         // Weitere Komponenten können ebenfalls hinzugefügt werden, je nach Bedarf
 
         return components;
+
     }
 }
-

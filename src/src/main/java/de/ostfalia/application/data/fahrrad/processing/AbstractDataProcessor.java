@@ -4,21 +4,17 @@ import de.ostfalia.application.data.entity.Bicycle;
 import de.ostfalia.application.data.service.BikeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Component
 public abstract class AbstractDataProcessor {
-
-    @Autowired
-    BikeService bikeService;
 
     private List<ProcessedData> processedData;
 
-    public AbstractDataProcessor(BikeService bikeService){
-        this.bikeService = bikeService;
-    }
 
     // Diese Methode dient als Template-Methode und ruft die anderen Methoden in der richtigen Reihenfolge auf.
     public final void process(int channel, LocalDateTime startTime, LocalDateTime endTime) {
@@ -36,13 +32,6 @@ public abstract class AbstractDataProcessor {
         return processedData;
     }
 
-    public BikeService getBikeService() {
-        return bikeService;
-    }
-
-    public void setBikeService(BikeService bikeService) {
-        this.bikeService = bikeService;
-    }
 
     // Hilfsklassen oder -methoden, um die Verarbeitung zu unterstützen
     // Beispiel für eine Hilfsklasse zur Repräsentation der verarbeiteten Daten
@@ -82,6 +71,5 @@ public abstract class AbstractDataProcessor {
 
     }
 
-    // Weitere Hilfsmethoden oder Klassen können hier definiert werden...
 }
 
