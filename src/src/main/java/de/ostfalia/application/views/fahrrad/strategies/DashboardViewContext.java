@@ -19,9 +19,9 @@ public class DashboardViewContext {
         this.strategy = strategy;
     }
 
-    public void buildView(List<AbstractDataProcessor.ProcessedData> processedDataList) {
+    public List<com.vaadin.flow.component.Component> buildView(List<AbstractDataProcessor.ProcessedData> processedDataList) {
         if(strategy != null) {
-            strategy.buildView(processedDataList);
+            return strategy.buildView(processedDataList);
         } else {
             throw new IllegalStateException("Strategy has not been set");
         }

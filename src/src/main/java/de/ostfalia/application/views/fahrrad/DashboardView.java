@@ -1,5 +1,6 @@
 package de.ostfalia.application.views.fahrrad;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 
@@ -41,6 +42,7 @@ public class DashboardView extends BasicLayout {
     private ComboBox<Integer> startSecondSelector;
     private ComboBox<Integer> endSecondSelector;
     private ComboBox<String> metricSelector;
+    private VerticalLayout layout;
 
     @Autowired
     public DashboardView(BikeDashboardController bikeDashboardController, DashboardViewContext dashboardViewContext, BikeService bikeService) {
@@ -88,7 +90,7 @@ public class DashboardView extends BasicLayout {
     }
 
     private void buildUI() {
-        VerticalLayout layout = new VerticalLayout(
+        layout = new VerticalLayout(
                 strategySelector,
                 bikeChannelSelector,
                 metricSelector,
@@ -123,7 +125,6 @@ public class DashboardView extends BasicLayout {
 
         switch (metric) {
             case "Distance":
-
                 break;
             case "Rotation":
 
@@ -144,8 +145,6 @@ public class DashboardView extends BasicLayout {
         LocalDateTime startTime = startDateTimePicker.getValue().withSecond(startSecondSelector.getValue());
         LocalDateTime endTime = endDateTimePicker.getValue().withSecond(endSecondSelector.getValue());
 
-
-
         String selectedMetric = metricSelector.getValue();
         if (selectedMetric == null) {
             Notification.show("Please select a metric.");
@@ -157,7 +156,12 @@ public class DashboardView extends BasicLayout {
 
             controller.setMetricProcessor(selectedMetric, selectedChannel, startTime, endTime);
             List<AbstractDataProcessor.ProcessedData> results = controller.getResults();
-            context.buildView(results);
+            List<Component> components = context.buildView(results);
+            layout.removeAll();
+            buildUI();
+            layout.add(components);
+
+
         } else {
             Notification.show("Please select a bike channel, time interval, and metric.");
         }
