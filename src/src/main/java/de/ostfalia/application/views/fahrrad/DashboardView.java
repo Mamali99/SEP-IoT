@@ -6,6 +6,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import de.ostfalia.application.data.fahrrad.controller.BikeDashboardController;
@@ -84,6 +85,8 @@ public class DashboardView extends BasicLayout {
     private void initializeComponents() {
         strategySelector = new ComboBox<>("View Strategy");
         strategySelector.setItems("Single Bike", "Compare Bikes");
+        // Set "Single Bike" as the default selected value
+        strategySelector.setValue("Single Bike");
         strategySelector.addValueChangeListener(event -> switchStrategy(event.getValue()));
         updateButton = new Button("Update Dashboard", event -> updateDashboard());
 
@@ -99,7 +102,7 @@ public class DashboardView extends BasicLayout {
                 updateButton
 
         );
-        layout.setSizeFull();
+        //layout.setSizeFull();
         setContent(layout);
 
     }
@@ -159,7 +162,17 @@ public class DashboardView extends BasicLayout {
             List<Component> components = context.buildView(results);
             layout.removeAll();
             buildUI();
-            layout.add(components);
+            //layout.add(components);
+            // Create a new layout for the right side
+            HorizontalLayout rightLayout = new HorizontalLayout();
+            rightLayout.setWidth("100%");
+
+
+                rightLayout.add(components);
+
+
+            // Add the new layout to the main layout
+            layout.add(rightLayout);
 
 
         } else {

@@ -20,7 +20,6 @@ import java.util.List;
 public class BikeDashboardController {
 
 
-
     private AbstractDataProcessor abstractDataProcessor;
 
     @Autowired
@@ -62,8 +61,6 @@ public class BikeDashboardController {
     public void updateDashboard(int channel, LocalDateTime startTime, LocalDateTime endTime) {
         if(abstractDataProcessor != null) {
             abstractDataProcessor.process(channel, startTime, endTime);
-            List<AbstractDataProcessor.ProcessedData> results = abstractDataProcessor.getResults();
-            viewContext.buildView(results);
         } else {
             throw new IllegalStateException("DataProcessor has not been set");
         }

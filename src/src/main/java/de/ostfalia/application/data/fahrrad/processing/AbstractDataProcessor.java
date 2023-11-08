@@ -15,17 +15,13 @@ public abstract class AbstractDataProcessor {
 
     private List<ProcessedData> processedData;
 
-
-    // Diese Methode dient als Template-Methode und ruft die anderen Methoden in der richtigen Reihenfolge auf.
     public final void process(int channel, LocalDateTime startTime, LocalDateTime endTime) {
         List<Bicycle> bicycles = fetchData(channel, startTime, endTime);
         processedData = calculateData(bicycles);
     }
 
-    // Methode zum Abrufen der Daten aus der Datenbank.
     protected abstract List<Bicycle> fetchData(int channel, LocalDateTime startTime, LocalDateTime endTime);
 
-    // Methode zur Berechnung der gewünschten Metriken (Distanz, Geschwindigkeit, Umdrehungen).
     protected abstract List<ProcessedData> calculateData(List<Bicycle> bicycles);
 
     public List<ProcessedData> getResults(){
@@ -33,8 +29,6 @@ public abstract class AbstractDataProcessor {
     }
 
 
-    // Hilfsklassen oder -methoden, um die Verarbeitung zu unterstützen
-    // Beispiel für eine Hilfsklasse zur Repräsentation der verarbeiteten Daten
     public class ProcessedData {
         private int channel;
         private BigDecimal value; // Dies könnte Distanz, Geschwindigkeit oder Umdrehungen sein
