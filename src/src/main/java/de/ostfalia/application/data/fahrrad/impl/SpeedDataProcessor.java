@@ -42,13 +42,6 @@ public class SpeedDataProcessor extends AbstractDataProcessor {
             speedData.add(new ProcessedData(bike.getChannel(), speed, bike.getTime()));
         }
 
-        for(ProcessedData p: speedData){
-            System.out.println("Channel: " + p.getChannel() +
-                    ", Speed: " + p.getValue() +
-                    ", Timestamp: " + p.getTimestamp());
-        }
-
-
         return speedData;
     }
 

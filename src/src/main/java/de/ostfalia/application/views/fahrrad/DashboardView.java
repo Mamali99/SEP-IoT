@@ -11,6 +11,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import de.ostfalia.application.data.fahrrad.controller.BikeDashboardController;
 
+import de.ostfalia.application.data.fahrrad.controller.DataAnalysisService;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
 import de.ostfalia.application.data.service.BikeService;
 import de.ostfalia.application.views.fahrrad.strategies.DashboardViewContext;
@@ -21,6 +22,7 @@ import de.ostfalia.application.views.fahrrad.strategies.impl.SingleBikeViewStrat
 import de.ostfalia.application.views.BasicLayout;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.awt.*;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -44,6 +46,9 @@ public class DashboardView extends BasicLayout {
     private ComboBox<Integer> endSecondSelector;
     private ComboBox<String> metricSelector;
     private VerticalLayout layout;
+
+    @Autowired
+    private DataAnalysisService dataAnalysisService;
 
     @Autowired
     public DashboardView(BikeDashboardController bikeDashboardController, DashboardViewContext dashboardViewContext, BikeService bikeService) {
@@ -143,6 +148,7 @@ public class DashboardView extends BasicLayout {
 
 
     private void updateDashboard() {
+
         Integer selectedChannel = bikeChannelSelector.getValue();
 
         LocalDateTime startTime = startDateTimePicker.getValue().withSecond(startSecondSelector.getValue());
@@ -159,6 +165,11 @@ public class DashboardView extends BasicLayout {
 
             controller.setMetricProcessor(selectedMetric, selectedChannel, startTime, endTime);
             List<AbstractDataProcessor.ProcessedData> results = controller.getResults();
+
+            // Analyze the results to get sum and average
+            DataAnalysisService.AnalysisResult analysisResult = dataAnalysisService.analyze(results);
+
+
             List<Component> components = context.buildView(results);
             layout.removeAll();
             buildUI();
@@ -178,5 +189,8 @@ public class DashboardView extends BasicLayout {
         } else {
             Notification.show("Please select a bike channel, time interval, and metric.");
         }
+
+
+
     }
 }

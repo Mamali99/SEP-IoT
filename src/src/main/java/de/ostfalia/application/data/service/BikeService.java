@@ -24,6 +24,6 @@ public class BikeService {
     }
 
     public List<Integer> getAvailableChannels() {
-        return bicycleRepository.getAllBicycles();
+        return bicycleRepository.getActiveChannels();
     }
 }
