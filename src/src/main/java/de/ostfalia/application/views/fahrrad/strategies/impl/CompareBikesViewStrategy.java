@@ -9,10 +9,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 public class CompareBikesViewStrategy implements DashboardViewStrategy {
-
-
     @Override
     public void buildView(List<AbstractDataProcessor.ProcessedData> dataList) {
-
+        System.out.println("size form Compare View: " + dataList.size());
     }
 }

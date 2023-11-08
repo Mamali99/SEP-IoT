@@ -33,6 +33,10 @@ public class BikeDashboardController {
     public void setDataProcessor(AbstractDataProcessor abstractDataProcessor) {
         this.abstractDataProcessor = abstractDataProcessor;
     }
+    public List<AbstractDataProcessor.ProcessedData> getResults() {
+
+        return abstractDataProcessor.getResults();
+    }
     public void setMetricProcessor(String metric, int channel, LocalDateTime startTime, LocalDateTime endTime) {
         AbstractDataProcessor processor;
         switch (metric) {
@@ -54,7 +58,7 @@ public class BikeDashboardController {
     }
 
 
-    // Diese Methode wird aufgerufen, um das Dashboard zu aktualisieren.
+
     public void updateDashboard(int channel, LocalDateTime startTime, LocalDateTime endTime) {
         if(abstractDataProcessor != null) {
             abstractDataProcessor.process(channel, startTime, endTime);

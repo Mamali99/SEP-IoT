@@ -9,6 +9,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import de.ostfalia.application.data.fahrrad.controller.BikeDashboardController;
 
+import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
 import de.ostfalia.application.data.service.BikeService;
 import de.ostfalia.application.views.fahrrad.strategies.DashboardViewContext;
 import de.ostfalia.application.views.fahrrad.strategies.impl.CompareBikesViewStrategy;
@@ -106,10 +107,10 @@ public class DashboardView extends BasicLayout {
         switch (strategyName) {
             case "Single Bike":
                 context.setStrategy(new SingleBikeViewStrategie());
-
                 break;
             case "Compare Bikes":
                 context.setStrategy(new CompareBikesViewStrategy());
+                break;
             default:
                 throw new IllegalArgumentException("Unknown strategy");
         }
@@ -122,13 +123,13 @@ public class DashboardView extends BasicLayout {
 
         switch (metric) {
             case "Distance":
-                // Implementieren Sie die entsprechende Logik für DistanceDataProcessor
+
                 break;
             case "Rotation":
-                // Implementieren Sie die entsprechende Logik für RotationDataProcessor
+
                 break;
             case "Speed":
-                // Hier ist bereits die Logik implementiert
+
                 break;
             default:
                 Notification.show("Please select a valid metric.");
@@ -153,8 +154,10 @@ public class DashboardView extends BasicLayout {
 
 
         if (selectedChannel != null && startTime != null && endTime != null && selectedMetric != null) {
-            // Rufen Sie die neue Methode im Controller auf
+
             controller.setMetricProcessor(selectedMetric, selectedChannel, startTime, endTime);
+            List<AbstractDataProcessor.ProcessedData> results = controller.getResults();
+            context.buildView(results);
         } else {
             Notification.show("Please select a bike channel, time interval, and metric.");
         }
