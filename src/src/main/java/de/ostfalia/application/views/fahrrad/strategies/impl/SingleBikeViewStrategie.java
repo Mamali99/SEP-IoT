@@ -20,15 +20,14 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy{
         Grid<AbstractDataProcessor.ProcessedData> grid = new Grid<>(AbstractDataProcessor.ProcessedData.class);
         grid.setItems(dataList);
 
-        // Setze die Spalten für die Anzeige
         grid.addColumn(AbstractDataProcessor.ProcessedData::getChannel).setHeader("Channel");
         grid.addColumn(AbstractDataProcessor.ProcessedData::getValue).setHeader("Value");
         grid.addColumn(AbstractDataProcessor.ProcessedData::getTimestamp).setHeader("Timestamp");
 
-        // Füge die Tabelle zur Liste der Komponenten hinzu
         components.add((Component) grid);
 
-        // Weitere Komponenten können ebenfalls hinzugefügt werden, je nach Bedarf
+        System.out.println("from Single Bike");
+
 
         return components;
 

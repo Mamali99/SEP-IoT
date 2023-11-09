@@ -38,17 +38,8 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
             BigDecimal realRotationsPerSecond = bike.getRotations().divide(new BigDecimal(4), 2, RoundingMode.HALF_UP);
             BigDecimal circumference = new BigDecimal("2.111"); // Radumfang in Metern
             BigDecimal distance = realRotationsPerSecond.multiply(circumference);
-
-
             distanceData.add(new ProcessedData(bike.getChannel(), distance, bike.getTime()));
         }
-
-        for (ProcessedData p : distanceData) {
-            System.out.println("Channel: " + p.getChannel() +
-                    ", Distance: " + p.getValue() +
-                    ", Timestamp: " + p.getTimestamp());
-        }
-
         return distanceData;
     }
 

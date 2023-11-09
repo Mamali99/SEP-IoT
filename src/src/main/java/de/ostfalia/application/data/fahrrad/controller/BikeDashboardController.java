@@ -1,6 +1,7 @@
 package de.ostfalia.application.data.fahrrad.controller;
 
 import de.ostfalia.application.data.fahrrad.impl.DistanceDataProcessor;
+import de.ostfalia.application.data.fahrrad.impl.OperatingTimeDataProcessor;
 import de.ostfalia.application.data.fahrrad.impl.RotationDataProcessor;
 import de.ostfalia.application.data.fahrrad.impl.SpeedDataProcessor;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
@@ -18,7 +19,6 @@ import java.util.List;
 
 @Component
 public class BikeDashboardController {
-
 
 
     private AbstractDataProcessor abstractDataProcessor;
@@ -49,6 +49,9 @@ public class BikeDashboardController {
             case "Distance":
                 processor = new DistanceDataProcessor(bikeService);
                 break;
+            case "Operating time":
+                processor = new OperatingTimeDataProcessor(bikeService);
+                break;
             default:
                 throw new IllegalArgumentException("Unknown metric: " + metric);
         }
@@ -62,12 +65,12 @@ public class BikeDashboardController {
     public void updateDashboard(int channel, LocalDateTime startTime, LocalDateTime endTime) {
         if(abstractDataProcessor != null) {
             abstractDataProcessor.process(channel, startTime, endTime);
-            List<AbstractDataProcessor.ProcessedData> results = abstractDataProcessor.getResults();
-            viewContext.buildView(results);
         } else {
             throw new IllegalStateException("DataProcessor has not been set");
         }
     }
+
+
 
 
 

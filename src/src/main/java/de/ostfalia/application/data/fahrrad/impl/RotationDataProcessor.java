@@ -35,22 +35,10 @@ public class RotationDataProcessor extends AbstractDataProcessor {
     protected List<ProcessedData> calculateData(List<Bicycle> bicycles) {
         List<ProcessedData> rotationData = new ArrayList<>();
         for (Bicycle bike : bicycles) {
-            // Die gemessene Rotationsfrequenz `datat` wird durch 4 geteilt, um `ft` zu erhalten
             BigDecimal rotationsPerSecond = bike.getRotations().divide(new BigDecimal("4"), 2, RoundingMode.HALF_UP);
-            // Fügen Sie das berechnete Rotationsobjekt zur Liste hinzu
             rotationData.add(new ProcessedData(bike.getChannel(), rotationsPerSecond, bike.getTime()));
         }
-
-        // Ausgabe der berechneten Rotationsdaten für jedes Fahrrad in der Konsole
-        for (ProcessedData p : rotationData) {
-            System.out.println("Channel: " + p.getChannel() +
-                    ", Rotations per second: " + p.getValue() +
-                    ", Timestamp: " + p.getTimestamp());
-        }
-
         return rotationData;
     }
-
-
 
 }

@@ -15,6 +15,8 @@ import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.material.Material;
 import de.ostfalia.application.data.fahrrad.controller.BikeDashboardController;
+
+import de.ostfalia.application.data.fahrrad.controller.DataAnalysisService;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
 import de.ostfalia.application.data.service.BikeService;
 import de.ostfalia.application.views.BasicLayout;
@@ -23,6 +25,7 @@ import de.ostfalia.application.views.fahrrad.strategies.impl.CompareBikesViewStr
 import de.ostfalia.application.views.fahrrad.strategies.impl.SingleBikeViewStrategie;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.awt.*;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -47,6 +50,9 @@ public class DashboardView extends BasicLayout {
     private VerticalLayout layout;
     SplitLayout splitLayout;
     HorizontalLayout titleGroup;
+
+    @Autowired
+    private DataAnalysisService dataAnalysisService;
 
     @Autowired
     public DashboardView(BikeDashboardController bikeDashboardController, DashboardViewContext dashboardViewContext, BikeService bikeService) {
@@ -84,13 +90,25 @@ public class DashboardView extends BasicLayout {
         endSecondSelector.setValue(0);
 
         metricSelector = new ListBox<>();
-        metricSelector.setItems("Distance", "Rotation", "Speed");
+        metricSelector.setItems("Distance", "Rotation", "Speed", "Operating Time");
         metricSelector.setValue("Speed");
         metricSelector.addValueChangeListener(event -> updateMetricSelection(event.getValue()));
 
 
         this.context.setStrategy(new SingleBikeViewStrategie());
 
+        //-------------------------------Defaultwerte setzen-------------------------------------
+        // Festlegen der Standardwerte für das Start- und Enddatum/-zeit
+        LocalDateTime defaultStartTime = LocalDateTime.of(2023, 9, 8, 16, 8, 1); // 8. September 2023, 16:08:01
+        LocalDateTime defaultEndTime = LocalDateTime.of(2023, 9, 8, 16, 8, 31); // 8. September 2023, 16:08:31
+        startDateTimePicker.setValue(defaultStartTime.minusSeconds(defaultStartTime.getSecond()));
+        endDateTimePicker.setValue(defaultEndTime.minusSeconds(defaultEndTime.getSecond()));
+        startSecondSelector.setValue(defaultStartTime.getSecond());
+        endSecondSelector.setValue(defaultEndTime.getSecond());
+        // Festlegen des Standardkanals und der Standardmetrik
+        bikeChannelSelector.setValue(1); // Standardkanal 1
+        metricSelector.setValue("Distance"); // Standardmetrik "Distance"
+        //-----------------------------------------------------------------------------------------
         initializeComponents();
         buildUI();
     }
@@ -166,6 +184,8 @@ public class DashboardView extends BasicLayout {
             case "Speed":
 
                 break;
+            case "Operating time":
+                break;
             default:
                 Notification.show("Please select a valid metric.");
                 break;
@@ -174,6 +194,7 @@ public class DashboardView extends BasicLayout {
 
 
     private void updateDashboard() {
+
         Integer selectedChannel = bikeChannelSelector.getValue();
 
         LocalDateTime startTime = startDateTimePicker.getValue().withSecond(startSecondSelector.getValue());
@@ -190,6 +211,11 @@ public class DashboardView extends BasicLayout {
 
             controller.setMetricProcessor(selectedMetric, selectedChannel, startTime, endTime);
             List<AbstractDataProcessor.ProcessedData> results = controller.getResults();
+
+            // Analyze the results to get sum and average
+            DataAnalysisService.AnalysisResult analysisResult = dataAnalysisService.analyze(results);
+
+
             List<Component> components = context.buildView(results);
             VerticalLayout singleLayout = new VerticalLayout();
             singleLayout.add(components);
@@ -197,10 +223,24 @@ public class DashboardView extends BasicLayout {
             buildUI();
             //layout.add(components);
             splitLayout.addToSecondary(singleLayout);
+            //layout.add(components);
+            // Create a new layout for the right side
+            HorizontalLayout rightLayout = new HorizontalLayout();
+            rightLayout.setWidth("100%");
+
+
+                rightLayout.add(components);
+
+
+            // Add the new layout to the main layout
+            layout.add(rightLayout);
 
 
         } else {
             Notification.show("Please select a bike channel, time interval, and metric.");
         }
+
+
+
     }
 }
