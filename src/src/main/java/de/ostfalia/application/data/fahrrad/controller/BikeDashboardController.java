@@ -1,6 +1,7 @@
 package de.ostfalia.application.data.fahrrad.controller;
 
 import de.ostfalia.application.data.fahrrad.impl.DistanceDataProcessor;
+import de.ostfalia.application.data.fahrrad.impl.OperatingTimeDataProcessor;
 import de.ostfalia.application.data.fahrrad.impl.RotationDataProcessor;
 import de.ostfalia.application.data.fahrrad.impl.SpeedDataProcessor;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
@@ -48,6 +49,9 @@ public class BikeDashboardController {
             case "Distance":
                 processor = new DistanceDataProcessor(bikeService);
                 break;
+            case "Operating time":
+                processor = new OperatingTimeDataProcessor(bikeService);
+                break;
             default:
                 throw new IllegalArgumentException("Unknown metric: " + metric);
         }
@@ -65,6 +69,8 @@ public class BikeDashboardController {
             throw new IllegalStateException("DataProcessor has not been set");
         }
     }
+
+
 
 
 

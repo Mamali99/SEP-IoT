@@ -77,7 +77,7 @@ public class DashboardView extends BasicLayout {
         endSecondSelector.setValue(0);
 
         metricSelector = new ComboBox<>("Metric");
-        metricSelector.setItems("Distance", "Rotation", "Speed");
+        metricSelector.setItems("Distance", "Rotation", "Speed", "Operating time");
         metricSelector.addValueChangeListener(event -> updateMetricSelection(event.getValue()));
 
 
@@ -139,6 +139,8 @@ public class DashboardView extends BasicLayout {
                 break;
             case "Speed":
 
+                break;
+            case "Operating time":
                 break;
             default:
                 Notification.show("Please select a valid metric.");
