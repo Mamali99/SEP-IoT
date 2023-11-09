@@ -79,10 +79,20 @@ public class DashboardView extends BasicLayout {
         metricSelector = new ComboBox<>("Metric");
         metricSelector.setItems("Distance", "Rotation", "Speed", "Operating time");
         metricSelector.addValueChangeListener(event -> updateMetricSelection(event.getValue()));
-
-
         this.context.setStrategy(new SingleBikeViewStrategie());
 
+        //-------------------------------Defaultwerte setzen-------------------------------------
+        // Festlegen der Standardwerte für das Start- und Enddatum/-zeit
+        LocalDateTime defaultStartTime = LocalDateTime.of(2023, 9, 8, 16, 8, 1); // 8. September 2023, 16:08:01
+        LocalDateTime defaultEndTime = LocalDateTime.of(2023, 9, 8, 16, 8, 31); // 8. September 2023, 16:08:31
+        startDateTimePicker.setValue(defaultStartTime.minusSeconds(defaultStartTime.getSecond()));
+        endDateTimePicker.setValue(defaultEndTime.minusSeconds(defaultEndTime.getSecond()));
+        startSecondSelector.setValue(defaultStartTime.getSecond());
+        endSecondSelector.setValue(defaultEndTime.getSecond());
+        // Festlegen des Standardkanals und der Standardmetrik
+        bikeChannelSelector.setValue(1); // Standardkanal 1
+        metricSelector.setValue("Distance"); // Standardmetrik "Distance"
+        //-----------------------------------------------------------------------------------------
         initializeComponents();
         buildUI();
     }

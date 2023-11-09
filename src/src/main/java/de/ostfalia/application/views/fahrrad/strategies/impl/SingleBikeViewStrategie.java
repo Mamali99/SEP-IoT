@@ -26,6 +26,8 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy{
 
         components.add((Component) grid);
 
+        System.out.println("from Single Bike");
+
 
         return components;
 

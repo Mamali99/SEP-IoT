@@ -23,6 +23,8 @@ public class CompareBikesViewStrategy implements DashboardViewStrategy {
 
         components.add((Component) grid);
 
+        System.out.println("from Compare Bike");
+
 
         return components;
 
