@@ -88,7 +88,7 @@ public class DashboardView extends BasicLayout {
 
         // Komponenten für die Dauerinitialisierung
         durationValueField = new NumberField("Duration Value");
-        durationUnitSelector = new ComboBox<>("Duration Unit", "Minutes", "Hours");
+        durationUnitSelector = new ComboBox<>("Duration Unit", "Minutes", "Hours", "Days");
         durationUnitSelector.setValue("Minutes"); // Setze Standardwert
 
         //-------------------------------Defaultwerte setzen-------------------------------------
@@ -190,8 +190,10 @@ public class DashboardView extends BasicLayout {
                 duration = Duration.ofMinutes(durationValue);
             } else if ("Hours".equals(durationUnit)) {
                 duration = Duration.ofHours(durationValue);
+            }else if("Days".equals(durationUnit)){
+                duration = Duration.ofDays(durationValue);
             }
-            // Andere Zeiteinheiten können hier hinzugefügt werden...
+
         }
 
         List<AbstractDataProcessor.ProcessedData> results;
