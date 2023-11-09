@@ -34,9 +34,13 @@ public class DataAnalysisService {
             return new AnalysisResult(BigDecimal.ZERO, BigDecimal.ZERO);
         }
 
-        BigDecimal sum = processedDataList.stream()
-                .map(AbstractDataProcessor.ProcessedData::getValue)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal lastValue = processedDataList.get(processedDataList.size() - 1).getValue();
+
+        BigDecimal firstValue = processedDataList.get(0).getValue();
+
+        BigDecimal sum = firstValue.subtract(lastValue).abs();
+
+
 
         BigDecimal average = sum.divide(new BigDecimal(processedDataList.size()), 2, RoundingMode.HALF_UP);
 

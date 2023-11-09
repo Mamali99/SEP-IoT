@@ -38,7 +38,6 @@ public class BikeService {
     public List<Bicycle> getBicyclesSinceLastActivity(int channel) {
         LocalDateTime lastActivityTime = bicycleRepository.findLastActivityByChannel(channel);
         if (lastActivityTime != null) {
-            // Sie könnten hier eine Toleranz hinzufügen, z.B. lastActivityTime.minusMinutes(1)
             return bicycleRepository.findBicycleDataSince(channel, lastActivityTime);
         }
         return new ArrayList<>();

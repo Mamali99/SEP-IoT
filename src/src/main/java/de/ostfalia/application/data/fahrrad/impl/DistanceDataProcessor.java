@@ -51,6 +51,10 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
             BigDecimal distance = realRotationsPerSecond.multiply(circumference);
             distanceData.add(new ProcessedData(bike.getChannel(), distance, bike.getTime()));
         }
+
+        for(ProcessedData p: distanceData){
+            System.out.println("Strecke: " + p.getValue());
+        }
         return distanceData;
     }
 
