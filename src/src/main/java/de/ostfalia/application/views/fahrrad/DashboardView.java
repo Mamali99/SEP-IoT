@@ -8,6 +8,7 @@ import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.router.Route;
 import de.ostfalia.application.data.fahrrad.controller.BikeDashboardController;
 
@@ -47,6 +48,10 @@ public class DashboardView extends BasicLayout {
     private ComboBox<String> metricSelector;
     private VerticalLayout layout;
 
+    // Neue UI-Komponenten für die Dauer hinzufügen
+    private NumberField durationValueField;
+    private ComboBox<String> durationUnitSelector;
+
     @Autowired
     private DataAnalysisService dataAnalysisService;
 
@@ -81,8 +86,14 @@ public class DashboardView extends BasicLayout {
         metricSelector.addValueChangeListener(event -> updateMetricSelection(event.getValue()));
         this.context.setStrategy(new SingleBikeViewStrategie());
 
+        // Komponenten für die Dauerinitialisierung
+        durationValueField = new NumberField("Duration Value");
+        durationUnitSelector = new ComboBox<>("Duration Unit", "Minutes", "Hours");
+        durationUnitSelector.setValue("Minutes"); // Setze Standardwert
+
         //-------------------------------Defaultwerte setzen-------------------------------------
         // Festlegen der Standardwerte für das Start- und Enddatum/-zeit
+
         LocalDateTime defaultStartTime = LocalDateTime.of(2023, 9, 8, 16, 8, 1); // 8. September 2023, 16:08:01
         LocalDateTime defaultEndTime = LocalDateTime.of(2023, 9, 8, 16, 8, 31); // 8. September 2023, 16:08:31
         startDateTimePicker.setValue(defaultStartTime.minusSeconds(defaultStartTime.getSecond()));
@@ -93,6 +104,8 @@ public class DashboardView extends BasicLayout {
         bikeChannelSelector.setValue(1); // Standardkanal 1
         metricSelector.setValue("Distance"); // Standardmetrik "Distance"
         //-----------------------------------------------------------------------------------------
+
+
         initializeComponents();
         buildUI();
     }
@@ -111,7 +124,7 @@ public class DashboardView extends BasicLayout {
         layout = new VerticalLayout(
                 strategySelector,
                 bikeChannelSelector,
-                metricSelector,
+                metricSelector, durationValueField, durationUnitSelector,
                 startDateTimePicker, startSecondSelector,
                 endDateTimePicker, endSecondSelector,
                 updateButton
@@ -160,49 +173,64 @@ public class DashboardView extends BasicLayout {
 
 
     private void updateDashboard() {
-
         Integer selectedChannel = bikeChannelSelector.getValue();
-
-        LocalDateTime startTime = startDateTimePicker.getValue().withSecond(startSecondSelector.getValue());
-        LocalDateTime endTime = endDateTimePicker.getValue().withSecond(endSecondSelector.getValue());
-
         String selectedMetric = metricSelector.getValue();
+
         if (selectedMetric == null) {
             Notification.show("Please select a metric.");
             return;
         }
 
+        // Berechnet die Dauer basierend auf den Eingaben des Benutzers
+        Duration duration = null;
+        if (durationValueField != null && durationValueField.getValue() != null) {
+            long durationValue = durationValueField.getValue().longValue();
+            String durationUnit = durationUnitSelector.getValue();
+            if ("Minutes".equals(durationUnit)) {
+                duration = Duration.ofMinutes(durationValue);
+            } else if ("Hours".equals(durationUnit)) {
+                duration = Duration.ofHours(durationValue);
+            }
+            // Andere Zeiteinheiten können hier hinzugefügt werden...
+        }
 
-        if (selectedChannel != null && startTime != null && endTime != null && selectedMetric != null) {
+        List<AbstractDataProcessor.ProcessedData> results;
 
+        // Wenn eine Dauer gewählt wurde, benutzen Sie diese zur Datenverarbeitung
+        if (selectedChannel != null && duration != null) {
+            controller.setMetricProcessor(selectedMetric, selectedChannel, duration);
+            results = controller.getResults();
+        }
+        // Andernfalls benutzen Sie das Start- und Enddatum zur Datenverarbeitung
+        else if (selectedChannel != null && startDateTimePicker.getValue() != null && endDateTimePicker.getValue() != null) {
+            LocalDateTime startTime = startDateTimePicker.getValue().withSecond(startSecondSelector.getValue());
+            LocalDateTime endTime = endDateTimePicker.getValue().withSecond(endSecondSelector.getValue());
             controller.setMetricProcessor(selectedMetric, selectedChannel, startTime, endTime);
-            List<AbstractDataProcessor.ProcessedData> results = controller.getResults();
+            results = controller.getResults();
+        } else {
+            Notification.show("Please select a bike channel and a time interval or duration.");
+            return;
+        }
 
+        // Nachdem die Daten verarbeitet wurden, bauen Sie die Ansicht auf und zeigen Sie die Ergebnisse an
+        if (results != null && !results.isEmpty()) {
+            // Hier könnte die Datenanalyse durchgeführt werden
+            DataAnalysisService.AnalysisResult analysisResult = dataAnalysisService.calculateAverageAndSum(results);
 
-            dataAnalysisService.calculateAverageAndSum(results);
+            // Zeigt Durchschnittswerte und Summen an (Implementierung der Anzeigelogik ausstehend)
+            // ...
 
-
+            // Aktualisieren Sie die Komponenten mit den neuen Daten
             List<Component> components = context.buildView(results);
             layout.removeAll();
             buildUI();
-            //layout.add(components);
-            // Create a new layout for the right side
             HorizontalLayout rightLayout = new HorizontalLayout();
             rightLayout.setWidth("100%");
-
-
-                rightLayout.add(components);
-
-
-            // Add the new layout to the main layout
+            rightLayout.add(components);
             layout.add(rightLayout);
-
-
         } else {
-            Notification.show("Please select a bike channel, time interval, and metric.");
+            Notification.show("No data available for the selected criteria.");
         }
-
-
 
     }
 }

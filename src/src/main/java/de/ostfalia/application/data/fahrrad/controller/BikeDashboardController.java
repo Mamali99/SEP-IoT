@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -34,32 +35,47 @@ public class BikeDashboardController {
         this.abstractDataProcessor = abstractDataProcessor;
     }
     public List<AbstractDataProcessor.ProcessedData> getResults() {
-
         return abstractDataProcessor.getResults();
     }
+    // Methode für Standard Start-/Endzeit
     public void setMetricProcessor(String metric, int channel, LocalDateTime startTime, LocalDateTime endTime) {
-        AbstractDataProcessor processor;
+        AbstractDataProcessor processor = getProcessorForMetric(metric);
+        setDataProcessor(processor);
+        abstractDataProcessor.process(channel, startTime, endTime);
+    }
+
+    // Überladene Methode für die Dauer
+    public void setMetricProcessor(String metric, int channel, Duration duration) {
+        AbstractDataProcessor processor = getProcessorForMetric(metric);
+        setDataProcessor(processor);
+        abstractDataProcessor.process(channel, duration);
+    }
+
+    // Überladene Methode für die letzte Nutzung
+    public void setMetricProcessor(String metric, int channel, LocalDateTime sinceTime, boolean sinceLastActivity) {
+        AbstractDataProcessor processor = getProcessorForMetric(metric);
+        setDataProcessor(processor);
+        if (sinceLastActivity) {
+            abstractDataProcessor.processSinceLastActivity(channel, sinceTime);
+        } else {
+            abstractDataProcessor.process(channel, sinceTime, LocalDateTime.now());
+        }
+    }
+
+    private AbstractDataProcessor getProcessorForMetric(String metric) {
         switch (metric) {
             case "Speed":
-                processor = new SpeedDataProcessor(bikeService);
-                break;
+                return new SpeedDataProcessor(bikeService);
             case "Rotation":
-                processor = new RotationDataProcessor(bikeService);
-                break;
+                return new RotationDataProcessor(bikeService);
             case "Distance":
-                processor = new DistanceDataProcessor(bikeService);
-                break;
+                return new DistanceDataProcessor(bikeService);
             case "Operating time":
-                processor = new OperatingTimeDataProcessor(bikeService);
-                break;
+                return new OperatingTimeDataProcessor(bikeService);
             default:
                 throw new IllegalArgumentException("Unknown metric: " + metric);
         }
-
-        setDataProcessor(processor);
-        updateDashboard(channel, startTime, endTime);
     }
-
 
 
     public void updateDashboard(int channel, LocalDateTime startTime, LocalDateTime endTime) {

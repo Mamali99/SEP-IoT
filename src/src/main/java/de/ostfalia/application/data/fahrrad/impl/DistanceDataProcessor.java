@@ -19,7 +19,6 @@ import java.util.List;
 @Qualifier("distanceDataProcessor")
 public class DistanceDataProcessor extends AbstractDataProcessor {
 
-    private final BikeService bikeService;
 
     @Autowired
     public DistanceDataProcessor(BikeService bikeService) {
@@ -28,6 +27,18 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
     @Override
     protected List<Bicycle> fetchData(int channel, LocalDateTime startTime, LocalDateTime endTime) {
         return bikeService.getDataWithTimeSpan(channel, startTime, endTime);
+    }
+
+    // Implementierung für die Abfrage von Daten seit einem bestimmten Zeitpunkt
+    @Override
+    protected List<Bicycle> fetchDataSince(int channel, LocalDateTime sinceTime) {
+        return bikeService.findBicycleDataSince(channel, sinceTime);
+    }
+
+    // Implementierung für das Abrufen der letzten Aktivität eines Kanals
+    @Override
+    protected LocalDateTime fetchLastActivity(int channel) {
+        return bikeService.findLastActivityByChannel(channel);
     }
 
     @Override
