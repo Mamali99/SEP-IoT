@@ -178,8 +178,8 @@ public class DashboardView extends BasicLayout {
             controller.setMetricProcessor(selectedMetric, selectedChannel, startTime, endTime);
             List<AbstractDataProcessor.ProcessedData> results = controller.getResults();
 
-            // Analyze the results to get sum and average
-            DataAnalysisService.AnalysisResult analysisResult = dataAnalysisService.analyze(results);
+
+            dataAnalysisService.calculateAverageAndSum(results);
 
 
             List<Component> components = context.buildView(results);

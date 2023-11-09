@@ -29,28 +29,39 @@ public class OperatingTimeDataProcessor extends AbstractDataProcessor {
     @Override
     protected List<ProcessedData> calculateData(List<Bicycle> bicycles) {
         List<ProcessedData> operatingTimeData = new ArrayList<>();
-        int counter = 0;
+        BigDecimal sumOperatingTime = BigDecimal.ZERO;
+        int operatingPeriods = 0;
         BigDecimal previousValue = BigDecimal.ZERO;
 
         for (Bicycle bike : bicycles) {
             if (bike.getRotations().compareTo(BigDecimal.ZERO) != 0) {
                 if (previousValue.compareTo(BigDecimal.ZERO) == 0) {
-                    counter = 1;
+                    // Beginn einer neuen Betriebszeitperiode
+                    operatingPeriods++;
+                    sumOperatingTime = sumOperatingTime.add(BigDecimal.ONE);
                 } else {
-                    counter++;
+                    // Fortsetzung einer Betriebszeitperiode
+                    sumOperatingTime = sumOperatingTime.add(BigDecimal.ONE);
                 }
             } else {
-                counter = 0;
+                // Ende einer Betriebszeitperiode, oder das Fahrrad war nicht in Betrieb
             }
 
             previousValue = bike.getRotations();
-            operatingTimeData.add(new ProcessedData(bike.getChannel(), BigDecimal.valueOf(counter), bike.getTime()));
+            operatingTimeData.add(new ProcessedData(bike.getChannel(), BigDecimal.valueOf(operatingPeriods), bike.getTime()));
         }
-        // Zum Testen: Ausgabe der Betriebszeiten auf der Konsole
-        for (ProcessedData pd : operatingTimeData) {
-            System.out.println("Channel: " + pd.getChannel() + ", Betriebszeit: " + pd.getValue() + ", Zeitstempel: " + pd.getTimestamp());
+
+        // Berechnung der durchschnittlichen Betriebszeit
+        BigDecimal averageOperatingTime = BigDecimal.ZERO;
+        if (operatingPeriods > 0) {
+            averageOperatingTime = sumOperatingTime.divide(BigDecimal.valueOf(operatingPeriods), 2, BigDecimal.ROUND_HALF_UP);
         }
+
+        // Ausgabe der Gesamt- und Durchschnittsbetriebszeit auf der Konsole
+        System.out.println("Gesamtbetriebszeit in Sekunden: " + sumOperatingTime);
+        System.out.println("Durchschnittliche Betriebszeit in Sekunden: " + averageOperatingTime);
 
         return operatingTimeData;
     }
+
 }
