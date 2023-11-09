@@ -225,15 +225,7 @@ public class DashboardView extends BasicLayout {
             splitLayout.addToSecondary(singleLayout);
             //layout.add(components);
             // Create a new layout for the right side
-            HorizontalLayout rightLayout = new HorizontalLayout();
-            rightLayout.setWidth("100%");
 
-
-                rightLayout.add(components);
-
-
-            // Add the new layout to the main layout
-            layout.add(rightLayout);
 
 
         } else {
