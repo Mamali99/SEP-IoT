@@ -18,14 +18,25 @@ public class CompareBikesViewStrategy implements DashboardViewStrategy {
         Grid<AbstractDataProcessor.ProcessedData> grid = new Grid<>(AbstractDataProcessor.ProcessedData.class);
         grid.setItems(dataList);
 
+        // Setze die Spalten für die Anzeige
         grid.addColumn(AbstractDataProcessor.ProcessedData::getChannel).setHeader("Channel");
         grid.addColumn(AbstractDataProcessor.ProcessedData::getValue).setHeader("Value");
         grid.addColumn(AbstractDataProcessor.ProcessedData::getTimestamp).setHeader("Timestamp");
 
-        components.add((Component) grid);
+        // second grid
+        Grid<AbstractDataProcessor.ProcessedData> grid2 = new Grid<>(AbstractDataProcessor.ProcessedData.class);
+        grid.setItems(dataList);
 
-        System.out.println("from Compare Bike");
+        // Setze die Spalten für die Anzeige
+        grid.addColumn(AbstractDataProcessor.ProcessedData::getChannel).setHeader("Channel");
+        grid.addColumn(AbstractDataProcessor.ProcessedData::getValue).setHeader("Value");
+        grid.addColumn(AbstractDataProcessor.ProcessedData::getTimestamp).setHeader("Timestamp");
 
+        // Füge die Tabelle zur Liste der Komponenten hinzu
+        components.add(grid);
+        components.add(grid2);
+
+        // Weitere Komponenten können ebenfalls hinzugefügt werden, je nach Bedarf
 
         return components;
 

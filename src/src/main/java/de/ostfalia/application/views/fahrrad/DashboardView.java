@@ -3,6 +3,7 @@ package de.ostfalia.application.views.fahrrad;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.icon.Icon;
@@ -11,8 +12,8 @@ import com.vaadin.flow.component.listbox.ListBox;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.material.Material;
 import de.ostfalia.application.data.fahrrad.controller.BikeDashboardController;
@@ -20,6 +21,7 @@ import de.ostfalia.application.data.fahrrad.controller.BikeDashboardController;
 import de.ostfalia.application.data.fahrrad.controller.DataAnalysisService;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
 import de.ostfalia.application.data.service.BikeService;
+import de.ostfalia.application.views.BasicLayout;
 import de.ostfalia.application.views.fahrrad.strategies.DashboardViewContext;
 import de.ostfalia.application.views.fahrrad.strategies.impl.CompareBikesViewStrategy;
 import de.ostfalia.application.views.fahrrad.strategies.impl.SingleBikeViewStrategie;
@@ -46,11 +48,10 @@ public class DashboardView extends BasicLayout {
     private DateTimePicker endDateTimePicker;
     private ComboBox<Integer> startSecondSelector;
     private ComboBox<Integer> endSecondSelector;
-    private ComboBox<String> metricSelector;
+    private ListBox<String> metricSelector;
 
     //Für Intervallgröße
     private NumberField intervalSizeField;
-    private ListBox<String> metricSelector;
     private VerticalLayout layout;
     SplitLayout splitLayout;
     HorizontalLayout titleGroup;
@@ -67,6 +68,15 @@ public class DashboardView extends BasicLayout {
         this.controller = bikeDashboardController;
         this.context = dashboardViewContext;
         this.bikeService = bikeService;
+
+        splitLayout = new SplitLayout();
+        splitLayout.setSplitterPosition(30);
+        splitLayout.setSizeFull();
+
+        titleGroup = new HorizontalLayout();
+        Icon dashicon = VaadinIcon.DASHBOARD.create();
+        H2 title = new H2("Bike Dashboard");
+        titleGroup.add(dashicon, title);
 
         bikeChannelSelector = new ComboBox<>("Bike Channel");
 
@@ -88,9 +98,12 @@ public class DashboardView extends BasicLayout {
         startSecondSelector.setValue(0);
         endSecondSelector.setValue(0);
 
-        metricSelector = new ComboBox<>("Metric");
-        metricSelector.setItems("Distance", "Rotation", "Speed", "Operating time");
+        metricSelector = new ListBox<>();
+        metricSelector.setItems("Distance", "Rotation", "Speed", "Operating Time");
+        metricSelector.setValue("Speed");
         metricSelector.addValueChangeListener(event -> updateMetricSelection(event.getValue()));
+
+
         this.context.setStrategy(new SingleBikeViewStrategie());
 
         // Komponenten für die Dauerinitialisierung
@@ -123,17 +136,34 @@ public class DashboardView extends BasicLayout {
     }
 
     private void initializeComponents() {
-        strategySelector = new ComboBox<>("View Strategy");
-        strategySelector.setItems("Single Bike", "Compare Bikes");
-        // Set "Single Bike" as the default selected value
-        strategySelector.setValue("Single Bike");
-        strategySelector.addValueChangeListener(event -> switchStrategy(event.getValue()));
-        updateButton = new Button("Update Dashboard", event -> updateDashboard());
+        // Create the buttons
+        Button singleBikeButton = new Button("Single Bike");
+        Button compareBikesButton = new Button("Compare Bikes");
 
+        // Apply styles to make the buttons orange with white text and rounded corners
+        singleBikeButton.getStyle().set("background-color", "#FFA500"); // Orange color in hex
+        singleBikeButton.getStyle().set("color", "white");
+        singleBikeButton.getStyle().set("border-radius", "12px"); // Adjust the value as needed
+
+        compareBikesButton.getStyle().set("background-color", "#FFA500"); // Orange color in hex
+        compareBikesButton.getStyle().set("color", "white");
+        compareBikesButton.getStyle().set("border-radius", "12px"); // Adjust the value as needed
+
+        // Set the strategy when each button is clicked
+        singleBikeButton.addClickListener(event -> switchStrategy("Single Bike"));
+        compareBikesButton.addClickListener(event -> switchStrategy("Compare Bikes"));
+
+        // Add the buttons to a HorizontalLayout
+        strategySelector = new HorizontalLayout(singleBikeButton, compareBikesButton);
+        strategySelector.add(singleBikeButton, compareBikesButton);
+
+        updateButton = new Button("Update Dashboard", event -> updateDashboard());
     }
+
 
     private void buildUI() {
         layout = new VerticalLayout(
+                titleGroup,
                 strategySelector,
                 bikeChannelSelector,
                 metricSelector, durationValueField, durationUnitSelector,intervalSizeField,
@@ -142,8 +172,10 @@ public class DashboardView extends BasicLayout {
                 updateButton
 
         );
-        //layout.setSizeFull();
-        setContent(layout);
+
+        layout.getElement().getThemeList().add(Material.DARK);
+        splitLayout.addToPrimary(layout);
+        setContent(splitLayout);
 
     }
 
@@ -161,7 +193,6 @@ public class DashboardView extends BasicLayout {
         }
 
     }
-
 
 
     private void updateMetricSelection(String metric) {
@@ -235,12 +266,17 @@ public class DashboardView extends BasicLayout {
 
             // Aktualisieren Sie die Komponenten mit den neuen Daten
             List<Component> components = context.buildView(results);
+            VerticalLayout singleLayout = new VerticalLayout();
+            singleLayout.add(components);
             layout.removeAll();
             buildUI();
-            HorizontalLayout rightLayout = new HorizontalLayout();
-            rightLayout.setWidth("100%");
-            rightLayout.add(components);
-            layout.add(rightLayout);
+            //layout.add(components);
+            splitLayout.addToSecondary(singleLayout);
+            //layout.add(components);
+            // Create a new layout for the right side
+
+
+
         } else {
             Notification.show("No data available for the selected criteria.");
         }
