@@ -96,8 +96,8 @@ public class DashboardView extends BasicLayout {
 
         // Initialisieren des neuen Feldes für die Intervallgröße
         intervalSizeField = new NumberField("Interval Size (minutes)");
-        intervalSizeField.setValue(5.0); // Standardwert ist 5 Minuten
-        intervalSizeField.setMin(1);
+        intervalSizeField.setValue(0.0); // Standardwert ist 0
+        intervalSizeField.setMin(0);
 
         //-------------------------------Defaultwerte setzen-------------------------------------
         // Festlegen der Standardwerte für das Start- und Enddatum/-zeit
