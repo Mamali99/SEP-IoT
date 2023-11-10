@@ -46,6 +46,9 @@ public class DashboardView extends BasicLayout {
     private ComboBox<Integer> startSecondSelector;
     private ComboBox<Integer> endSecondSelector;
     private ComboBox<String> metricSelector;
+
+    //Für Intervallgröße
+    private NumberField intervalSizeField;
     private VerticalLayout layout;
 
     // Neue UI-Komponenten für die Dauer hinzufügen
@@ -91,6 +94,11 @@ public class DashboardView extends BasicLayout {
         durationUnitSelector = new ComboBox<>("Duration Unit", "Minutes", "Hours", "Days");
         durationUnitSelector.setValue("Minutes"); // Setze Standardwert
 
+        // Initialisieren des neuen Feldes für die Intervallgröße
+        intervalSizeField = new NumberField("Interval Size (minutes)");
+        intervalSizeField.setValue(5.0); // Standardwert ist 5 Minuten
+        intervalSizeField.setMin(1);
+
         //-------------------------------Defaultwerte setzen-------------------------------------
         // Festlegen der Standardwerte für das Start- und Enddatum/-zeit
 
@@ -124,7 +132,7 @@ public class DashboardView extends BasicLayout {
         layout = new VerticalLayout(
                 strategySelector,
                 bikeChannelSelector,
-                metricSelector, durationValueField, durationUnitSelector,
+                metricSelector, durationValueField, durationUnitSelector,intervalSizeField,
                 startDateTimePicker, startSecondSelector,
                 endDateTimePicker, endSecondSelector,
                 updateButton
@@ -176,6 +184,8 @@ public class DashboardView extends BasicLayout {
         Integer selectedChannel = bikeChannelSelector.getValue();
         String selectedMetric = metricSelector.getValue();
 
+        int intervalSizeInMinutes = intervalSizeField.getValue().intValue();
+
         if (selectedMetric == null) {
             Notification.show("Please select a metric.");
             return;
@@ -200,14 +210,14 @@ public class DashboardView extends BasicLayout {
 
         // Wenn eine Dauer gewählt wurde, benutzen Sie diese zur Datenverarbeitung
         if (selectedChannel != null && duration != null) {
-            controller.setMetricProcessor(selectedMetric, selectedChannel, duration);
+            controller.setMetricProcessor(selectedMetric, selectedChannel, duration, intervalSizeInMinutes);
             results = controller.getResults();
         }
         // Andernfalls benutzen Sie das Start- und Enddatum zur Datenverarbeitung
         else if (selectedChannel != null && startDateTimePicker.getValue() != null && endDateTimePicker.getValue() != null) {
             LocalDateTime startTime = startDateTimePicker.getValue().withSecond(startSecondSelector.getValue());
             LocalDateTime endTime = endDateTimePicker.getValue().withSecond(endSecondSelector.getValue());
-            controller.setMetricProcessor(selectedMetric, selectedChannel, startTime, endTime);
+            controller.setMetricProcessor(selectedMetric, selectedChannel, startTime, endTime, intervalSizeInMinutes);
             results = controller.getResults();
         } else {
             Notification.show("Please select a bike channel and a time interval or duration.");
@@ -218,9 +228,6 @@ public class DashboardView extends BasicLayout {
         if (results != null && !results.isEmpty()) {
             // Hier könnte die Datenanalyse durchgeführt werden
             DataAnalysisService.AnalysisResult analysisResult = dataAnalysisService.calculateAverageAndSum(results);
-
-            // Zeigt Durchschnittswerte und Summen an (Implementierung der Anzeigelogik ausstehend)
-            // ...
 
             // Aktualisieren Sie die Komponenten mit den neuen Daten
             List<Component> components = context.buildView(results);

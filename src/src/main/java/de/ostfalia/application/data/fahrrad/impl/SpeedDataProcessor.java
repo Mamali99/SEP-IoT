@@ -45,7 +45,7 @@ public class SpeedDataProcessor extends AbstractDataProcessor {
 
 
     @Override
-    protected List<ProcessedData> calculateData(List<Bicycle> bicycles) {
+    protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInMinutes) {
         List<ProcessedData> speedData = new ArrayList<>();
         for (Bicycle bike : bicycles) {
             // Berechnen Sie die Geschwindigkeit für jedes Fahrrad

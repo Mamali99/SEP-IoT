@@ -61,47 +61,51 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
 
      */
     @Override
-    protected List<ProcessedData> calculateData(List<Bicycle> bicycles) {
+    protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInMinutes) {
         // Sortieren der Fahrraddaten nach Zeitstempel
         bicycles.sort((b1, b2) -> b1.getTime().compareTo(b2.getTime()));
 
-        // Initialisierung des ersten Intervalls
-        LocalDateTime intervalStart = bicycles.get(0).getTime();
-        BigDecimal intervalDistance = BigDecimal.ZERO;
         List<ProcessedData> intervalDataList = new ArrayList<>();
+        if (!bicycles.isEmpty()) {
+            // Initialisierung des ersten Intervalls
+            LocalDateTime intervalStart = bicycles.get(0).getTime();
+            BigDecimal intervalDistance = BigDecimal.ZERO;
+            BigDecimal totalDistance = BigDecimal.ZERO;
 
-        // Bestimmen der Intervallgröße, z.B. 5 Minuten
-        Duration intervalSize = Duration.ofMinutes(30);
+            // Bestimmen der Intervallgröße
+            Duration intervalSize = Duration.ofMinutes(intervalInMinutes);
 
-        // Durchlaufen der Fahrraddaten und Aggregieren der Distanzen in Intervallen
-        for (Bicycle bike : bicycles) {
-            // Überprüfen, ob das aktuelle Fahrradobjekt zum aktuellen Intervall gehört
-            if (bike.getTime().isBefore(intervalStart.plus(intervalSize))) {
+            // Durchlaufen der Fahrraddaten und Aggregieren der Distanzen in Intervallen
+            for (Bicycle bike : bicycles) {
+                // Überprüfen, ob das aktuelle Fahrradobjekt zum nächsten Intervall gehört
+                while (bike.getTime().isAfter(intervalStart.plus(intervalSize))) {
+                    // Speichern der aggregierten Daten für das aktuelle Intervall
+                    intervalDataList.add(new ProcessedData(bike.getChannel(), intervalDistance, intervalStart));
+
+                    // Vorbereitung des nächsten Intervalls
+                    intervalStart = intervalStart.plus(intervalSize);
+                    intervalDistance = BigDecimal.ZERO;
+                }
                 // Aggregieren Sie die Distanz für dieses Intervall
                 BigDecimal realRotationsPerSecond = bike.getRotations().divide(new BigDecimal(4), 2, RoundingMode.HALF_UP);
                 BigDecimal circumference = new BigDecimal("2.111"); // Radumfang in Metern
                 BigDecimal distance = realRotationsPerSecond.multiply(circumference).multiply(new BigDecimal("60")); // Distanz pro Minute
                 intervalDistance = intervalDistance.add(distance);
-            } else {
-                // Speichern der aggregierten Daten für das aktuelle Intervall
-                intervalDataList.add(new ProcessedData(bike.getChannel(), intervalDistance, intervalStart));
+                totalDistance = totalDistance.add(distance);
+            }
 
-                // Vorbereitung des nächsten Intervalls
-                intervalStart = bike.getTime(); // oder intervalStart.plus(intervalSize) für lückenlose Intervalle
-                intervalDistance = BigDecimal.ZERO;
+            // Stellen Sie sicher, dass Sie die Daten für das letzte Intervall nicht verlieren
+            if (intervalDistance.compareTo(BigDecimal.ZERO) > 0) {
+                intervalDataList.add(new ProcessedData(bicycles.get(bicycles.size() - 1).getChannel(), intervalDistance, intervalStart));
             }
         }
 
-        // Stellen Sie sicher, dass Sie die Daten für das letzte Intervall nicht verlieren
-        if (!intervalDistance.equals(BigDecimal.ZERO)) {
-            intervalDataList.add(new ProcessedData(bicycles.get(bicycles.size() - 1).getChannel(), intervalDistance, intervalStart));
-        }
-        for(ProcessedData p: intervalDataList){
-            System.out.println("Strecke: " + p.getValue());
-        }
+        // Ausgabe der Intervallstrecken
+        intervalDataList.forEach(p -> System.out.println("Interval Start: " + p.getTimestamp() + " Strecke: " + p.getValue()));
 
         return intervalDataList;
     }
+
 
 
 }

@@ -19,24 +19,23 @@ public abstract class AbstractDataProcessor {
 
     private List<ProcessedData> processedData;
 
-    // Verarbeitung basierend auf Start- und Endzeit
-    public final void process(int channel, LocalDateTime startTime, LocalDateTime endTime) {
+    // Verarbeitung basierend auf Start- und Endzeit mit Intervallgröße
+    public final void process(int channel, LocalDateTime startTime, LocalDateTime endTime, int intervalInMinutes) {
         List<Bicycle> bicycles = fetchData(channel, startTime, endTime);
-        processedData = calculateData(bicycles);
+        processedData = calculateData(bicycles, intervalInMinutes);
     }
 
-    // Verarbeitung basierend auf Dauer ab jetzt rückwärts
-    public final void process(int channel, Duration duration) {
+    // Verarbeitung basierend auf Dauer ab jetzt rückwärts mit Intervallgröße
+    public final void process(int channel, Duration duration, int intervalInMinutes) {
         LocalDateTime endTime = LocalDateTime.now();
         LocalDateTime startTime = endTime.minus(duration);
-        process(channel, startTime, endTime);
+        process(channel, startTime, endTime, intervalInMinutes);
     }
 
-    // Verarbeitung basierend auf der letzten Nutzung vor/nach Zeit x
-// In AbstractDataProcessor
-    public final void processSinceLastActivity(int channel, LocalDateTime sinceTime) {
+    // Verarbeitung basierend auf der letzten Nutzung vor/nach Zeit x mit Intervallgröße
+    public final void processSinceLastActivity(int channel, LocalDateTime sinceTime, int intervalInMinutes) {
         List<Bicycle> bicycles = fetchDataSince(channel, sinceTime);
-        processedData = calculateData(bicycles);
+        processedData = calculateData(bicycles, intervalInMinutes);
     }
 
 
@@ -45,7 +44,7 @@ public abstract class AbstractDataProcessor {
     protected abstract List<Bicycle> fetchDataSince(int channel, LocalDateTime sinceTime);
     protected abstract LocalDateTime fetchLastActivity(int channel);
 
-    protected abstract List<ProcessedData> calculateData(List<Bicycle> bicycles);
+    protected abstract List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInMinutes);
 
     public List<ProcessedData> getResults(){
         return processedData;

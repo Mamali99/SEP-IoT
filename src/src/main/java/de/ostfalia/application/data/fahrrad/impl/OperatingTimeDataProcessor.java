@@ -38,7 +38,7 @@ public class OperatingTimeDataProcessor extends AbstractDataProcessor {
         return bikeService.findLastActivityByChannel(channel);
     }
     @Override
-    protected List<ProcessedData> calculateData(List<Bicycle> bicycles) {
+    protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInMinutes) {
         List<ProcessedData> operatingTimeData = new ArrayList<>();
         BigDecimal sumOperatingTime = BigDecimal.ZERO;
         int operatingPeriods = 0;
