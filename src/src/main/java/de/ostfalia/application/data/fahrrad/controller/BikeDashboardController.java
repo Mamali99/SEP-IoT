@@ -1,6 +1,7 @@
 package de.ostfalia.application.data.fahrrad.controller;
 
 import de.ostfalia.application.data.fahrrad.impl.DistanceDataProcessor;
+import de.ostfalia.application.data.fahrrad.impl.OperatingTimeDataProcessor;
 import de.ostfalia.application.data.fahrrad.impl.RotationDataProcessor;
 import de.ostfalia.application.data.fahrrad.impl.SpeedDataProcessor;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
@@ -12,13 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
 
 @Component
 public class BikeDashboardController {
-
 
 
     private AbstractDataProcessor abstractDataProcessor;
@@ -34,41 +35,58 @@ public class BikeDashboardController {
         this.abstractDataProcessor = abstractDataProcessor;
     }
     public List<AbstractDataProcessor.ProcessedData> getResults() {
-
         return abstractDataProcessor.getResults();
     }
-    public void setMetricProcessor(String metric, int channel, LocalDateTime startTime, LocalDateTime endTime) {
-        AbstractDataProcessor processor;
+
+    // Methode für Standard Start-/Endzeit mit Intervallgröße
+    public void setMetricProcessor(String metric, int channel, LocalDateTime startTime, LocalDateTime endTime, int intervalInMinutes) {
+        AbstractDataProcessor processor = getProcessorForMetric(metric);
+        setDataProcessor(processor);
+        abstractDataProcessor.process(channel, startTime, endTime, intervalInMinutes);
+    }
+
+    // Überladene Methode für die Dauer mit Intervallgröße
+    public void setMetricProcessor(String metric, int channel, Duration duration, int intervalInMinutes) {
+        AbstractDataProcessor processor = getProcessorForMetric(metric);
+        setDataProcessor(processor);
+        abstractDataProcessor.process(channel, duration, intervalInMinutes);
+    }
+
+    // Überladene Methode für die letzte Nutzung mit Intervallgröße
+    public void setMetricProcessor(String metric, int channel, LocalDateTime sinceTime, boolean sinceLastActivity, int intervalInMinutes) {
+        AbstractDataProcessor processor = getProcessorForMetric(metric);
+        setDataProcessor(processor);
+        if (sinceLastActivity) {
+            abstractDataProcessor.processSinceLastActivity(channel, sinceTime, intervalInMinutes);
+        } else {
+            abstractDataProcessor.process(channel, sinceTime, LocalDateTime.now(), intervalInMinutes);
+        }
+    }
+
+    private AbstractDataProcessor getProcessorForMetric(String metric) {
         switch (metric) {
             case "Speed":
-                processor = new SpeedDataProcessor(bikeService);
-                break;
+                return new SpeedDataProcessor(bikeService);
             case "Rotation":
-                processor = new RotationDataProcessor(bikeService);
-                break;
+                return new RotationDataProcessor(bikeService);
             case "Distance":
-                processor = new DistanceDataProcessor(bikeService);
-                break;
+                return new DistanceDataProcessor(bikeService);
+            case "Operating time":
+                return new OperatingTimeDataProcessor(bikeService);
             default:
                 throw new IllegalArgumentException("Unknown metric: " + metric);
         }
-
-        setDataProcessor(processor);
-        updateDashboard(channel, startTime, endTime);
     }
 
 
-
-    public void updateDashboard(int channel, LocalDateTime startTime, LocalDateTime endTime) {
+    // Methode, um das Dashboard zu aktualisieren (mit Intervallgröße)
+    public void updateDashboard(int channel, LocalDateTime startTime, LocalDateTime endTime, int intervalInMinutes) {
         if(abstractDataProcessor != null) {
-            abstractDataProcessor.process(channel, startTime, endTime);
-            List<AbstractDataProcessor.ProcessedData> results = abstractDataProcessor.getResults();
-            viewContext.buildView(results);
+            abstractDataProcessor.process(channel, startTime, endTime, intervalInMinutes);
         } else {
             throw new IllegalStateException("DataProcessor has not been set");
         }
     }
-
 
 
 }
