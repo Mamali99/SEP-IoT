@@ -18,21 +18,34 @@ import java.util.List;
 @Qualifier("speedDataProcessor")
 public class SpeedDataProcessor extends AbstractDataProcessor {
 
-    private final BikeService bikeService;
+
 
     @Autowired
     public SpeedDataProcessor(BikeService bikeService) {
         this.bikeService = bikeService;
     }
 
+    // Implementierung für die Standard-Abfrage von Daten zwischen Start- und Endzeit
     @Override
     protected List<Bicycle> fetchData(int channel, LocalDateTime startTime, LocalDateTime endTime) {
-        List<Bicycle> bicycleList =  bikeService.getDataWithTimeSpan(channel, startTime, endTime);
-        return bicycleList;
+        return bikeService.getDataWithTimeSpan(channel, startTime, endTime);
     }
 
+    // Implementierung für die Abfrage von Daten seit einem bestimmten Zeitpunkt
     @Override
-    protected List<ProcessedData> calculateData(List<Bicycle> bicycles) {
+    protected List<Bicycle> fetchDataSince(int channel, LocalDateTime sinceTime) {
+        return bikeService.findBicycleDataSince(channel, sinceTime);
+    }
+
+    // Implementierung für das Abrufen der letzten Aktivität eines Kanals
+    @Override
+    protected LocalDateTime fetchLastActivity(int channel) {
+        return bikeService.findLastActivityByChannel(channel);
+    }
+
+
+    @Override
+    protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInMinutes) {
         List<ProcessedData> speedData = new ArrayList<>();
         for (Bicycle bike : bicycles) {
             // Berechnen Sie die Geschwindigkeit für jedes Fahrrad

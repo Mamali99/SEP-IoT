@@ -1,43 +1,53 @@
 package de.ostfalia.application.data.fahrrad.controller;
 
+
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+
 @Service
 public class DataAnalysisService {
 
-    public AnalysisResult analyze(List<AbstractDataProcessor.ProcessedData> processedData) {
-        BigDecimal sum = BigDecimal.ZERO;
-        BigDecimal average = BigDecimal.ZERO;
-
-        if (!processedData.isEmpty()) {
-            for (AbstractDataProcessor.ProcessedData data : processedData) {
-                sum = sum.add(data.getValue());
-            }
-            average = sum.divide(BigDecimal.valueOf(processedData.size()), 2, RoundingMode.HALF_UP);
-        }
-
-        return new AnalysisResult(sum, average);
-    }
-
     public static class AnalysisResult {
-        private final BigDecimal sum;
-        private final BigDecimal average;
+        private BigDecimal average;
+        private BigDecimal sum;
 
-        public AnalysisResult(BigDecimal sum, BigDecimal average) {
-            this.sum = sum;
+        public AnalysisResult(BigDecimal average, BigDecimal sum) {
             this.average = average;
-        }
-
-        public BigDecimal getSum() {
-            return sum;
+            this.sum = sum;
         }
 
         public BigDecimal getAverage() {
             return average;
         }
+
+        public BigDecimal getSum() {
+            return sum;
+        }
+    }
+
+    public AnalysisResult calculateAverageAndSum(List<AbstractDataProcessor.ProcessedData> processedDataList) {
+        if (processedDataList == null || processedDataList.isEmpty()) {
+            return new AnalysisResult(BigDecimal.ZERO, BigDecimal.ZERO);
+        }
+
+        BigDecimal lastValue = processedDataList.get(processedDataList.size() - 1).getValue();
+
+        BigDecimal firstValue = processedDataList.get(0).getValue();
+
+        BigDecimal sum = firstValue.subtract(lastValue).abs();
+
+
+
+        BigDecimal average = sum.divide(new BigDecimal(processedDataList.size()), 2, RoundingMode.HALF_UP);
+
+        AnalysisResult a = new AnalysisResult(average, sum);
+        System.out.println("Average: " + a.getAverage());
+        System.out.println("Sum: " + a.getSum());
+
+        return a;
     }
 }
