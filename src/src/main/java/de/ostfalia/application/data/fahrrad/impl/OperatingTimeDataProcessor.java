@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,7 @@ public class OperatingTimeDataProcessor extends AbstractDataProcessor {
     protected LocalDateTime fetchLastActivity(int channel) {
         return bikeService.findLastActivityByChannel(channel);
     }
+
     @Override
     protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInMinutes) {
         List<ProcessedData> operatingTimeData = new ArrayList<>();
@@ -62,17 +64,10 @@ public class OperatingTimeDataProcessor extends AbstractDataProcessor {
             operatingTimeData.add(new ProcessedData(bike.getChannel(), BigDecimal.valueOf(operatingPeriods), bike.getTime()));
         }
 
-        // Berechnung der durchschnittlichen Betriebszeit
-        BigDecimal averageOperatingTime = BigDecimal.ZERO;
-        if (operatingPeriods > 0) {
-            averageOperatingTime = sumOperatingTime.divide(BigDecimal.valueOf(operatingPeriods), 2, BigDecimal.ROUND_HALF_UP);
-        }
-
-        // Ausgabe der Gesamt- und Durchschnittsbetriebszeit auf der Konsole
-        System.out.println("Gesamtbetriebszeit in Sekunden: " + sumOperatingTime);
-        System.out.println("Durchschnittliche Betriebszeit in Sekunden: " + averageOperatingTime);
-
         return operatingTimeData;
     }
+
+
+
 
 }
