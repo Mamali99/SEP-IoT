@@ -10,6 +10,7 @@ import java.util.List;
 
 public class CompareBikesViewStrategy implements DashboardViewStrategy {
 
+
     @Override
     public List<Component> buildView(List<AbstractDataProcessor.ProcessedData> dataList) {
         List<Component> components = new ArrayList<>();

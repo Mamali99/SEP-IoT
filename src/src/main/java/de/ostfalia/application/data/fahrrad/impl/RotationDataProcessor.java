@@ -19,6 +19,8 @@ import java.util.List;
 @Qualifier("rotationDataProcessor")
 public class RotationDataProcessor extends AbstractDataProcessor {
 
+    String processorName = "Rotation";
+
 
     @Autowired
     public RotationDataProcessor(BikeService bikeService) {
@@ -45,7 +47,8 @@ public class RotationDataProcessor extends AbstractDataProcessor {
         List<ProcessedData> rotationData = new ArrayList<>();
         for (Bicycle bike : bicycles) {
             BigDecimal rotationsPerSecond = bike.getRotations().divide(new BigDecimal("4"), 2, RoundingMode.HALF_UP);
-            rotationData.add(new ProcessedData(bike.getChannel(), rotationsPerSecond, bike.getTime()));
+            rotationData.add(new ProcessedData(bike.getChannel(), rotationsPerSecond, bike.getTime(), processorName));
+
         }
         return rotationData;
     }
