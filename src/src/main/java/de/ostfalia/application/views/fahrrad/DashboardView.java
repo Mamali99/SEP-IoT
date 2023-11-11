@@ -52,6 +52,8 @@ public class DashboardView extends BasicLayout {
 
     private TabSheet tabSheet;
 
+    private TabSheet strategyTab;
+
     //Für Intervallgröße
     private NumberField intervalSizeField;
     private VerticalLayout layout;
@@ -85,9 +87,21 @@ public class DashboardView extends BasicLayout {
 
 
         // Bike Channels → Bikes werden angezeigt, wenn es Datensätze dafür gibt
-        bikeChannelSelector = new ComboBox<>("Bike Channel");
+        VerticalLayout bikeChannelOne = new VerticalLayout();
+        bikeChannelSelector = new ComboBox<>("First Bike Channel");
         List<Integer> availableChannels = bikeService.getAvailableChannels();
         bikeChannelSelector.setItems(availableChannels);
+        bikeChannelOne.add(bikeChannelSelector);
+        bikeChannelOne.setVisible(true);
+
+
+        ComboBox<Integer> bikeChannelSelectorOne = new ComboBox<>("First Bike Channel");
+        bikeChannelSelectorOne.setItems(availableChannels);
+        ComboBox<Integer> bikeChannelSelectorTwo = new ComboBox<>("Second Bike Channel");
+        bikeChannelSelectorTwo.setItems(availableChannels);
+
+        VerticalLayout bikeChannelTwo = new VerticalLayout();
+        bikeChannelTwo.add(bikeChannelSelectorOne, bikeChannelSelectorTwo);
 
         // Metrics Selector
         metricSelector = new ListBox<>();
@@ -137,6 +151,7 @@ public class DashboardView extends BasicLayout {
         tabSheet = new TabSheet();
         tabSheet.add("Start und Endzeit", new Div(startEndZeitInterval));
         tabSheet.add("Dauer", new Div(durationIntervall));
+        tabSheet.getSelectedTab().getStyle().set("color", "orange");
 
 
         //-------------------------------Defaultwerte setzen-------------------------------------
@@ -153,27 +168,15 @@ public class DashboardView extends BasicLayout {
         metricSelector.setValue("Distance"); // Standardmetrik "Distance"
         //-----------------------------------------------------------------------------------------
 
+        // SingleBike or CompareBike Tab
+        strategyTab = new TabSheet();
+        strategyTab.add("Single Bike", bikeChannelOne);
+        strategyTab.add("Compare Bikes", bikeChannelTwo);
+        strategyTab.addSelectedChangeListener(event -> switchStrategy(event.getSelectedTab().getLabel()));
+        bikeChannelOne.addClickListener(event -> switchStrategy("Single Bike"));
+        bikeChannelTwo.addClickListener(event -> switchStrategy("Compare Bikes"));
+        strategyTab.getSelectedTab().getStyle().set("color", "orange");
 
-        // Create the buttons
-        Button singleBikeButton = new Button("Single Bike");
-        Button compareBikesButton = new Button("Compare Bikes");
-
-        // Apply styles to make the buttons orange with white text and rounded corners
-        singleBikeButton.getStyle().set("background-color", "#FFA500"); // Orange color in hex
-        singleBikeButton.getStyle().set("color", "white");
-        singleBikeButton.getStyle().set("border-radius", "10px");
-
-        compareBikesButton.getStyle().set("background-color", "#FFA500"); // Orange color in hex
-        compareBikesButton.getStyle().set("color", "white");
-        compareBikesButton.getStyle().set("border-radius", "10px");
-
-        // Set the strategy when each button is clicked
-        singleBikeButton.addClickListener(event -> switchStrategy("Single Bike"));
-        compareBikesButton.addClickListener(event -> switchStrategy("Compare Bikes"));
-
-        // Add the buttons to a HorizontalLayout
-        strategySelector = new HorizontalLayout(singleBikeButton, compareBikesButton);
-        strategySelector.add(singleBikeButton, compareBikesButton);
         updateButton = new Button("Update Dashboard", event -> updateDashboard());
         buildUI();
     }
@@ -182,8 +185,7 @@ public class DashboardView extends BasicLayout {
     private void buildUI() {
         layout = new VerticalLayout(
                 titleGroup,
-                strategySelector,
-                bikeChannelSelector,
+                strategyTab,
                 metricSelector,
                 tabSheet,
                 intervalSizeField,
