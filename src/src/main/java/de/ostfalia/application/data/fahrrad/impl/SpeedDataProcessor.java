@@ -18,6 +18,7 @@ import java.util.List;
 @Qualifier("speedDataProcessor")
 public class SpeedDataProcessor extends AbstractDataProcessor {
 
+    private String processorName = "Geschwindigkeit";
 
 
     @Autowired
@@ -51,8 +52,10 @@ public class SpeedDataProcessor extends AbstractDataProcessor {
             // Berechnen Sie die Geschwindigkeit für jedes Fahrrad
             BigDecimal distance = bike.getRotations().multiply(new BigDecimal("2.111")); // f_t * Umfang
             BigDecimal duration = BigDecimal.valueOf(ChronoUnit.SECONDS.between(bike.getTime().minusSeconds(bike.getTime().getSecond()), bike.getTime())); // t_end - t_start
-            BigDecimal speed = distance.divide(duration, RoundingMode.HALF_UP); // v_I = dist_I / duration
-            speedData.add(new ProcessedData(bike.getChannel(), speed, bike.getTime()));
+            if (duration.compareTo(BigDecimal.ZERO) > 0) { //divide by zero verhindern
+                BigDecimal speed = distance.divide(duration, RoundingMode.HALF_UP);
+                speedData.add(new ProcessedData(bike.getChannel(), speed, bike.getTime(), processorName));
+            }
         }
 
         return speedData;

@@ -37,6 +37,7 @@ public abstract class AbstractDataProcessor {
         List<Bicycle> bicycles = fetchDataSince(channel, sinceTime);
         processedData = calculateData(bicycles, intervalInMinutes);
     }
+        
 
 
     // Hook-Methoden
@@ -55,10 +56,13 @@ public abstract class AbstractDataProcessor {
         private int channel;
         private BigDecimal value; // Dies könnte Distanz, Geschwindigkeit oder Umdrehungen sein
         private LocalDateTime timestamp;
-        public ProcessedData(int c, BigDecimal b, LocalDateTime l){
+
+        private String processorName;
+        public ProcessedData(int c, BigDecimal b, LocalDateTime l, String processorName){
             this.channel = c;
             this.value = b;
             this.timestamp = l;
+            this.processorName = processorName;
         }
 
         public int getChannel() {
@@ -85,6 +89,9 @@ public abstract class AbstractDataProcessor {
             this.timestamp = timestamp;
         }
 
+        public String getProcessorName() {
+            return processorName;
+        }
     }
 
 }

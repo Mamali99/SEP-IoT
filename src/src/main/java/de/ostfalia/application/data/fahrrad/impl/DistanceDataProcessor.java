@@ -20,7 +20,7 @@ import java.util.List;
 @Qualifier("distanceDataProcessor")
 public class DistanceDataProcessor extends AbstractDataProcessor {
 
-
+    private String processorName = "Distanz";
     @Autowired
     public DistanceDataProcessor(BikeService bikeService) {
         this.bikeService = bikeService;
@@ -52,7 +52,7 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
                 BigDecimal realRotationsPerSecond = bike.getRotations().divide(new BigDecimal(4), 2, RoundingMode.HALF_UP);
                 BigDecimal circumference = new BigDecimal("2.111"); // Radumfang in Metern
                 BigDecimal distance = realRotationsPerSecond.multiply(circumference);
-                distanceData.add(new ProcessedData(bike.getChannel(), distance, bike.getTime()));
+                distanceData.add(new ProcessedData(bike.getChannel(), distance, bike.getTime(), processorName));
             }
             return distanceData;
 
@@ -76,7 +76,7 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
                 // Überprüfen, ob das aktuelle Fahrradobjekt zum nächsten Intervall gehört
                 while (bike.getTime().isAfter(intervalStart.plus(intervalSize))) {
                     // Speichern der aggregierten Daten für das aktuelle Intervall
-                    intervalDataList.add(new ProcessedData(bike.getChannel(), intervalDistance, intervalStart));
+                    intervalDataList.add(new ProcessedData(bike.getChannel(), intervalDistance, intervalStart, processorName));
 
                     // Vorbereitung des nächsten Intervalls
                     intervalStart = intervalStart.plus(intervalSize);
@@ -92,7 +92,7 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
 
             // Stellen Sie sicher, dass Sie die Daten für das letzte Intervall nicht verlieren
             if (intervalDistance.compareTo(BigDecimal.ZERO) > 0) {
-                intervalDataList.add(new ProcessedData(bicycles.get(bicycles.size() - 1).getChannel(), intervalDistance, intervalStart));
+                intervalDataList.add(new ProcessedData(bicycles.get(bicycles.size() - 1).getChannel(), intervalDistance, intervalStart, processorName));
             }
         }
 

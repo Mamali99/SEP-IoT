@@ -17,6 +17,8 @@ import java.util.List;
 @Qualifier("operatingTimeDataProcessor")
 public class OperatingTimeDataProcessor extends AbstractDataProcessor {
 
+    String processorName = "Betriebszeit";
+
     @Autowired
     public OperatingTimeDataProcessor(BikeService bikeService) {
         this.bikeService = bikeService;
@@ -61,7 +63,7 @@ public class OperatingTimeDataProcessor extends AbstractDataProcessor {
             }
 
             previousValue = bike.getRotations();
-            operatingTimeData.add(new ProcessedData(bike.getChannel(), BigDecimal.valueOf(operatingPeriods), bike.getTime()));
+            operatingTimeData.add(new ProcessedData(bike.getChannel(), BigDecimal.valueOf(operatingPeriods), bike.getTime(), processorName));
         }
 
         return operatingTimeData;
