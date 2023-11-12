@@ -38,8 +38,6 @@ public class DashboardView extends BasicLayout {
 
     private final DashboardViewContext context;
     private final BikeDashboardController controller;
-
-    private HorizontalLayout strategySelector;
     private Button updateButton;
     private ComboBox<Integer> bikeChannelSelector;
     private DateTimePicker startDateTimePicker;
@@ -77,7 +75,7 @@ public class DashboardView extends BasicLayout {
 
         // Split Layer und Title
         splitLayout = new SplitLayout();
-        splitLayout.setSplitterPosition(30);
+        splitLayout.setSplitterPosition(50);
         splitLayout.setSizeFull();
 
         titleGroup = new HorizontalLayout();
@@ -87,9 +85,9 @@ public class DashboardView extends BasicLayout {
 
 
         // Bike Channels → Bikes werden angezeigt, wenn es Datensätze dafür gibt
+        List<Integer> availableChannels = bikeService.getAvailableChannels();
         VerticalLayout bikeChannelOne = new VerticalLayout();
         bikeChannelSelector = new ComboBox<>("First Bike Channel");
-        List<Integer> availableChannels = bikeService.getAvailableChannels();
         bikeChannelSelector.setItems(availableChannels);
         bikeChannelOne.add(bikeChannelSelector);
         bikeChannelOne.setVisible(true);
@@ -105,10 +103,9 @@ public class DashboardView extends BasicLayout {
 
         // Metrics Selector
         metricSelector = new ListBox<>();
-        metricSelector.setTooltipText("Kennzahlen für die Daten");
         metricSelector.setItems("Distance", "Rotation", "Speed", "Operating Time");
         metricSelector.setValue("Speed");
-        metricSelector.addValueChangeListener(event -> updateMetricSelection(event.getValue()));
+        //metricSelector.addValueChangeListener(event -> updateMetricSelection(event.getValue()));
 
 
         // Zeitinervalanzeige
@@ -144,7 +141,6 @@ public class DashboardView extends BasicLayout {
         intervalSizeField = new NumberField("Intervallgröße(in Minuten)");
         intervalSizeField.setValue(0.0); // Standardwert ist 0
         intervalSizeField.setMin(0);
-
         zeitintervall.add(startEndZeitInterval, durationIntervall);
 
         // Entscheidungslogik für Zeintintervall
@@ -215,24 +211,19 @@ public class DashboardView extends BasicLayout {
     }
 
 
+    /* Kan weg ???
     private void updateMetricSelection(String metric) {
 
         switch (metric) {
-            case "Distance":
-                break;
-            case "Rotation":
-
-                break;
-            case "Speed":
-
-                break;
-            case "Operating time":
+            case "Distance", "Speed", "Rotation", "Operating time":
                 break;
             default:
                 Notification.show("Please select a valid metric.");
                 break;
         }
     }
+
+    */
 
 
     private void updateDashboard() {
@@ -282,7 +273,7 @@ public class DashboardView extends BasicLayout {
         // Nachdem die Daten verarbeitet wurden, bauen Sie die Ansicht auf und zeigen Sie die Ergebnisse an
         if (results != null && !results.isEmpty()) {
             // Hier könnte die Datenanalyse durchgeführt werden
-            DataAnalysisService.AnalysisResult analysisResult = dataAnalysisService.calculateAverageAndSum(results);
+            // DataAnalysisService.AnalysisResult analysisResult = dataAnalysisService.calculateAverageAndSum(results);
 
             // Aktualisieren Sie die Komponenten mit den neuen Daten
             List<Component> components = context.buildView(results);
