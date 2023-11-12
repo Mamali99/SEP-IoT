@@ -3,8 +3,8 @@ package de.ostfalia.application.views.fahrrad;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
-
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -13,11 +13,11 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.material.Material;
 import de.ostfalia.application.data.fahrrad.controller.BikeDashboardController;
-
 import de.ostfalia.application.data.fahrrad.controller.DataAnalysisService;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
 import de.ostfalia.application.data.service.BikeService;
@@ -27,7 +27,6 @@ import de.ostfalia.application.views.fahrrad.strategies.impl.CompareBikesViewStr
 import de.ostfalia.application.views.fahrrad.strategies.impl.SingleBikeViewStrategie;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.awt.*;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,7 +38,6 @@ public class DashboardView extends BasicLayout {
 
     private final DashboardViewContext context;
     private final BikeDashboardController controller;
-    private final BikeService bikeService;
 
     private HorizontalLayout strategySelector;
     private Button updateButton;
@@ -49,6 +47,12 @@ public class DashboardView extends BasicLayout {
     private ComboBox<Integer> startSecondSelector;
     private ComboBox<Integer> endSecondSelector;
     private ListBox<String> metricSelector;
+
+    private VerticalLayout zeitintervall;
+
+    private TabSheet tabSheet;
+
+    private TabSheet strategyTab;
 
     //Für Intervallgröße
     private NumberField intervalSizeField;
@@ -67,8 +71,11 @@ public class DashboardView extends BasicLayout {
     public DashboardView(BikeDashboardController bikeDashboardController, DashboardViewContext dashboardViewContext, BikeService bikeService) {
         this.controller = bikeDashboardController;
         this.context = dashboardViewContext;
-        this.bikeService = bikeService;
 
+        // Default Stategy
+        this.context.setStrategy(new SingleBikeViewStrategie());
+
+        // Split Layer und Title
         splitLayout = new SplitLayout();
         splitLayout.setSplitterPosition(30);
         splitLayout.setSizeFull();
@@ -78,43 +85,74 @@ public class DashboardView extends BasicLayout {
         H2 title = new H2("Bike Dashboard");
         titleGroup.add(dashicon, title);
 
-        bikeChannelSelector = new ComboBox<>("Bike Channel");
 
+        // Bike Channels → Bikes werden angezeigt, wenn es Datensätze dafür gibt
+        VerticalLayout bikeChannelOne = new VerticalLayout();
+        bikeChannelSelector = new ComboBox<>("First Bike Channel");
         List<Integer> availableChannels = bikeService.getAvailableChannels();
         bikeChannelSelector.setItems(availableChannels);
-
-        startDateTimePicker = new DateTimePicker("Start Time");
-        endDateTimePicker = new DateTimePicker("End Time");
-
-
-        startDateTimePicker.setStep(Duration.ofMinutes(1));
-        endDateTimePicker.setStep(Duration.ofMinutes(1));
+        bikeChannelOne.add(bikeChannelSelector);
+        bikeChannelOne.setVisible(true);
 
 
-        startSecondSelector = new ComboBox<>("Start Second");
-        endSecondSelector = new ComboBox<>("End Second");
-        startSecondSelector.setItems(IntStream.range(0, 60).boxed().collect(Collectors.toList()));
-        endSecondSelector.setItems(IntStream.range(0, 60).boxed().collect(Collectors.toList()));
-        startSecondSelector.setValue(0);
-        endSecondSelector.setValue(0);
+        ComboBox<Integer> bikeChannelSelectorOne = new ComboBox<>("First Bike Channel");
+        bikeChannelSelectorOne.setItems(availableChannels);
+        ComboBox<Integer> bikeChannelSelectorTwo = new ComboBox<>("Second Bike Channel");
+        bikeChannelSelectorTwo.setItems(availableChannels);
 
+        VerticalLayout bikeChannelTwo = new VerticalLayout();
+        bikeChannelTwo.add(bikeChannelSelectorOne, bikeChannelSelectorTwo);
+
+        // Metrics Selector
         metricSelector = new ListBox<>();
+        metricSelector.setTooltipText("Kennzahlen für die Daten");
         metricSelector.setItems("Distance", "Rotation", "Speed", "Operating Time");
         metricSelector.setValue("Speed");
         metricSelector.addValueChangeListener(event -> updateMetricSelection(event.getValue()));
 
 
-        this.context.setStrategy(new SingleBikeViewStrategie());
+        // Zeitinervalanzeige
+        zeitintervall = new VerticalLayout();
+        VerticalLayout startEndZeitInterval = new VerticalLayout();
 
-        // Komponenten für die Dauerinitialisierung
+        // Start und End Time
+        startDateTimePicker = new DateTimePicker("Start Time");
+        startSecondSelector = new ComboBox<>("Start Second");
+        startDateTimePicker.setStep(Duration.ofMinutes(1));
+        startSecondSelector.setItems(IntStream.range(0, 60).boxed().collect(Collectors.toList()));
+        startSecondSelector.setValue(0);
+
+        endDateTimePicker = new DateTimePicker("End Time");
+        endDateTimePicker.setStep(Duration.ofMinutes(1));
+        endSecondSelector = new ComboBox<>("End Second");
+        endSecondSelector.setItems(IntStream.range(0, 60).boxed().collect(Collectors.toList()));
+        endSecondSelector.setValue(0);
+
+        startEndZeitInterval.add(startDateTimePicker, startSecondSelector, endDateTimePicker, endSecondSelector);
+
+
+        // Duration Intervall
+        VerticalLayout durationIntervall = new VerticalLayout();
         durationValueField = new NumberField("Duration Value");
+        durationValueField.setTooltipText("Dauer der Nutzung");
         durationUnitSelector = new ComboBox<>("Duration Unit", "Minutes", "Hours", "Days");
         durationUnitSelector.setValue("Minutes"); // Setze Standardwert
+        durationIntervall.add(durationUnitSelector, durationValueField);
+
 
         // Initialisieren des neuen Feldes für die Intervallgröße
-        intervalSizeField = new NumberField("Interval Size (minutes)");
+        intervalSizeField = new NumberField("Intervallgröße(in Minuten)");
         intervalSizeField.setValue(0.0); // Standardwert ist 0
         intervalSizeField.setMin(0);
+
+        zeitintervall.add(startEndZeitInterval, durationIntervall);
+
+        // Entscheidungslogik für Zeintintervall
+        tabSheet = new TabSheet();
+        tabSheet.add("Start und Endzeit", new Div(startEndZeitInterval));
+        tabSheet.add("Dauer", new Div(durationIntervall));
+        tabSheet.getSelectedTab().getStyle().set("color", "orange");
+
 
         //-------------------------------Defaultwerte setzen-------------------------------------
         // Festlegen der Standardwerte für das Start- und Enddatum/-zeit
@@ -130,45 +168,27 @@ public class DashboardView extends BasicLayout {
         metricSelector.setValue("Distance"); // Standardmetrik "Distance"
         //-----------------------------------------------------------------------------------------
 
-
-        initializeComponents();
-        buildUI();
-    }
-
-    private void initializeComponents() {
-        // Create the buttons
-        Button singleBikeButton = new Button("Single Bike");
-        Button compareBikesButton = new Button("Compare Bikes");
-
-        // Apply styles to make the buttons orange with white text and rounded corners
-        singleBikeButton.getStyle().set("background-color", "#FFA500"); // Orange color in hex
-        singleBikeButton.getStyle().set("color", "white");
-        singleBikeButton.getStyle().set("border-radius", "12px"); // Adjust the value as needed
-
-        compareBikesButton.getStyle().set("background-color", "#FFA500"); // Orange color in hex
-        compareBikesButton.getStyle().set("color", "white");
-        compareBikesButton.getStyle().set("border-radius", "12px"); // Adjust the value as needed
-
-        // Set the strategy when each button is clicked
-        singleBikeButton.addClickListener(event -> switchStrategy("Single Bike"));
-        compareBikesButton.addClickListener(event -> switchStrategy("Compare Bikes"));
-
-        // Add the buttons to a HorizontalLayout
-        strategySelector = new HorizontalLayout(singleBikeButton, compareBikesButton);
-        strategySelector.add(singleBikeButton, compareBikesButton);
+        // SingleBike or CompareBike Tab
+        strategyTab = new TabSheet();
+        strategyTab.add("Single Bike", bikeChannelOne);
+        strategyTab.add("Compare Bikes", bikeChannelTwo);
+        strategyTab.addSelectedChangeListener(event -> switchStrategy(event.getSelectedTab().getLabel()));
+        bikeChannelOne.addClickListener(event -> switchStrategy("Single Bike"));
+        bikeChannelTwo.addClickListener(event -> switchStrategy("Compare Bikes"));
+        strategyTab.getSelectedTab().getStyle().set("color", "orange");
 
         updateButton = new Button("Update Dashboard", event -> updateDashboard());
+        buildUI();
     }
 
 
     private void buildUI() {
         layout = new VerticalLayout(
                 titleGroup,
-                strategySelector,
-                bikeChannelSelector,
-                metricSelector, durationValueField, durationUnitSelector,intervalSizeField,
-                startDateTimePicker, startSecondSelector,
-                endDateTimePicker, endSecondSelector,
+                strategyTab,
+                metricSelector,
+                tabSheet,
+                intervalSizeField,
                 updateButton
 
         );
@@ -235,7 +255,7 @@ public class DashboardView extends BasicLayout {
                 duration = Duration.ofMinutes(durationValue);
             } else if ("Hours".equals(durationUnit)) {
                 duration = Duration.ofHours(durationValue);
-            }else if("Days".equals(durationUnit)){
+            } else if ("Days".equals(durationUnit)) {
                 duration = Duration.ofDays(durationValue);
             }
 
@@ -274,7 +294,6 @@ public class DashboardView extends BasicLayout {
             splitLayout.addToSecondary(singleLayout);
             //layout.add(components);
             // Create a new layout for the right side
-
 
 
         } else {
