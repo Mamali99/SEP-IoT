@@ -51,8 +51,8 @@ public class SpeedDataProcessor extends AbstractDataProcessor {
         for (Bicycle bike : bicycles) {
             // Berechnen Sie die Geschwindigkeit für jedes Fahrrad
             BigDecimal distance = bike.getRotations().multiply(new BigDecimal("2.111")); // f_t * Umfang
-            LocalDateTime startTime = bike.getTime().minusSeconds(bike.getTime().getSecond());
-            BigDecimal duration = BigDecimal.valueOf(ChronoUnit.SECONDS.between(startTime, bike.getTime())); // t_end - t_start
+            LocalDateTime endTime = bike.getTime().minusSeconds(bike.getTime().getSecond());
+            BigDecimal duration = BigDecimal.valueOf(ChronoUnit.SECONDS.between(endTime, bike.getTime())); // t_end - t_start
 
             if (duration.compareTo(BigDecimal.ZERO) > 0) { //divide by zero verhindern
                 BigDecimal speed = distance.divide(duration, RoundingMode.HALF_UP);
