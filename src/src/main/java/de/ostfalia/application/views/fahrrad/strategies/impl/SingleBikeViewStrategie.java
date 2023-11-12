@@ -16,6 +16,7 @@ import de.ostfalia.application.views.fahrrad.strategies.DashboardViewStrategy;
 import com.vaadin.flow.component.Component;
 
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,16 +35,24 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy{
         TimeData timestamp = new TimeData();
         Data channel = new Data();
 
-
-        for (int i = 0; i < 2; i++) {
+        Data totalDistance = new Data();
+        double cumulativeDistance = 0.0;
+        for (int i = 0; i < dataList.size(); i++) {
 
             System.out.println(dataList.get(i).getProcessorName());
             value.add(dataList.get(i).getValue());
             timestamp.add(dataList.get(i).getTimestamp());
             channel.add(dataList.get(i).getChannel());
+
+            BigDecimal distanceBigDecimal = dataList.get(i).getValue();
+            double distance = distanceBigDecimal.doubleValue();
+            cumulativeDistance += distance;
+            totalDistance.add(cumulativeDistance);
+
         }
 
         LineChart lineValue = new LineChart(timestamp, value);
+        LineChart lineTotalDistance = new LineChart(timestamp, totalDistance);
         lineValue.setName(dataList.get(0).getProcessorName());
 
         XAxis xAxis = new XAxis(DataType.DATE);
@@ -56,11 +65,13 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy{
         RectangularCoordinate rc = new RectangularCoordinate(xAxis, yAxis);
 
         lineValue.plotOn(rc);
+        lineTotalDistance.plotOn(rc);
         SOChart soChart = new SOChart();
         soChart.setSize("80%", "300px");
         soChart.add(new Title(dataList.get(0).getProcessorName()));
         soChart.add(new Legend());
         soChart.add(lineValue);
+        soChart.add(lineTotalDistance);
         layout.add(soChart);
         components.add(layout);
 

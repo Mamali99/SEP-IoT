@@ -85,7 +85,7 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
                 // Aggregieren Sie die Distanz für dieses Intervall
                 BigDecimal realRotationsPerSecond = bike.getRotations().divide(new BigDecimal(4), 2, RoundingMode.HALF_UP);
                 BigDecimal circumference = new BigDecimal("2.111"); // Radumfang in Metern
-                BigDecimal distance = realRotationsPerSecond.multiply(circumference).multiply(new BigDecimal("60")); // Distanz pro Minute
+                BigDecimal distance = realRotationsPerSecond.multiply(circumference); // Distanz pro Minute
                 intervalDistance = intervalDistance.add(distance);
                 totalDistance = totalDistance.add(distance);
             }
@@ -97,7 +97,7 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
         }
 
         // Ausgabe der Intervallstrecken
-        intervalDataList.forEach(p -> System.out.println("Interval Start: " + p.getTimestamp() + " Strecke: " + p.getValue()));
+        intervalDataList.forEach(p -> System.out.println("Interval Start: " + p.getTimestamp() + " Strecke: " + p.getValue() + "test" + p.getProcessorName()));
 
         return intervalDataList;
     }
