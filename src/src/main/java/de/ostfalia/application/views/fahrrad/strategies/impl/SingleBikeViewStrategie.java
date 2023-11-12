@@ -101,8 +101,9 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy{
         BigDecimal totalSpeed = BigDecimal.ZERO;
         for (int i = 0; i < dataList.size(); i++) {
             if (dataList.get(i).getProcessorName().equals("Geschwindigkeit")) {
-                totalSpeed = totalSpeed.add(dataList.get(i).getValue().max(dataList.get(i).getValue()));
-                System.out.println(dataList.get(i).getValue());
+                BigDecimal currentSpeed = dataList.get(i).getValue();
+                totalSpeed = totalSpeed.max(currentSpeed);
+                System.out.println(currentSpeed);
             }
         }
         return totalSpeed;
