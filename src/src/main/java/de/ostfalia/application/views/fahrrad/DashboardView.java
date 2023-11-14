@@ -18,7 +18,6 @@ import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.material.Material;
 import de.ostfalia.application.data.fahrrad.controller.BikeDashboardController;
-import de.ostfalia.application.data.fahrrad.controller.DataAnalysisService;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
 import de.ostfalia.application.data.service.BikeService;
 import de.ostfalia.application.views.BasicLayout;
@@ -62,8 +61,8 @@ public class DashboardView extends BasicLayout {
     private NumberField durationValueField;
     private ComboBox<String> durationUnitSelector;
 
-    @Autowired
-    private DataAnalysisService dataAnalysisService;
+    private VerticalLayout bikeChannelOne;
+    private VerticalLayout bikeChannelTwo;
 
     @Autowired
     public DashboardView(BikeDashboardController bikeDashboardController, DashboardViewContext dashboardViewContext, BikeService bikeService) {
@@ -78,37 +77,49 @@ public class DashboardView extends BasicLayout {
         splitLayout.setSplitterPosition(30);
         splitLayout.setSizeFull();
 
+        buildTitleGroup();
+        buildBikeChannels(bikeService);
+        buildMetricsSelector();
+        buildZeitintervall();
+        buildDefaultValues();
+        buildStrategyTab();
+        buildUpdateButton();
+        buildUI();
+    }
+
+    private void buildTitleGroup() {
         titleGroup = new HorizontalLayout();
         Icon dashicon = VaadinIcon.DASHBOARD.create();
         H2 title = new H2("Bike Dashboard");
         titleGroup.add(dashicon, title);
+    }
 
-
-        // Bike Channels → Bikes werden angezeigt, wenn es Datensätze dafür gibt
+    private void buildBikeChannels(BikeService bikeService) {
         List<Integer> availableChannels = bikeService.getAvailableChannels();
-        VerticalLayout bikeChannelOne = new VerticalLayout();
+
+        bikeChannelOne = new VerticalLayout();
         bikeChannelSelector = new ComboBox<>("First Bike Channel");
         bikeChannelSelector.setItems(availableChannels);
         bikeChannelOne.add(bikeChannelSelector);
         bikeChannelOne.setVisible(true);
-
 
         ComboBox<Integer> bikeChannelSelectorOne = new ComboBox<>("First Bike Channel");
         bikeChannelSelectorOne.setItems(availableChannels);
         ComboBox<Integer> bikeChannelSelectorTwo = new ComboBox<>("Second Bike Channel");
         bikeChannelSelectorTwo.setItems(availableChannels);
 
-        VerticalLayout bikeChannelTwo = new VerticalLayout();
+        bikeChannelTwo = new VerticalLayout();
         bikeChannelTwo.add(bikeChannelSelectorOne, bikeChannelSelectorTwo);
+    }
 
-        // Metrics Selector
+    private void buildMetricsSelector() {
         metricSelector = new ListBox<>();
         metricSelector.setItems("Distance", "Rotation", "Speed", "Operating Time");
         metricSelector.setValue("Speed");
         //metricSelector.addValueChangeListener(event -> updateMetricSelection(event.getValue()));
+    }
 
-
-        // Zeitinervalanzeige
+    private void buildZeitintervall() {
         zeitintervall = new VerticalLayout();
         VerticalLayout startEndZeitInterval = new VerticalLayout();
 
@@ -127,7 +138,6 @@ public class DashboardView extends BasicLayout {
 
         startEndZeitInterval.add(startDateTimePicker, startSecondSelector, endDateTimePicker, endSecondSelector);
 
-
         // Duration Intervall
         VerticalLayout durationIntervall = new VerticalLayout();
         durationValueField = new NumberField("Duration Value");
@@ -136,34 +146,34 @@ public class DashboardView extends BasicLayout {
         durationUnitSelector.setValue("Minutes"); // Setze Standardwert
         durationIntervall.add(durationUnitSelector, durationValueField);
 
-
         // Initialisieren des neuen Feldes für die Intervallgröße
         intervalSizeField = new NumberField("Intervallgröße(in Minuten)");
         intervalSizeField.setValue(0.0); // Standardwert ist 0
         intervalSizeField.setMin(0);
         zeitintervall.add(startEndZeitInterval, durationIntervall);
 
-        // Entscheidungslogik für Zeintintervall
+        // Entscheidungslogik für Zeitintervall
         tabSheet = new TabSheet();
         tabSheet.add("Start und Endzeit", new Div(startEndZeitInterval));
         tabSheet.add("Dauer", new Div(durationIntervall));
         tabSheet.getSelectedTab().getStyle().set("color", "orange");
+    }
 
-
-        //-------------------------------Defaultwerte setzen-------------------------------------
+    private void buildDefaultValues() {
         // Festlegen der Standardwerte für das Start- und Enddatum/-zeit
-
         LocalDateTime defaultStartTime = LocalDateTime.of(2023, 9, 8, 16, 8, 1); // 8. September 2023, 16:08:01
         LocalDateTime defaultEndTime = LocalDateTime.of(2023, 9, 8, 16, 8, 31); // 8. September 2023, 16:08:31
         startDateTimePicker.setValue(defaultStartTime.minusSeconds(defaultStartTime.getSecond()));
         endDateTimePicker.setValue(defaultEndTime.minusSeconds(defaultEndTime.getSecond()));
         startSecondSelector.setValue(defaultStartTime.getSecond());
         endSecondSelector.setValue(defaultEndTime.getSecond());
+
         // Festlegen des Standardkanals und der Standardmetrik
         bikeChannelSelector.setValue(1); // Standardkanal 1
         metricSelector.setValue("Distance"); // Standardmetrik "Distance"
-        //-----------------------------------------------------------------------------------------
+    }
 
+    private void buildStrategyTab() {
         // SingleBike or CompareBike Tab
         strategyTab = new TabSheet();
         strategyTab.add("Single Bike", bikeChannelOne);
@@ -172,11 +182,11 @@ public class DashboardView extends BasicLayout {
         bikeChannelOne.addClickListener(event -> switchStrategy("Single Bike"));
         bikeChannelTwo.addClickListener(event -> switchStrategy("Compare Bikes"));
         strategyTab.getSelectedTab().getStyle().set("color", "orange");
-
-        updateButton = new Button("Update Dashboard", event -> updateDashboard());
-        buildUI();
     }
 
+    private void buildUpdateButton() {
+        updateButton = new Button("Update Dashboard", event -> updateDashboard());
+    }
 
     private void buildUI() {
         layout = new VerticalLayout(
@@ -186,17 +196,14 @@ public class DashboardView extends BasicLayout {
                 tabSheet,
                 intervalSizeField,
                 updateButton
-
         );
 
         layout.getElement().getThemeList().add(Material.DARK);
         splitLayout.addToPrimary(layout);
         setContent(splitLayout);
-
     }
 
     private void switchStrategy(String strategyName) {
-
         switch (strategyName) {
             case "Single Bike":
                 context.setStrategy(new SingleBikeViewStrategie());
@@ -207,23 +214,7 @@ public class DashboardView extends BasicLayout {
             default:
                 throw new IllegalArgumentException("Unknown strategy");
         }
-
     }
-
-
-    /* Kan weg ???
-    private void updateMetricSelection(String metric) {
-
-        switch (metric) {
-            case "Distance", "Speed", "Rotation", "Operating time":
-                break;
-            default:
-                Notification.show("Please select a valid metric.");
-                break;
-        }
-    }
-
-    */
 
 
     private void updateDashboard() {
@@ -272,19 +263,12 @@ public class DashboardView extends BasicLayout {
 
         // Nachdem die Daten verarbeitet wurden, bauen Sie die Ansicht auf und zeigen Sie die Ergebnisse an
         if (results != null && !results.isEmpty()) {
-            // Hier könnte die Datenanalyse durchgeführt werden
-            // DataAnalysisService.AnalysisResult analysisResult = dataAnalysisService.calculateAverageAndSum(results);
-
-            // Aktualisieren Sie die Komponenten mit den neuen Daten
             List<Component> components = context.buildView(results);
             VerticalLayout singleLayout = new VerticalLayout();
             singleLayout.add(components);
             layout.removeAll();
             buildUI();
-            //layout.add(components);
             splitLayout.addToSecondary(singleLayout);
-            //layout.add(components);
-            // Create a new layout for the right side
 
 
         } else {

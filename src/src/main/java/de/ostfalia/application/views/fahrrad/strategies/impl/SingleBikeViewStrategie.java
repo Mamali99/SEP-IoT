@@ -88,7 +88,7 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
 
         // Reduce number of points on the X-axis
         XAxis xAxis = new XAxis(DataType.DATE);
-        xAxis.setDivisions(dataList.size() / 10);
+        xAxis.setDivisions(9);
         xAxis.setName("Time");
 
         YAxis yAxis = new YAxis(DataType.NUMBER);
@@ -100,7 +100,7 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         individualLine.plotOn(rc);
 
         SOChart soChart = new SOChart();
-        soChart.setSize("80%", "350px");
+        soChart.setSize("90%", "350px");
         soChart.add(new Legend());
         soChart.add(cumulativeLine);
         soChart.add(individualLine);
