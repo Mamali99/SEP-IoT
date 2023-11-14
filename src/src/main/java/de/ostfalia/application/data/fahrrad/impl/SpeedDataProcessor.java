@@ -6,7 +6,6 @@ import de.ostfalia.application.data.service.BikeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -14,11 +13,12 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+
 @Component
 @Qualifier("speedDataProcessor")
 public class SpeedDataProcessor extends AbstractDataProcessor {
 
-    private String processorName = "Geschwindigkeit";
+    private String processorName = "Speed";
 
 
     @Autowired

@@ -4,7 +4,7 @@ import com.storedobject.chart.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import de.ostfalia.application.data.fahrrad.controller.DataAnalysisService;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
@@ -31,51 +31,96 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         Map<String, BigDecimal> result = dataAnalysisService.calculateAverageAndSum(dataList);
         BigDecimal average = result.get("average");
         BigDecimal sum = result.get("sum");
+        BigDecimal roundedSum = sum.setScale(2, RoundingMode.HALF_UP);
+        String processorName = dataList.get(0).getProcessorName();
+        Integer channel = dataList.get(0).getChannel();
+
+        HorizontalLayout layout = new HorizontalLayout();
+        layout.setWidthFull();
+
+        layout.add(createTitle(channel));
+        layout.add(createMetrics(processorName, roundedSum, average));
+        layout.add(createLineChart(dataList));
+
+
+        components.add(layout);
+        return components;
+    }
+
+    private Component createTitle(Integer channel) {
+        H2 h2 = new H2("Fahrrad " + channel);
+        h2.setWidth("10%");
+        h2.setHeight("10%");
+        Element h2Element = h2.getElement();
+        h2Element.getStyle().set("display", "inline-block");
+        h2Element.getStyle().set("padding", "10px");
+        h2Element.getStyle().set("border", "1px solid #008000");
+        return h2;
+    }
+
+    private Component createLineChart(List<AbstractDataProcessor.ProcessedData> dataList) {
+        // Calculate cumulative values
+        Data cumulativeValue = new Data();
+        TimeData timestamp = new TimeData();
+        BigDecimal cumulativeSum = BigDecimal.ZERO;
         String processorName = dataList.get(0).getProcessorName();
 
-
-        VerticalLayout layout = new VerticalLayout();
-
-
-        Data value = new Data();
-        TimeData timestamp = new TimeData();
-
         for (AbstractDataProcessor.ProcessedData processedData : dataList) {
-            value.add(processedData.getValue());
+            cumulativeSum = cumulativeSum.add(processedData.getValue());
+            cumulativeValue.add(cumulativeSum);
             timestamp.add(processedData.getTimestamp());
         }
 
-        BigDecimal totalDistanceBD = new BigDecimal(String.valueOf(sum));
-        BigDecimal totalDistanceBRounded = totalDistanceBD.setScale(2, RoundingMode.DOWN);
-        BigDecimal totalSpeedBD = new BigDecimal(String.valueOf(average));
-        BigDecimal totalSpeedBRounded = totalSpeedBD.setScale(2, RoundingMode.DOWN);
+        // Plot cumulative line
+        LineChart cumulativeLine = new LineChart(timestamp, cumulativeValue);
+        cumulativeLine.setName("Cumulated");
 
-        H2 title = new H2("Fahrrad " + dataList.get(0).getChannel());
 
-        layout.add(title);
+        // Plot individual points line
+        Data individualValue = new Data();
+        for (AbstractDataProcessor.ProcessedData processedData : dataList) {
+            individualValue.add(processedData.getValue());
+        }
 
-        LineChart lineValue = new LineChart(timestamp, value);
-        lineValue.setName(processorName);
+        LineChart individualLine = new LineChart(timestamp, individualValue);
+        individualLine.setName("Individual");
+
+
+        // Reduce number of points on the X-axis
         XAxis xAxis = new XAxis(DataType.DATE);
-        xAxis.setDivisions(1);
-        xAxis.setName("Zeit");
+        xAxis.setDivisions(dataList.size() / 10);
+        xAxis.setName("Time");
 
         YAxis yAxis = new YAxis(DataType.NUMBER);
+        yAxis.setDivisions(10);
         yAxis.setName(processorName);
-        // Rechtwinklige Achsen
+
         RectangularCoordinate rc = new RectangularCoordinate(xAxis, yAxis);
+        cumulativeLine.plotOn(rc);
+        individualLine.plotOn(rc);
 
-        layout.add(title);
-        ListItem totalDistanceTitle = new ListItem("Gesamtsumme der " + processorName + ": " + totalDistanceBRounded);
-        ListItem speed = new ListItem("Avg.: " + totalSpeedBRounded);
+        SOChart soChart = new SOChart();
+        soChart.setSize("80%", "350px");
+        soChart.add(new Legend());
+        soChart.add(cumulativeLine);
+        soChart.add(individualLine);
 
+        return soChart;
+    }
+
+    private Aside createMetrics(String processorName, BigDecimal totalDistanceBRounded, BigDecimal totalSpeedBRounded) {
         Aside aside = new Aside();
         aside.addClassNames(LumoUtility.Background.CONTRAST_5, LumoUtility.BoxSizing.BORDER, LumoUtility.Padding.LARGE, LumoUtility.BorderRadius.LARGE,
                 LumoUtility.Position.STICKY);
+        aside.setWidth("20%");
+        aside.setHeight("50%");
+
         Header headerSection = new Header();
         headerSection.addClassNames(LumoUtility.Display.FLEX, LumoUtility.AlignItems.CENTER, LumoUtility.JustifyContent.BETWEEN, LumoUtility.Margin.Bottom.MEDIUM);
-        H3 header = new H3("Kennzahlen");
+
+        H3 header = new H3("Metrics");
         header.addClassNames(LumoUtility.Margin.NONE);
+
         headerSection.add(header);
 
         UnorderedList ul = new UnorderedList();
@@ -86,56 +131,26 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
                 LumoUtility.FlexDirection.COLUMN,
                 LumoUtility.Gap.MEDIUM);
 
-        ul.add(totalDistanceTitle);
-        ul.add(speed);
-        aside.add(headerSection, ul);
+        String metricValueEnding = switch (processorName) {
+            case "Distance" -> " m";
+            case "Speed" -> " m/s";
+            case "Rotation" -> " RPM";
+            default -> ""; // Rotations per minute
 
+        };
 
-        lineValue.plotOn(rc);
-        SOChart soChart = new SOChart();
-        soChart.setSize("80%", "300px");
-        soChart.add(new Legend());
-        soChart.add(lineValue);
+        // Create list items for total distance and average speed
+        ListItem totalDistanceTitle = new ListItem("Total " + processorName + ": " + totalDistanceBRounded + metricValueEnding);
+        ListItem speed = new ListItem("Average: " + totalSpeedBRounded + metricValueEnding);
 
-        HorizontalLayout graphAndMetrics = new HorizontalLayout();
-        graphAndMetrics.setSizeFull();
-        graphAndMetrics.add(aside, soChart);
-
-
-        //layout.add(soChart);
-        //layout.add(totalDistanceTitle);
-        //layout.add(speed);
-        //layout.add(aside);
-        layout.add(graphAndMetrics);
-        components.add(layout);
-
-        if (processorName.equals("Geschwindigkeit")) {
+        if (processorName.equals("Speed")) {
             ul.remove(totalDistanceTitle);
         }
-        return components;
+        ul.add(totalDistanceTitle);
+        ul.add(speed);
 
+        aside.add(headerSection, ul);
+
+        return aside;
     }
-
-    private BigDecimal calculateTotalDistance(List<AbstractDataProcessor.ProcessedData> dataList) {
-        BigDecimal totalDistance = BigDecimal.ZERO;
-        for (int i = 0; i < dataList.size(); i++) {
-            if (dataList.get(i).getProcessorName().equals("Distanz")) {
-                totalDistance = totalDistance.add(dataList.get(i).getValue());
-            }
-        }
-        return totalDistance;
-    }
-
-    private BigDecimal calculateTotalSpeed(List<AbstractDataProcessor.ProcessedData> dataList) {
-        BigDecimal totalSpeed = BigDecimal.ZERO;
-        for (int i = 0; i < dataList.size(); i++) {
-            if (dataList.get(i).getProcessorName().equals("Geschwindigkeit")) {
-                BigDecimal currentSpeed = dataList.get(i).getValue();
-                totalSpeed = totalSpeed.max(currentSpeed);
-                System.out.println(currentSpeed);
-            }
-        }
-        return totalSpeed;
-    }
-
 }

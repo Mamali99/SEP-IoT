@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +16,7 @@ import java.util.List;
 @Qualifier("operatingTimeDataProcessor")
 public class OperatingTimeDataProcessor extends AbstractDataProcessor {
 
-    String processorName = "Betriebszeit";
+    String processorName = "Operating Time";
 
     @Autowired
     public OperatingTimeDataProcessor(BikeService bikeService) {
@@ -68,8 +67,6 @@ public class OperatingTimeDataProcessor extends AbstractDataProcessor {
 
         return operatingTimeData;
     }
-
-
 
 
 }

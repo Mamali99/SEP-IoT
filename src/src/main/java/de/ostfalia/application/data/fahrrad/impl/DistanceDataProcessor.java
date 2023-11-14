@@ -6,13 +6,11 @@ import de.ostfalia.application.data.service.BikeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,11 +18,13 @@ import java.util.List;
 @Qualifier("distanceDataProcessor")
 public class DistanceDataProcessor extends AbstractDataProcessor {
 
-    private String processorName = "Distanz";
+    private String processorName = "Distance";
+
     @Autowired
     public DistanceDataProcessor(BikeService bikeService) {
         this.bikeService = bikeService;
     }
+
     @Override
     protected List<Bicycle> fetchData(int channel, LocalDateTime startTime, LocalDateTime endTime) {
         return bikeService.getDataWithTimeSpan(channel, startTime, endTime);
@@ -46,7 +46,7 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
     @Override
     protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInMinutes) {
 
-        if(intervalInMinutes==0){
+        if (intervalInMinutes == 0) {
             List<ProcessedData> distanceData = new ArrayList<>();
             for (Bicycle bike : bicycles) {
                 BigDecimal realRotationsPerSecond = bike.getRotations().divide(new BigDecimal(4), 2, RoundingMode.HALF_UP);
@@ -101,9 +101,6 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
 
         return intervalDataList;
     }
-
-
-
 
 
 }
