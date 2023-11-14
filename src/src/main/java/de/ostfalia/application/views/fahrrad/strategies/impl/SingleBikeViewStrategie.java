@@ -110,7 +110,7 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         components.add(layout);
 
         if (processorName.equals("Geschwindigkeit")) {
-            graphAndMetrics.remove(totalDistanceTitle);
+            ul.remove(totalDistanceTitle);
         }
         return components;
 
