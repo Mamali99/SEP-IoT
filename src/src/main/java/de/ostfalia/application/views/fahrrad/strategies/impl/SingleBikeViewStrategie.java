@@ -2,9 +2,10 @@ package de.ostfalia.application.views.fahrrad.strategies.impl;
 
 import com.storedobject.chart.*;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 import de.ostfalia.application.data.fahrrad.controller.DataAnalysisService;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
 import de.ostfalia.application.views.fahrrad.strategies.DashboardViewStrategy;
@@ -49,7 +50,7 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         BigDecimal totalSpeedBD = new BigDecimal(String.valueOf(average));
         BigDecimal totalSpeedBRounded = totalSpeedBD.setScale(2, RoundingMode.DOWN);
 
-        H2 title = new H2(processorName + " für Fahrrad " + dataList.get(0).getChannel());
+        H2 title = new H2("Fahrrad " + dataList.get(0).getChannel());
 
         layout.add(title);
 
@@ -65,8 +66,29 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         RectangularCoordinate rc = new RectangularCoordinate(xAxis, yAxis);
 
         layout.add(title);
-        H3 totalDistanceTitle = new H3("Gesamtsumme der " + processorName + ": " + totalDistanceBRounded);
-        H3 speed = new H3("Avg.: " + totalSpeedBRounded);
+        ListItem totalDistanceTitle = new ListItem("Gesamtsumme der " + processorName + ": " + totalDistanceBRounded);
+        ListItem speed = new ListItem("Avg.: " + totalSpeedBRounded);
+
+        Aside aside = new Aside();
+        aside.addClassNames(LumoUtility.Background.CONTRAST_5, LumoUtility.BoxSizing.BORDER, LumoUtility.Padding.LARGE, LumoUtility.BorderRadius.LARGE,
+                LumoUtility.Position.STICKY);
+        Header headerSection = new Header();
+        headerSection.addClassNames(LumoUtility.Display.FLEX, LumoUtility.AlignItems.CENTER, LumoUtility.JustifyContent.BETWEEN, LumoUtility.Margin.Bottom.MEDIUM);
+        H3 header = new H3("Kennzahlen");
+        header.addClassNames(LumoUtility.Margin.NONE);
+        headerSection.add(header);
+
+        UnorderedList ul = new UnorderedList();
+        ul.addClassNames(LumoUtility.ListStyleType.NONE,
+                LumoUtility.Margin.NONE,
+                LumoUtility.Padding.NONE,
+                LumoUtility.Display.FLEX,
+                LumoUtility.FlexDirection.COLUMN,
+                LumoUtility.Gap.MEDIUM);
+
+        ul.add(totalDistanceTitle);
+        ul.add(speed);
+        aside.add(headerSection, ul);
 
 
         lineValue.plotOn(rc);
@@ -74,13 +96,21 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         soChart.setSize("80%", "300px");
         soChart.add(new Legend());
         soChart.add(lineValue);
-        layout.add(soChart);
-        layout.add(totalDistanceTitle);
-        layout.add(speed);
+
+        HorizontalLayout graphAndMetrics = new HorizontalLayout();
+        graphAndMetrics.setSizeFull();
+        graphAndMetrics.add(aside, soChart);
+
+
+        //layout.add(soChart);
+        //layout.add(totalDistanceTitle);
+        //layout.add(speed);
+        //layout.add(aside);
+        layout.add(graphAndMetrics);
         components.add(layout);
 
         if (processorName.equals("Geschwindigkeit")) {
-            layout.remove(totalDistanceTitle);
+            graphAndMetrics.remove(totalDistanceTitle);
         }
         return components;
 

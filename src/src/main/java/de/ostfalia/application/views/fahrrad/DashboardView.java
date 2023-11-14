@@ -75,7 +75,7 @@ public class DashboardView extends BasicLayout {
 
         // Split Layer und Title
         splitLayout = new SplitLayout();
-        splitLayout.setSplitterPosition(50);
+        splitLayout.setSplitterPosition(30);
         splitLayout.setSizeFull();
 
         titleGroup = new HorizontalLayout();
