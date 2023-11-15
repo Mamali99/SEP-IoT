@@ -29,8 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Route("/SE/BikeDashboard")
 public class DashboardView extends BasicLayout {
@@ -41,14 +39,9 @@ public class DashboardView extends BasicLayout {
     private ComboBox<Integer> bikeChannelSelector;
     private DateTimePicker startDateTimePicker;
     private DateTimePicker endDateTimePicker;
-    private ComboBox<Integer> startSecondSelector;
-    private ComboBox<Integer> endSecondSelector;
     private ListBox<String> metricSelector;
-
     private VerticalLayout zeitintervall;
-
     private TabSheet tabSheet;
-
     private TabSheet strategyTab;
 
     //Für Intervallgröße
@@ -60,9 +53,11 @@ public class DashboardView extends BasicLayout {
     // Neue UI-Komponenten für die Dauer hinzufügen
     private NumberField durationValueField;
     private ComboBox<String> durationUnitSelector;
-
     private VerticalLayout bikeChannelOne;
     private VerticalLayout bikeChannelTwo;
+
+    private VerticalLayout durationIntervall;
+    private VerticalLayout startEndZeitInterval;
 
     @Autowired
     public DashboardView(BikeDashboardController bikeDashboardController, DashboardViewContext dashboardViewContext, BikeService bikeService) {
@@ -121,52 +116,63 @@ public class DashboardView extends BasicLayout {
 
     private void buildZeitintervall() {
         zeitintervall = new VerticalLayout();
-        VerticalLayout startEndZeitInterval = new VerticalLayout();
+
+        // Initialize layout components
+        buildStartEndZeitintervall();
+        buildDurationIntervall();
+        buildIntervalSizeInput();
+
+        // Add components to the layout
+        zeitintervall.add(startEndZeitInterval, durationIntervall);
+
+        // Decision logic for time interval
+        tabSheet = new TabSheet();
+        tabSheet.add("Start und Endzeit", new Div(startEndZeitInterval));
+        tabSheet.add("Duration", new Div(durationIntervall));
+        tabSheet.getSelectedTab().getStyle().set("color", "green");
+    }
+
+    private void buildStartEndZeitintervall() {
+        startEndZeitInterval = new VerticalLayout();
 
         // Start und End Time
         startDateTimePicker = new DateTimePicker("Start Time");
-        startSecondSelector = new ComboBox<>("Start Second");
-        startDateTimePicker.setStep(Duration.ofMinutes(1));
-        startSecondSelector.setItems(IntStream.range(0, 60).boxed().collect(Collectors.toList()));
-        startSecondSelector.setValue(0);
+        startDateTimePicker.setStep(Duration.ofSeconds(1)); // Set step to seconds for precise time selection
 
         endDateTimePicker = new DateTimePicker("End Time");
-        endDateTimePicker.setStep(Duration.ofMinutes(1));
-        endSecondSelector = new ComboBox<>("End Second");
-        endSecondSelector.setItems(IntStream.range(0, 60).boxed().collect(Collectors.toList()));
-        endSecondSelector.setValue(0);
+        endDateTimePicker.setStep(Duration.ofSeconds(1)); // Set step to seconds for precise time selection
 
-        startEndZeitInterval.add(startDateTimePicker, startSecondSelector, endDateTimePicker, endSecondSelector);
+        startEndZeitInterval.add(startDateTimePicker, endDateTimePicker);
+
+        // Set default time values using buildDefaultValues() method
+        buildDefaultValues();
+    }
+
+    private void buildDurationIntervall() {
+        durationIntervall = new VerticalLayout();
 
         // Duration Intervall
-        VerticalLayout durationIntervall = new VerticalLayout();
         durationValueField = new NumberField("Duration Value");
-        durationValueField.setTooltipText("Dauer der Nutzung");
+        durationValueField.setTooltipText("Duration of Use");
         durationUnitSelector = new ComboBox<>("Duration Unit", "Minutes", "Hours", "Days");
-        durationUnitSelector.setValue("Minutes"); // Setze Standardwert
+        durationUnitSelector.setValue("Minutes"); // Set default value
         durationIntervall.add(durationUnitSelector, durationValueField);
+    }
 
-        // Initialisieren des neuen Feldes für die Intervallgröße
-        intervalSizeField = new NumberField("Intervallgröße(in Minuten)");
-        intervalSizeField.setValue(0.0); // Standardwert ist 0
+    private void buildIntervalSizeInput() {
+        // Initialize the new field for the interval size
+        intervalSizeField = new NumberField("Size of the Interval (in Minutes)");
+        intervalSizeField.setValue(0.0); // Default value is 0
         intervalSizeField.setMin(0);
-        zeitintervall.add(startEndZeitInterval, durationIntervall);
-
-        // Entscheidungslogik für Zeitintervall
-        tabSheet = new TabSheet();
-        tabSheet.add("Start und Endzeit", new Div(startEndZeitInterval));
-        tabSheet.add("Dauer", new Div(durationIntervall));
-        tabSheet.getSelectedTab().getStyle().set("color", "orange");
+        zeitintervall.add(intervalSizeField);
     }
 
     private void buildDefaultValues() {
         // Festlegen der Standardwerte für das Start- und Enddatum/-zeit
-        LocalDateTime defaultStartTime = LocalDateTime.of(2023, 9, 8, 16, 8, 1); // 8. September 2023, 16:08:01
-        LocalDateTime defaultEndTime = LocalDateTime.of(2023, 9, 8, 16, 8, 31); // 8. September 2023, 16:08:31
+        LocalDateTime defaultStartTime = LocalDateTime.of(2023, 9, 8, 16, 8, 0); // 8. September 2023, 16:08:01
+        LocalDateTime defaultEndTime = LocalDateTime.of(2023, 9, 8, 16, 9, 0); // 8. September 2023, 16:08:31
         startDateTimePicker.setValue(defaultStartTime.minusSeconds(defaultStartTime.getSecond()));
         endDateTimePicker.setValue(defaultEndTime.minusSeconds(defaultEndTime.getSecond()));
-        startSecondSelector.setValue(defaultStartTime.getSecond());
-        endSecondSelector.setValue(defaultEndTime.getSecond());
 
         // Festlegen des Standardkanals und der Standardmetrik
         bikeChannelSelector.setValue(1); // Standardkanal 1
@@ -181,7 +187,7 @@ public class DashboardView extends BasicLayout {
         strategyTab.addSelectedChangeListener(event -> switchStrategy(event.getSelectedTab().getLabel()));
         bikeChannelOne.addClickListener(event -> switchStrategy("Single Bike"));
         bikeChannelTwo.addClickListener(event -> switchStrategy("Compare Bikes"));
-        strategyTab.getSelectedTab().getStyle().set("color", "orange");
+        strategyTab.getSelectedTab().getStyle().set("color", "green");
     }
 
     private void buildUpdateButton() {
@@ -220,7 +226,6 @@ public class DashboardView extends BasicLayout {
     private void updateDashboard() {
         Integer selectedChannel = bikeChannelSelector.getValue();
         String selectedMetric = metricSelector.getValue();
-
         int intervalSizeInMinutes = intervalSizeField.getValue().intValue();
 
         if (selectedMetric == null) {
@@ -228,40 +233,42 @@ public class DashboardView extends BasicLayout {
             return;
         }
 
-        // Berechnet die Dauer basierend auf den Eingaben des Benutzers
-        Duration duration = null;
-        if (durationValueField != null && durationValueField.getValue() != null) {
-            long durationValue = durationValueField.getValue().longValue();
-            String durationUnit = durationUnitSelector.getValue();
-            if ("Minutes".equals(durationUnit)) {
-                duration = Duration.ofMinutes(durationValue);
-            } else if ("Hours".equals(durationUnit)) {
-                duration = Duration.ofHours(durationValue);
-            } else if ("Days".equals(durationUnit)) {
-                duration = Duration.ofDays(durationValue);
-            }
-
-        }
-
         List<AbstractDataProcessor.ProcessedData> results;
 
-        // Wenn eine Dauer gewählt wurde, benutzen Sie diese zur Datenverarbeitung
-        if (selectedChannel != null && duration != null) {
-            controller.setMetricProcessor(selectedMetric, selectedChannel, duration, intervalSizeInMinutes);
-            results = controller.getResults();
-        }
-        // Andernfalls benutzen Sie das Start- und Enddatum zur Datenverarbeitung
-        else if (selectedChannel != null && startDateTimePicker.getValue() != null && endDateTimePicker.getValue() != null) {
-            LocalDateTime startTime = startDateTimePicker.getValue().withSecond(startSecondSelector.getValue());
-            LocalDateTime endTime = endDateTimePicker.getValue().withSecond(endSecondSelector.getValue());
-            controller.setMetricProcessor(selectedMetric, selectedChannel, startTime, endTime, intervalSizeInMinutes);
-            results = controller.getResults();
-        } else {
-            Notification.show("Please select a bike channel and a time interval or duration.");
-            return;
+        // If duration tab is selected
+        if (tabSheet.getSelectedTab().getLabel().equals("Duration")) {
+            Duration duration = null;
+            if (durationValueField != null && durationValueField.getValue() != null) {
+                long durationValue = durationValueField.getValue().longValue();
+                String durationUnit = durationUnitSelector.getValue();
+                if ("Minutes".equals(durationUnit)) {
+                    duration = Duration.ofMinutes(durationValue);
+                } else if ("Hours".equals(durationUnit)) {
+                    duration = Duration.ofHours(durationValue);
+                } else if ("Days".equals(durationUnit)) {
+                    duration = Duration.ofDays(durationValue);
+                }
+            }
+
+            if (selectedChannel != null && duration != null) {
+                controller.setMetricProcessor(selectedMetric, selectedChannel, duration, intervalSizeInMinutes);
+                results = controller.getResults();
+            } else {
+                Notification.show("Please select a bike channel and a duration.");
+                return;
+            }
+        } else { // "Start und Endzeit" tab is selected
+            LocalDateTime startTime = startDateTimePicker.getValue();
+            LocalDateTime endTime = endDateTimePicker.getValue();
+            if (selectedChannel != null && startTime != null && endTime != null) {
+                controller.setMetricProcessor(selectedMetric, selectedChannel, startTime, endTime, intervalSizeInMinutes);
+                results = controller.getResults();
+            } else {
+                Notification.show("Please select a bike channel and a time interval.");
+                return;
+            }
         }
 
-        // Nachdem die Daten verarbeitet wurden, bauen Sie die Ansicht auf und zeigen Sie die Ergebnisse an
         if (results != null && !results.isEmpty()) {
             List<Component> components = context.buildView(results);
             VerticalLayout singleLayout = new VerticalLayout();
@@ -269,11 +276,8 @@ public class DashboardView extends BasicLayout {
             layout.removeAll();
             buildUI();
             splitLayout.addToSecondary(singleLayout);
-
-
         } else {
             Notification.show("No data available for the selected criteria.");
         }
-
     }
 }
