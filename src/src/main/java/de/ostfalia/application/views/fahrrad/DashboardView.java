@@ -10,11 +10,11 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.listbox.ListBox;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
-import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.material.Material;
 import de.ostfalia.application.data.fahrrad.controller.BikeDashboardController;
@@ -25,6 +25,8 @@ import de.ostfalia.application.views.fahrrad.strategies.DashboardViewContext;
 import de.ostfalia.application.views.fahrrad.strategies.impl.CompareBikesViewStrategy;
 import de.ostfalia.application.views.fahrrad.strategies.impl.SingleBikeViewStrategie;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.vaadin.addons.componentfactory.PaperSlider;
+import org.vaadin.addons.componentfactory.PaperSliderVariant;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -45,19 +47,22 @@ public class DashboardView extends BasicLayout {
     private TabSheet strategyTab;
 
     //Für Intervallgröße
-    private NumberField intervalSizeField;
+    private Div intervalSliderValue;
+    private PaperSlider intervalSizeField;
     private VerticalLayout layout;
     SplitLayout splitLayout;
     HorizontalLayout titleGroup;
 
     // Neue UI-Komponenten für die Dauer hinzufügen
-    private NumberField durationValueField;
+    private PaperSlider durationValueField;
     private ComboBox<String> durationUnitSelector;
     private VerticalLayout bikeChannelOne;
     private VerticalLayout bikeChannelTwo;
 
     private VerticalLayout durationIntervall;
     private VerticalLayout startEndZeitInterval;
+
+    private VerticalLayout verticalSlider;
 
     @Autowired
     public DashboardView(BikeDashboardController bikeDashboardController, DashboardViewContext dashboardViewContext, BikeService bikeService) {
@@ -121,15 +126,29 @@ public class DashboardView extends BasicLayout {
         buildStartEndZeitintervall();
         buildDurationIntervall();
         buildIntervalSizeInput();
+        buildDurationSince();
 
         // Add components to the layout
         zeitintervall.add(startEndZeitInterval, durationIntervall);
 
         // Decision logic for time interval
         tabSheet = new TabSheet();
-        tabSheet.add("Start und Endzeit", new Div(startEndZeitInterval));
+        tabSheet.add("Start and Endtime", new Div(startEndZeitInterval));
         tabSheet.add("Duration", new Div(durationIntervall));
+        tabSheet.add("Duration Since", new Div(verticalSlider));
         tabSheet.getSelectedTab().getStyle().set("color", "green");
+    }
+
+    private void buildDurationSince() {
+        verticalSlider = new VerticalLayout();
+        PaperSlider slider = new PaperSlider();
+        slider.setMin(1);
+        slider.setMax(10);
+        slider.setWidth("500px");
+        slider.addValueChangeListener(event -> {
+            Notification.show("Answer: " + event.getValue());
+        });
+        verticalSlider.add(slider);
     }
 
     private void buildStartEndZeitintervall() {
@@ -152,19 +171,50 @@ public class DashboardView extends BasicLayout {
         durationIntervall = new VerticalLayout();
 
         // Duration Intervall
-        durationValueField = new NumberField("Duration Value");
+        VerticalLayout sliderLine = new VerticalLayout();
+        durationValueField = new PaperSlider("Duration Value");
         durationValueField.setTooltipText("Duration of Use");
+        Div sliderValue = new Div();
+        durationValueField.addValueChangeListener(e -> sliderValue.setText("Duration value: " + e.getValue()));
+        durationValueField.setMax(60);
+        durationValueField.setMin(0);
+        durationValueField.setWidth("300px");
+        durationValueField.setMaxMarkers(6);
+        durationValueField.setPinned(true);
+        durationValueField.setSnaps(true);
+        durationValueField.addThemeVariants(PaperSliderVariant.LUMO_SECONDARY);
+
+        sliderLine.add(durationValueField, sliderValue);
+
         durationUnitSelector = new ComboBox<>("Duration Unit", "Minutes", "Hours", "Days");
         durationUnitSelector.setValue("Minutes"); // Set default value
-        durationIntervall.add(durationUnitSelector, durationValueField);
+        durationIntervall.add(durationUnitSelector, sliderLine);
     }
 
     private void buildIntervalSizeInput() {
-        // Initialize the new field for the interval size
-        intervalSizeField = new NumberField("Size of the Interval (in Minutes)");
-        intervalSizeField.setValue(0.0); // Default value is 0
+
+        VerticalLayout intervalVertical = new VerticalLayout();
+        intervalSizeField = new PaperSlider("Interval (in Minutes)");
+        intervalSizeField.setTooltipText("How long are the intervals between data");
+        intervalSliderValue = new Div();
+        intervalSliderValue.setText("Interval not specified.");
+        intervalSizeField.addValueChangeListener(event -> intervalSliderValue.setText("Interval size: " + (event.getValue() + 1)));
+        intervalSizeField.setMax(60);
         intervalSizeField.setMin(0);
-        zeitintervall.add(intervalSizeField);
+        intervalSizeField.setValue(0);
+        intervalSizeField.setWidth("300px");
+        intervalSizeField.setMaxMarkers(6);
+        intervalSizeField.setPinned(true);
+        intervalSizeField.setSnaps(true);
+        intervalSizeField.addThemeVariants(PaperSliderVariant.LUMO_SECONDARY);
+        intervalVertical.add(intervalSizeField, intervalSliderValue);
+
+        // Initialize the new field for the interval size
+        //intervalSizeField = new NumberField("Interval (in Minutes)");
+        //intervalSizeField.setValue(0.0); // Default value is 0
+        //intervalSizeField.setMin(0);
+        zeitintervall.add(intervalVertical);
+
     }
 
     private void buildDefaultValues() {
@@ -191,7 +241,7 @@ public class DashboardView extends BasicLayout {
     }
 
     private void buildUpdateButton() {
-        updateButton = new Button("Update Dashboard", event -> updateDashboard());
+        updateButton = new Button("Update Dashboard", event -> updateDashboardOnChange());
     }
 
     private void buildUI() {
@@ -200,14 +250,27 @@ public class DashboardView extends BasicLayout {
                 strategyTab,
                 metricSelector,
                 tabSheet,
-                intervalSizeField,
+                zeitintervall,
                 updateButton
         );
+
 
         layout.getElement().getThemeList().add(Material.DARK);
         splitLayout.addToPrimary(layout);
         setContent(splitLayout);
     }
+
+    private void updateDashboardOnChange() {
+        // Call the updateDashboard function
+        updateDashboard();
+        // Display a notification
+        Notification notification = Notification
+                .show("Dashboard Updated!");
+        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        notification.setPosition(Notification.Position.BOTTOM_START);
+
+    }
+
 
     private void switchStrategy(String strategyName) {
         switch (strategyName) {
@@ -226,7 +289,7 @@ public class DashboardView extends BasicLayout {
     private void updateDashboard() {
         Integer selectedChannel = bikeChannelSelector.getValue();
         String selectedMetric = metricSelector.getValue();
-        int intervalSizeInMinutes = intervalSizeField.getValue().intValue();
+        int intervalSizeInMinutes = intervalSizeField.getValue();
 
         if (selectedMetric == null) {
             Notification.show("Please select a metric.");
@@ -279,5 +342,7 @@ public class DashboardView extends BasicLayout {
         } else {
             Notification.show("No data available for the selected criteria.");
         }
+
+
     }
 }

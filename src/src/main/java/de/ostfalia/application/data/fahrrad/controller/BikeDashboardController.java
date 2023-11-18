@@ -5,12 +5,9 @@ import de.ostfalia.application.data.fahrrad.impl.OperatingTimeDataProcessor;
 import de.ostfalia.application.data.fahrrad.impl.RotationDataProcessor;
 import de.ostfalia.application.data.fahrrad.impl.SpeedDataProcessor;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
-
 import de.ostfalia.application.data.service.BikeService;
 import de.ostfalia.application.views.fahrrad.strategies.DashboardViewContext;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -34,6 +31,7 @@ public class BikeDashboardController {
     public void setDataProcessor(AbstractDataProcessor abstractDataProcessor) {
         this.abstractDataProcessor = abstractDataProcessor;
     }
+
     public List<AbstractDataProcessor.ProcessedData> getResults() {
         return abstractDataProcessor.getResults();
     }
@@ -81,7 +79,7 @@ public class BikeDashboardController {
 
     // Methode, um das Dashboard zu aktualisieren (mit Intervallgröße)
     public void updateDashboard(int channel, LocalDateTime startTime, LocalDateTime endTime, int intervalInMinutes) {
-        if(abstractDataProcessor != null) {
+        if (abstractDataProcessor != null) {
             abstractDataProcessor.process(channel, startTime, endTime, intervalInMinutes);
         } else {
             throw new IllegalStateException("DataProcessor has not been set");
