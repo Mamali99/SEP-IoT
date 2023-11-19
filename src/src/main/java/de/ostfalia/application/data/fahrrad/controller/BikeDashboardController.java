@@ -78,6 +78,15 @@ public class BikeDashboardController {
         }
     }
 
+    //Durch ein Checkbox überprüfen, ob Glättern durchgeführt werden soll oder nicht
+    public void setShouldSmoothData(boolean shouldSmooth) {
+        if (abstractDataProcessor != null) {
+            abstractDataProcessor.setShouldSmoothData(shouldSmooth);
+        } else {
+            throw new IllegalStateException("DataProcessor has not been set");
+        }
+    }
+
 
     // Methode, um das Dashboard zu aktualisieren (mit Intervallgröße)
     public void updateDashboard(int channel, LocalDateTime startTime, LocalDateTime endTime, int intervalInMinutes) {

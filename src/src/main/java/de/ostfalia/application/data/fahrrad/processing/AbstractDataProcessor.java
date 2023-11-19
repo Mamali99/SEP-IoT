@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -18,6 +19,8 @@ public abstract class AbstractDataProcessor {
     protected BikeService bikeService;
 
     private List<ProcessedData> processedData;
+
+    private boolean shouldSmoothData = false;
 
     // Verarbeitung basierend auf Start- und Endzeit mit Intervallgröße
     public final void process(int channel, LocalDateTime startTime, LocalDateTime endTime, int intervalInMinutes) {
@@ -37,6 +40,27 @@ public abstract class AbstractDataProcessor {
         List<Bicycle> bicycles = fetchDataSince(channel, sinceTime);
         processedData = calculateData(bicycles, intervalInMinutes);
     }
+
+    protected List<ProcessedData> smoothData(List<ProcessedData> originalData, int windowSize) {
+        List<ProcessedData> smoothedData = new ArrayList<>();
+        for (int i = 0; i < originalData.size(); i++) {
+            BigDecimal sum = BigDecimal.ZERO;
+            int count = 0;
+            for (int j = i; j < i + windowSize && j < originalData.size(); j++) {
+                sum = sum.add(originalData.get(j).getValue());
+                count++;
+            }
+            BigDecimal average = sum.divide(BigDecimal.valueOf(count), BigDecimal.ROUND_HALF_UP);
+            ProcessedData smoothedPoint = new ProcessedData(
+                    originalData.get(i).getChannel(),
+                    average,
+                    originalData.get(i).getTimestamp(),
+                    originalData.get(i).getProcessorName()
+            );
+            smoothedData.add(smoothedPoint);
+        }
+        return smoothedData;
+    }
         
 
 
@@ -51,6 +75,13 @@ public abstract class AbstractDataProcessor {
         return processedData;
     }
 
+    public boolean isShouldSmoothData() {
+        return shouldSmoothData;
+    }
+
+    public void setShouldSmoothData(boolean shouldSmoothData) {
+        this.shouldSmoothData = shouldSmoothData;
+    }
 
     public class ProcessedData {
         private int channel;
