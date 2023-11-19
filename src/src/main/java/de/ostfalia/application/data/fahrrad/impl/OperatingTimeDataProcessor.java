@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,30 +43,16 @@ public class OperatingTimeDataProcessor extends AbstractDataProcessor {
 
     @Override
     protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInMinutes) {
-        List<ProcessedData> operatingTimeData = new ArrayList<>();
-        BigDecimal sumOperatingTime = BigDecimal.ZERO;
-        int operatingPeriods = 0;
-        BigDecimal previousValue = BigDecimal.ZERO;
+        List<ProcessedData> results = new ArrayList<>();
 
         for (Bicycle bike : bicycles) {
-            if (bike.getRotations().compareTo(BigDecimal.ZERO) != 0) {
-                if (previousValue.compareTo(BigDecimal.ZERO) == 0) {
-                    // Beginn einer neuen Betriebszeitperiode
-                    operatingPeriods++;
-                    sumOperatingTime = sumOperatingTime.add(BigDecimal.ONE);
-                } else {
-                    // Fortsetzung einer Betriebszeitperiode
-                    sumOperatingTime = sumOperatingTime.add(BigDecimal.ONE);
-                }
-            } else {
-                // Ende einer Betriebszeitperiode, oder das Fahrrad war nicht in Betrieb
-            }
-
-            previousValue = bike.getRotations();
-            operatingTimeData.add(new ProcessedData(bike.getChannel(), BigDecimal.valueOf(operatingPeriods), bike.getTime(), processorName));
+            // Überprüfen, ob das Fahrrad aktiv ist (Rotationen > 0)
+            BigDecimal isActive = bike.getRotations().compareTo(BigDecimal.ZERO) > 0 ? BigDecimal.ONE : BigDecimal.ZERO;
+            ProcessedData processedData = new ProcessedData(bike.getChannel(), isActive, bike.getTime(), this.processorName);
+            results.add(processedData);
         }
 
-        return operatingTimeData;
+        return results;
     }
 
 
