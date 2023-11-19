@@ -51,4 +51,8 @@ public class BikeService {
     public LocalDateTime findLastActivityByChannel(int channel) {
         return bicycleRepository.findLastActivityByChannel(channel);
     }
+
+    public List<Bicycle> findAllBicyclesByChannelsAndTimeSpan(List<Integer> channels, LocalDateTime startTime, LocalDateTime endTime){
+        return bicycleRepository.findAllBicyclesByChannelsAndTimeSpan(channels, startTime, endTime);
+    }
 }
