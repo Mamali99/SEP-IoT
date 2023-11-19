@@ -4,6 +4,7 @@ import com.storedobject.chart.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import de.ostfalia.application.data.fahrrad.controller.DataAnalysisService;
@@ -38,23 +39,26 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         HorizontalLayout layout = new HorizontalLayout();
         layout.setWidthFull();
 
-        layout.add(createTitle(channel));
-        layout.add(createMetrics(processorName, roundedSum, average));
-        layout.add(createLineChart(dataList));
+        VerticalLayout sidePanel = new VerticalLayout();
+        sidePanel.add(createTitle(channel));
+        sidePanel.add(createMetrics(processorName, roundedSum, average));
+        sidePanel.setWidth("30%");
 
+
+        layout.add(sidePanel);
+        layout.add(createLineChart(dataList));
 
         components.add(layout);
         return components;
     }
 
+
     private Component createTitle(Integer channel) {
-        H2 h2 = new H2("Fahrrad " + channel);
-        h2.setWidth("10%");
-        h2.setHeight("10%");
+        H2 h2 = new H2("Bike " + channel);
         Element h2Element = h2.getElement();
+        h2.setWidthFull();
         h2Element.getStyle().set("display", "inline-block");
-        h2Element.getStyle().set("padding", "10px");
-        h2Element.getStyle().set("border", "1px solid #008000");
+        h2Element.getStyle().set("border", "2px solid #008000");
         return h2;
     }
 
@@ -112,8 +116,8 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         Aside aside = new Aside();
         aside.addClassNames(LumoUtility.Background.CONTRAST_5, LumoUtility.BoxSizing.BORDER, LumoUtility.Padding.LARGE, LumoUtility.BorderRadius.LARGE,
                 LumoUtility.Position.STICKY);
-        aside.setWidth("20%");
         aside.setHeight("50%");
+        aside.setWidthFull();
 
         Header headerSection = new Header();
         headerSection.addClassNames(LumoUtility.Display.FLEX, LumoUtility.AlignItems.CENTER, LumoUtility.JustifyContent.BETWEEN, LumoUtility.Margin.Bottom.MEDIUM);

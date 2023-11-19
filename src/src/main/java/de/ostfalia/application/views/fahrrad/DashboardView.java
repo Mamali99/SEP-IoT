@@ -30,6 +30,7 @@ import org.vaadin.addons.componentfactory.PaperSliderVariant;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Route("/SE/BikeDashboard")
@@ -63,6 +64,10 @@ public class DashboardView extends BasicLayout {
     private VerticalLayout startEndZeitInterval;
 
     private VerticalLayout verticalSlider;
+
+    // Compare Bike
+    ComboBox<Integer> bikeChannelSelectorOne;
+    ComboBox<Integer> bikeChannelSelectorTwo;
 
     @Autowired
     public DashboardView(BikeDashboardController bikeDashboardController, DashboardViewContext dashboardViewContext, BikeService bikeService) {
@@ -103,9 +108,9 @@ public class DashboardView extends BasicLayout {
         bikeChannelOne.add(bikeChannelSelector);
         bikeChannelOne.setVisible(true);
 
-        ComboBox<Integer> bikeChannelSelectorOne = new ComboBox<>("First Bike Channel");
+        bikeChannelSelectorOne = new ComboBox<>("First Bike Channel");
         bikeChannelSelectorOne.setItems(availableChannels);
-        ComboBox<Integer> bikeChannelSelectorTwo = new ComboBox<>("Second Bike Channel");
+        bikeChannelSelectorTwo = new ComboBox<>("Second Bike Channel");
         bikeChannelSelectorTwo.setItems(availableChannels);
 
         bikeChannelTwo = new VerticalLayout();
@@ -198,7 +203,7 @@ public class DashboardView extends BasicLayout {
         intervalSizeField.setTooltipText("How long are the intervals between data");
         intervalSliderValue = new Div();
         intervalSliderValue.setText("Interval not specified.");
-        intervalSizeField.addValueChangeListener(event -> intervalSliderValue.setText("Interval size: " + (event.getValue() + 1)));
+        intervalSizeField.addValueChangeListener(event -> intervalSliderValue.setText("Interval size: " + event.getValue()));
         intervalSizeField.setMax(60);
         intervalSizeField.setMin(0);
         intervalSizeField.setValue(0);
@@ -287,9 +292,15 @@ public class DashboardView extends BasicLayout {
 
 
     private void updateDashboard() {
+        //Single
         Integer selectedChannel = bikeChannelSelector.getValue();
+        // Compare
+        Integer compareChannelSelectorOne = bikeChannelSelectorOne.getValue();
+        Integer compareChannelSelectorTwo = bikeChannelSelectorTwo.getValue();
+
         String selectedMetric = metricSelector.getValue();
         int intervalSizeInMinutes = intervalSizeField.getValue();
+        String currentStrategy = strategyTab.getSelectedTab().getLabel();
 
         if (selectedMetric == null) {
             Notification.show("Please select a metric.");
@@ -300,32 +311,41 @@ public class DashboardView extends BasicLayout {
 
         // If duration tab is selected
         if (tabSheet.getSelectedTab().getLabel().equals("Duration")) {
-            Duration duration = null;
-            if (durationValueField != null && durationValueField.getValue() != null) {
-                long durationValue = durationValueField.getValue().longValue();
-                String durationUnit = durationUnitSelector.getValue();
-                if ("Minutes".equals(durationUnit)) {
-                    duration = Duration.ofMinutes(durationValue);
-                } else if ("Hours".equals(durationUnit)) {
-                    duration = Duration.ofHours(durationValue);
-                } else if ("Days".equals(durationUnit)) {
-                    duration = Duration.ofDays(durationValue);
-                }
+            if (currentStrategy.equals("Single Bike")) {
+                results = processDurationData(selectedChannel, intervalSizeInMinutes, selectedMetric);
+            } else {
+                List<AbstractDataProcessor.ProcessedData> result1 = processDurationData(compareChannelSelectorOne, intervalSizeInMinutes, selectedMetric);
+                List<AbstractDataProcessor.ProcessedData> result2 = processDurationData(compareChannelSelectorTwo, intervalSizeInMinutes, selectedMetric);
+
+                // Merge the results
+                List<AbstractDataProcessor.ProcessedData> mergedResults = new ArrayList<>(result1);
+                mergedResults.addAll(result2);
+                results = mergedResults;
+
             }
 
-            if (selectedChannel != null && duration != null) {
-                controller.setMetricProcessor(selectedMetric, selectedChannel, duration, intervalSizeInMinutes);
-                results = controller.getResults();
-            } else {
-                Notification.show("Please select a bike channel and a duration.");
-                return;
-            }
+
         } else { // "Start und Endzeit" tab is selected
             LocalDateTime startTime = startDateTimePicker.getValue();
             LocalDateTime endTime = endDateTimePicker.getValue();
             if (selectedChannel != null && startTime != null && endTime != null) {
-                controller.setMetricProcessor(selectedMetric, selectedChannel, startTime, endTime, intervalSizeInMinutes);
-                results = controller.getResults();
+
+
+                if (currentStrategy.equals("Single Bike")) {
+                    controller.setMetricProcessor(selectedMetric, selectedChannel, startTime, endTime, intervalSizeInMinutes);
+                    results = controller.getResults();
+                } else {
+                    controller.setMetricProcessor(selectedMetric, compareChannelSelectorOne, startTime, endTime, intervalSizeInMinutes);
+                    List<AbstractDataProcessor.ProcessedData> result1 = controller.getResults();
+                    controller.setMetricProcessor(selectedMetric, compareChannelSelectorTwo, startTime, endTime, intervalSizeInMinutes);
+                    List<AbstractDataProcessor.ProcessedData> result2 = controller.getResults();
+
+                    // Merge the results
+                    List<AbstractDataProcessor.ProcessedData> mergedResults = new ArrayList<>(result1);
+                    mergedResults.addAll(result2);
+                    results = mergedResults;
+
+                }
             } else {
                 Notification.show("Please select a bike channel and a time interval.");
                 return;
@@ -344,5 +364,32 @@ public class DashboardView extends BasicLayout {
         }
 
 
+    }
+
+    public List<AbstractDataProcessor.ProcessedData> processDurationData(Integer selectedChannel, int intervalSizeInMinutes, String selectedMetric) {
+        Duration duration = getDuration();
+        if (selectedChannel != null && duration != null) {
+            controller.setMetricProcessor(selectedMetric, selectedChannel, duration, intervalSizeInMinutes);
+            return controller.getResults();
+        } else {
+            Notification.show("Please select a bike channel and a duration.");
+            return null;
+        }
+    }
+
+    private Duration getDuration() {
+        Duration duration = null;
+        if (durationValueField != null && durationValueField.getValue() != null) {
+            long durationValue = durationValueField.getValue().longValue();
+            String durationUnit = durationUnitSelector.getValue();
+            if ("Minutes".equals(durationUnit)) {
+                duration = Duration.ofMinutes(durationValue);
+            } else if ("Hours".equals(durationUnit)) {
+                duration = Duration.ofHours(durationValue);
+            } else if ("Days".equals(durationUnit)) {
+                duration = Duration.ofDays(durationValue);
+            }
+        }
+        return duration;
     }
 }
