@@ -109,7 +109,7 @@ public class DashboardView extends BasicLayout {
 
     private void buildMetricsSelector() {
         metricSelector = new ListBox<>();
-        metricSelector.setItems("Distance", "Rotation", "Speed", "Operating Time");
+        metricSelector.setItems("Distance", "Rotation", "Speed", "Operating time");
         metricSelector.setValue("Speed");
         //metricSelector.addValueChangeListener(event -> updateMetricSelection(event.getValue()));
     }
