@@ -40,7 +40,6 @@ public abstract class AbstractDataProcessor {
         
 
 
-    // Hook-Methoden
     protected abstract List<Bicycle> fetchData(int channel, LocalDateTime startTime, LocalDateTime endTime);
     protected abstract List<Bicycle> fetchDataSince(int channel, LocalDateTime sinceTime);
     protected abstract LocalDateTime fetchLastActivity(int channel);
@@ -65,6 +64,8 @@ public abstract class AbstractDataProcessor {
             this.processorName = processorName;
         }
 
+
+        //Hook Methoden
         public int getChannel() {
             return channel;
         }
@@ -92,6 +93,8 @@ public abstract class AbstractDataProcessor {
         public String getProcessorName() {
             return processorName;
         }
+
+
     }
 
 }

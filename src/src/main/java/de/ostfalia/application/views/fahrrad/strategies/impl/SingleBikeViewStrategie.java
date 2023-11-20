@@ -30,6 +30,7 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         List<Component> components = new ArrayList<>();
 
         Map<String, BigDecimal> result = dataAnalysisService.calculateAverageAndSum(dataList);
+        BigDecimal topSpeed = dataAnalysisService.calculateTopSpeed(dataList);
         BigDecimal average = result.get("average");
         BigDecimal sum = result.get("sum");
         BigDecimal roundedSum = sum.setScale(2, RoundingMode.HALF_UP);
@@ -41,7 +42,7 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
 
         VerticalLayout sidePanel = new VerticalLayout();
         sidePanel.add(createTitle(channel));
-        sidePanel.add(createMetrics(processorName, roundedSum, average));
+        sidePanel.add(createMetrics(processorName, roundedSum, average, topSpeed));
         sidePanel.setWidth("30%");
 
 
@@ -112,7 +113,7 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         return soChart;
     }
 
-    private Aside createMetrics(String processorName, BigDecimal totalDistanceBRounded, BigDecimal totalSpeedBRounded) {
+    private Aside createMetrics(String processorName, BigDecimal totalDistanceBRounded, BigDecimal average, BigDecimal totalSpeed) {
         Aside aside = new Aside();
         aside.addClassNames(LumoUtility.Background.CONTRAST_5, LumoUtility.BoxSizing.BORDER, LumoUtility.Padding.LARGE, LumoUtility.BorderRadius.LARGE,
                 LumoUtility.Position.STICKY);
@@ -145,14 +146,16 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
 
         // Create list items for total distance and average speed
         ListItem totalDistanceTitle = new ListItem("Total " + processorName + ": " + totalDistanceBRounded + metricValueEnding);
-        ListItem speed = new ListItem("Average: " + totalSpeedBRounded + metricValueEnding);
+        ListItem speed = new ListItem("Average: " + average + metricValueEnding);
+        ListItem topSpeed = new ListItem("Top Speed " + totalSpeed);
 
-        if (processorName.equals("Speed")) {
-            ul.remove(totalDistanceTitle);
-        }
+
         ul.add(totalDistanceTitle);
         ul.add(speed);
-
+        if (processorName.equals("Speed")) {
+            ul.remove(totalDistanceTitle);
+            ul.add(topSpeed);
+        }
         aside.add(headerSection, ul);
 
         return aside;
