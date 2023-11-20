@@ -345,17 +345,11 @@ public class DashboardView extends BasicLayout {
                         duration = Duration.ofDays(durationValue);
                     }
                 }
-
-                if (selectedChannel != null && duration != null) {
-
                     // This should be set before any processing happens
                     controller.setShouldSmoothData(smoothDataCheckbox.getValue());
                     controller.updateDashboard(selectedChannel, duration, intervalSizeInMinutes);
                     results = controller.getResults();
-                } else {
-                    Notification.show("Please select a bike channel and a duration.");
-                    return;
-                }
+
             }else{ //Compare bike
                 Duration duration = null;
                 if (durationValueField != null && durationValueField.getValue() != null) {
@@ -369,8 +363,6 @@ public class DashboardView extends BasicLayout {
                         duration = Duration.ofDays(durationValue);
                     }
                 }
-                if (selectedChannel != null && duration != null) {
-
                     // This should be set before any processing happens
                     controller.setShouldSmoothData(smoothDataCheckbox.getValue());
                     controller.updateDashboard(compareChannelSelectorOne, duration, intervalSizeInMinutes);
@@ -381,13 +373,6 @@ public class DashboardView extends BasicLayout {
                     List<AbstractDataProcessor.ProcessedData> mergedResults = new ArrayList<>(result1);
                     mergedResults.addAll(result2);
                     results = mergedResults;
-
-
-                } else {
-                    Notification.show("Please select a bike channel and a duration.");
-                    return;
-                }
-
             }
 
 
@@ -395,20 +380,14 @@ public class DashboardView extends BasicLayout {
             if(currentStrategy.equals("Single Bike")){
                 LocalDateTime startTime = startDateTimePicker.getValue();
                 LocalDateTime endTime = endDateTimePicker.getValue();
-                if (selectedChannel != null && startTime != null && endTime != null) {
                     // This should be set before any processing happens
                     controller.setShouldSmoothData(smoothDataCheckbox.getValue());
                     controller.updateDashboard(selectedChannel, startTime, endTime, intervalSizeInMinutes);
                     results = controller.getResults();
-                } else {
-                    Notification.show("Please select a bike channel and a time interval.");
-                    return;
-                }
             }
-            }else{ // compare bike
-            LocalDateTime startTime = startDateTimePicker.getValue();
-            LocalDateTime endTime = endDateTimePicker.getValue();
-            if(compareChannelSelectorOne != null && compareChannelSelectorTwo!= null && startTime != null && endTime != null){
+            else{ // compare bike
+                LocalDateTime startTime = startDateTimePicker.getValue();
+                LocalDateTime endTime = endDateTimePicker.getValue();
                 controller.setShouldSmoothData(smoothDataCheckbox.getValue());
                 controller.updateDashboard(compareChannelSelectorOne, startTime, endTime, intervalSizeInMinutes);
                 result1 = controller.getResults();
@@ -417,9 +396,10 @@ public class DashboardView extends BasicLayout {
                 List<AbstractDataProcessor.ProcessedData> mergedResults = new ArrayList<>(result1);
                 mergedResults.addAll(result2);
                 results = mergedResults;
+            }
+            }else if(tabSheet.getSelectedTab().getLabel().equals("Duration Since")){
 
-            }
-            }
+        }
 
 
 
