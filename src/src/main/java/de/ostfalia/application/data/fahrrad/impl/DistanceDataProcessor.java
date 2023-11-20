@@ -35,8 +35,6 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
 
         List<Bicycle> bicycles = bikeService.getDataWithTimeSpan(channel, startTime, endTime);
 
-        for(Bicycle b: bicycles)
-            System.out.println("Channel: " + b.getChannel() + ", Time: " + b.getTime() + ", Rotation: " + b.getRotations());
         return bicycles;
     }
 

@@ -42,25 +42,19 @@ public class BikeDashboardController {
     public void setMetricProcessor(String metric, int channel, LocalDateTime startTime, LocalDateTime endTime, int intervalInMinutes) {
         AbstractDataProcessor processor = getProcessorForMetric(metric);
         setDataProcessor(processor);
-        abstractDataProcessor.process(channel, startTime, endTime, intervalInMinutes);
+
     }
 
     // Überladene Methode für die Dauer mit Intervallgröße
     public void setMetricProcessor(String metric, int channel, Duration duration, int intervalInMinutes) {
         AbstractDataProcessor processor = getProcessorForMetric(metric);
         setDataProcessor(processor);
-        abstractDataProcessor.process(channel, duration, intervalInMinutes);
     }
 
     // Überladene Methode für die letzte Nutzung mit Intervallgröße
     public void setMetricProcessor(String metric, int channel, LocalDateTime sinceTime, boolean sinceLastActivity, int intervalInMinutes) {
         AbstractDataProcessor processor = getProcessorForMetric(metric);
         setDataProcessor(processor);
-        if (sinceLastActivity) {
-            abstractDataProcessor.processSinceLastActivity(channel, sinceTime, intervalInMinutes);
-        } else {
-            abstractDataProcessor.process(channel, sinceTime, LocalDateTime.now(), intervalInMinutes);
-        }
     }
 
     private AbstractDataProcessor getProcessorForMetric(String metric) {
@@ -88,10 +82,28 @@ public class BikeDashboardController {
     }
 
 
-    // Methode, um das Dashboard zu aktualisieren (mit Intervallgröße)
+    // Overload for process with start/end time and interval size
     public void updateDashboard(int channel, LocalDateTime startTime, LocalDateTime endTime, int intervalInMinutes) {
-        if(abstractDataProcessor != null) {
+        if (abstractDataProcessor != null) {
             abstractDataProcessor.process(channel, startTime, endTime, intervalInMinutes);
+        } else {
+            throw new IllegalStateException("DataProcessor has not been set");
+        }
+    }
+
+    // Overload for process with duration and interval size
+    public void updateDashboard(int channel, Duration duration, int intervalInMinutes) {
+        if (abstractDataProcessor != null) {
+            abstractDataProcessor.process(channel, duration, intervalInMinutes);
+        } else {
+            throw new IllegalStateException("DataProcessor has not been set");
+        }
+    }
+
+    // Overload for process since last activity with interval size
+    public void updateDashboardSinceLastActivity(int channel, LocalDateTime sinceTime, int intervalInMinutes) {
+        if (abstractDataProcessor != null) {
+            abstractDataProcessor.processSinceLastActivity(channel, sinceTime, intervalInMinutes);
         } else {
             throw new IllegalStateException("DataProcessor has not been set");
         }

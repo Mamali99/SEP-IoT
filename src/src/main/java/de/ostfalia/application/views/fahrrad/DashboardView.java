@@ -271,6 +271,7 @@ public class DashboardView extends BasicLayout {
                 controller.setMetricProcessor(selectedMetric, selectedChannel, duration, intervalSizeInMinutes);
                 // This should be set before any processing happens
                 controller.setShouldSmoothData(smoothDataCheckbox.getValue());
+                controller.updateDashboard(selectedChannel, duration, intervalSizeInMinutes);
                 results = controller.getResults();
             } else {
                 Notification.show("Please select a bike channel and a duration.");
@@ -283,6 +284,7 @@ public class DashboardView extends BasicLayout {
                 controller.setMetricProcessor(selectedMetric, selectedChannel, startTime, endTime, intervalSizeInMinutes);
                 // This should be set before any processing happens
                 controller.setShouldSmoothData(smoothDataCheckbox.getValue());
+                controller.updateDashboard(selectedChannel, startTime, endTime, intervalSizeInMinutes);
                 results = controller.getResults();
             } else {
                 Notification.show("Please select a bike channel and a time interval.");
