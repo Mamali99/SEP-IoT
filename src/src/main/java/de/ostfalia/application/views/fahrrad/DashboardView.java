@@ -3,7 +3,6 @@ package de.ostfalia.application.views.fahrrad;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.html.Div;
@@ -12,7 +11,6 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.listbox.ListBox;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -102,7 +100,6 @@ public class DashboardView extends BasicLayout {
     }
 
 
-
     private void buildTitleGroup() {
         titleGroup = new HorizontalLayout();
         Icon dashicon = VaadinIcon.DASHBOARD.create();
@@ -113,7 +110,6 @@ public class DashboardView extends BasicLayout {
     private void buildSmoothingOption() {
         smoothDataCheckbox = new Checkbox("Smooth Data");
     }
-
 
 
     private void buildBikeChannels(BikeService bikeService) {
@@ -320,21 +316,22 @@ public class DashboardView extends BasicLayout {
         String selectedMetric = metricSelector.getValue();
         int intervalSizeInMinutes = intervalSizeField.getValue();
         String currentStrategy = strategyTab.getSelectedTab().getLabel();
+        boolean smoothingData = smoothDataCheckbox.getValue();
 
         if (selectedMetric == null) {
             Notification.show("Please select a metric.");
             return;
         }
 
-        List<AbstractDataProcessor.ProcessedData> results;
+        List<AbstractDataProcessor.ProcessedData> results = null;
 
         // If duration tab is selected
         if (tabSheet.getSelectedTab().getLabel().equals("Duration")) {
             if (currentStrategy.equals("Single Bike")) {
-                results = processDurationData(selectedChannel, intervalSizeInMinutes, selectedMetric);
+                results = processDurationData(selectedChannel, intervalSizeInMinutes, selectedMetric, smoothingData);
             } else {
-                List<AbstractDataProcessor.ProcessedData> result1 = processDurationData(compareChannelSelectorOne, intervalSizeInMinutes, selectedMetric);
-                List<AbstractDataProcessor.ProcessedData> result2 = processDurationData(compareChannelSelectorTwo, intervalSizeInMinutes, selectedMetric);
+                List<AbstractDataProcessor.ProcessedData> result1 = processDurationData(compareChannelSelectorOne, intervalSizeInMinutes, selectedMetric, smoothingData);
+                List<AbstractDataProcessor.ProcessedData> result2 = processDurationData(compareChannelSelectorTwo, intervalSizeInMinutes, selectedMetric, smoothingData);
 
                 // Merge the results
                 List<AbstractDataProcessor.ProcessedData> mergedResults = new ArrayList<>(result1);
@@ -344,51 +341,75 @@ public class DashboardView extends BasicLayout {
             }
 
 
-        } else { // "Start und Endzeit" tab is selected
+        } else if (tabSheet.getSelectedTab().getLabel().equals("Start and Endtime")) { // "Start und Endzeit" tab is selected
             LocalDateTime startTime = startDateTimePicker.getValue();
             LocalDateTime endTime = endDateTimePicker.getValue();
-            if (selectedChannel != null && startTime != null && endTime != null) {
 
-
-                if (currentStrategy.equals("Single Bike")) {
-                    controller.setMetricProcessor(selectedMetric, selectedChannel, startTime, endTime, intervalSizeInMinutes);
-                    results = controller.getResults();
-                } else {
-                    controller.setMetricProcessor(selectedMetric, compareChannelSelectorOne, startTime, endTime, intervalSizeInMinutes);
-                    List<AbstractDataProcessor.ProcessedData> result1 = controller.getResults();
-                    controller.setMetricProcessor(selectedMetric, compareChannelSelectorTwo, startTime, endTime, intervalSizeInMinutes);
-                    List<AbstractDataProcessor.ProcessedData> result2 = controller.getResults();
-
-                    // Merge the results
-                    List<AbstractDataProcessor.ProcessedData> mergedResults = new ArrayList<>(result1);
-                    mergedResults.addAll(result2);
-                    results = mergedResults;
-
-                }
+            if (currentStrategy.equals("Single Bike")) {
+                results = processStartEndData(selectedChannel, intervalSizeInMinutes, startTime, endTime, selectedMetric, smoothingData);
             } else {
-                Notification.show("Please select a bike channel and a time interval.");
-                return;
+                List<AbstractDataProcessor.ProcessedData> result1 = processStartEndData(compareChannelSelectorOne, intervalSizeInMinutes, startTime, endTime, selectedMetric, smoothingData);
+
+                // Merge the results
+                List<AbstractDataProcessor.ProcessedData> result2 = processStartEndData(compareChannelSelectorTwo, intervalSizeInMinutes, startTime, endTime, selectedMetric, smoothingData);
+                List<AbstractDataProcessor.ProcessedData> mergedResults = new ArrayList<>(result1);
+                mergedResults.addAll(result2);
+                results = mergedResults;
+
             }
         }
 
-        if (results != null && !results.isEmpty()) {
+        // hier kommt duration since
+
+
+        if (results == null || results.isEmpty()) {
+            Notification.show("No data available for the selected criteria.");
+        } else {
             List<Component> components = context.buildView(results);
             VerticalLayout singleLayout = new VerticalLayout();
             singleLayout.add(components);
             layout.removeAll();
             buildUI();
             splitLayout.addToSecondary(singleLayout);
-        } else {
-            Notification.show("No data available for the selected criteria.");
         }
 
 
     }
 
-    public List<AbstractDataProcessor.ProcessedData> processDurationData(Integer selectedChannel, int intervalSizeInMinutes, String selectedMetric) {
+    public List<AbstractDataProcessor.ProcessedData> processDurationData(Integer selectedChannel, int intervalSizeInMinutes, String selectedMetric, boolean smoothingData) {
         Duration duration = getDuration();
         if (selectedChannel != null && duration != null) {
-            controller.setMetricProcessor(selectedMetric, selectedChannel, duration, intervalSizeInMinutes);
+            controller.setMetricProcessor(selectedMetric);
+            controller.setShouldSmoothData(smoothingData);
+            controller.updateDashboard(selectedChannel, duration, intervalSizeInMinutes);
+            return controller.getResults();
+        } else {
+            Notification.show("Please select a bike channel and a duration.");
+            return null;
+        }
+    }
+
+    public List<AbstractDataProcessor.ProcessedData> processStartEndData(Integer selectedChannel, int intervalSizeInMinutes, LocalDateTime startTime, LocalDateTime endTime, String selectedMetric, boolean smoothingData) {
+        if (selectedChannel != null && startTime != null && endTime != null) {
+            controller.setMetricProcessor(selectedMetric);
+            controller.setShouldSmoothData(smoothingData);
+            controller.updateDashboard(selectedChannel, startTime, endTime, intervalSizeInMinutes);
+            return controller.getResults();
+        } else {
+            Notification.show("Please select a bike channel and a start and end time.");
+            return null;
+        }
+    }
+
+    public List<AbstractDataProcessor.ProcessedData> processDurationSinceData(Integer selectedChannel, int intervalSizeInMinutes, String selectedMetric, boolean smoothingData) {
+
+        // ist die gleiche Methode wie Duration einfach als platzhalter
+
+        Duration duration = getDuration();
+        if (selectedChannel != null && duration != null) {
+            controller.setMetricProcessor(selectedMetric);
+            controller.setShouldSmoothData(smoothingData);
+            controller.updateDashboard(selectedChannel, duration, intervalSizeInMinutes);
             return controller.getResults();
         } else {
             Notification.show("Please select a bike channel and a duration.");
