@@ -34,4 +34,20 @@ public class DataAnalysisService {
 
         return result;
     }
+
+    public BigDecimal calculateTopSpeed(List<AbstractDataProcessor.ProcessedData> processedDataList) {
+        if (processedDataList.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal result = processedDataList.get(0).getValue();
+
+        for (AbstractDataProcessor.ProcessedData data : processedDataList) {
+            if (data.getValue().compareTo(result) > 0) {
+                result = data.getValue();
+            }
+        }
+
+        return result.setScale(2, RoundingMode.HALF_UP);
+    }
 }

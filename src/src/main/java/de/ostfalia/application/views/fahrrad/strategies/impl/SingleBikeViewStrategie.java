@@ -4,6 +4,7 @@ import com.storedobject.chart.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import de.ostfalia.application.data.fahrrad.controller.DataAnalysisService;
@@ -13,6 +14,7 @@ import de.ostfalia.application.views.fahrrad.strategies.DashboardViewStrategy;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +31,7 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         List<Component> components = new ArrayList<>();
 
         Map<String, BigDecimal> result = dataAnalysisService.calculateAverageAndSum(dataList);
+        BigDecimal topSpeed = dataAnalysisService.calculateTopSpeed(dataList);
         BigDecimal average = result.get("average");
         BigDecimal sum = result.get("sum");
         BigDecimal roundedSum = sum.setScale(2, RoundingMode.HALF_UP);
@@ -38,23 +41,27 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         HorizontalLayout layout = new HorizontalLayout();
         layout.setWidthFull();
 
-        layout.add(createTitle(channel));
-        layout.add(createMetrics(processorName, roundedSum, average));
-        layout.add(createLineChart(dataList));
+        VerticalLayout sidePanel = new VerticalLayout();
+        sidePanel.add(createTitle(channel));
+        sidePanel.add(createMetrics(processorName, roundedSum, average, topSpeed));
+        sidePanel.setWidth("30%");
 
+
+        layout.add(sidePanel);
+        layout.add(createLineChart(dataList));
 
         components.add(layout);
         return components;
     }
 
+
     private Component createTitle(Integer channel) {
-        H2 h2 = new H2("Fahrrad " + channel);
-        h2.setWidth("10%");
-        h2.setHeight("10%");
+        H2 h2 = new H2("Bike " + channel);
         Element h2Element = h2.getElement();
+        h2.setWidthFull();
         h2Element.getStyle().set("display", "inline-block");
-        h2Element.getStyle().set("padding", "10px");
-        h2Element.getStyle().set("border", "1px solid #008000");
+        h2Element.getStyle().set("margin-top", "40px");
+        h2Element.getStyle().set("border", "2px solid ");
         return h2;
     }
 
@@ -100,7 +107,7 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         individualLine.plotOn(rc);
 
         SOChart soChart = new SOChart();
-        soChart.setSize("90%", "350px");
+        soChart.setSize("100%", "350px");
         soChart.add(new Legend());
         soChart.add(cumulativeLine);
         soChart.add(individualLine);
@@ -108,12 +115,12 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         return soChart;
     }
 
-    private Aside createMetrics(String processorName, BigDecimal totalDistanceBRounded, BigDecimal totalSpeedBRounded) {
+    private Aside createMetrics(String processorName, BigDecimal totalDistanceBRounded, BigDecimal average, BigDecimal totalSpeed) {
         Aside aside = new Aside();
         aside.addClassNames(LumoUtility.Background.CONTRAST_5, LumoUtility.BoxSizing.BORDER, LumoUtility.Padding.LARGE, LumoUtility.BorderRadius.LARGE,
                 LumoUtility.Position.STICKY);
-        aside.setWidth("20%");
         aside.setHeight("50%");
+        aside.setWidthFull();
 
         Header headerSection = new Header();
         headerSection.addClassNames(LumoUtility.Display.FLEX, LumoUtility.AlignItems.CENTER, LumoUtility.JustifyContent.BETWEEN, LumoUtility.Margin.Bottom.MEDIUM);
@@ -141,16 +148,19 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
 
         // Create list items for total distance and average speed
         ListItem totalDistanceTitle = new ListItem("Total " + processorName + ": " + totalDistanceBRounded + metricValueEnding);
-        ListItem speed = new ListItem("Average: " + totalSpeedBRounded + metricValueEnding);
+        ListItem speed = new ListItem("Average: " + average + metricValueEnding);
+        ListItem topSpeed = new ListItem("Top Speed " + totalSpeed + " m/s");
 
-        if (processorName.equals("Speed")) {
-            ul.remove(totalDistanceTitle);
-        }
+
         ul.add(totalDistanceTitle);
         ul.add(speed);
-
+        if (processorName.equals("Speed")) {
+            ul.remove(totalDistanceTitle);
+            ul.add(topSpeed);
+        }
         aside.add(headerSection, ul);
 
         return aside;
     }
+
 }

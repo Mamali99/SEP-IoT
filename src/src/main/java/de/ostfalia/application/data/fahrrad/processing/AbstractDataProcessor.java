@@ -64,7 +64,6 @@ public abstract class AbstractDataProcessor {
         
 
 
-    // Hook-Methoden
     protected abstract List<Bicycle> fetchData(int channel, LocalDateTime startTime, LocalDateTime endTime);
     protected abstract List<Bicycle> fetchDataSince(int channel, LocalDateTime sinceTime);
     protected abstract LocalDateTime fetchLastActivity(int channel);
@@ -85,6 +84,8 @@ public abstract class AbstractDataProcessor {
 
     public class ProcessedData {
         private int channel;
+
+        private String hexColor;
         private BigDecimal value; // Dies könnte Distanz, Geschwindigkeit oder Umdrehungen sein
         private LocalDateTime timestamp;
 
@@ -96,6 +97,8 @@ public abstract class AbstractDataProcessor {
             this.processorName = processorName;
         }
 
+
+        //Hook Methoden
         public int getChannel() {
             return channel;
         }
@@ -116,6 +119,10 @@ public abstract class AbstractDataProcessor {
             return timestamp;
         }
 
+        public void setHexColor(String hexColor) {
+            this.hexColor = hexColor;
+        }
+
         public void setTimestamp(LocalDateTime timestamp) {
             this.timestamp = timestamp;
         }
@@ -123,6 +130,10 @@ public abstract class AbstractDataProcessor {
         public String getProcessorName() {
             return processorName;
         }
+
+
+
+
     }
 
 }

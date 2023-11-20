@@ -3,6 +3,7 @@
   "license": "UNLICENSED",
   "type": "module",
   "dependencies": {
+    "@polymer/paper-slider": "3.0.1",
     "@polymer/polymer": "3.5.1",
     "@vaadin/a11y-base": "24.1.4",
     "@vaadin/accordion": "24.1.4",
@@ -93,6 +94,7 @@
   },
   "vaadin": {
     "dependencies": {
+      "@polymer/paper-slider": "3.0.1",
       "@polymer/polymer": "3.5.1",
       "@vaadin/a11y-base": "24.1.4",
       "@vaadin/accordion": "24.1.4",
@@ -181,7 +183,7 @@
       "workbox-core": "7.0.0",
       "workbox-precaching": "7.0.0"
     },
-    "hash": "4584d7d9285605424d6dd779afe27841545bbda24393e28b8944ce0d05b95d78"
+    "hash": "e444a9db76e0598f721d3e294cd423b9b45654c083b748a0cf788ee4636ba579"
   },
   "overrides": {
     "@vaadin/bundles": "$@vaadin/bundles",
@@ -252,6 +254,7 @@
     "@vaadin/vaadin-themable-mixin": "$@vaadin/vaadin-themable-mixin",
     "date-fns": "$date-fns",
     "echarts": "$echarts",
-    "mobile-drag-drop": "$mobile-drag-drop"
+    "mobile-drag-drop": "$mobile-drag-drop",
+    "@polymer/paper-slider": "$@polymer/paper-slider"
   }
 }
