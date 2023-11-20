@@ -153,7 +153,7 @@ public class DashboardView extends BasicLayout {
         tabSheet = new TabSheet();
         tabSheet.add("Start and Endtime", new Div(startEndZeitInterval));
         tabSheet.add("Duration", new Div(durationIntervall));
-        tabSheet.add("Duration Since", new Div(verticalSlider));
+        tabSheet.add("Last activity", new Div(verticalSlider));
         tabSheet.getSelectedTab().getStyle().set("color", "green");
     }
 
@@ -357,6 +357,12 @@ public class DashboardView extends BasicLayout {
                 results = mergedResults;
 
             }
+        } else if(tabSheet.getSelectedTab().getLabel().equals("Last activity")){
+            if(currentStrategy.equals("Single Bike")){
+
+            }else{
+
+            }
         }
 
         // hier kommt duration since
@@ -401,7 +407,7 @@ public class DashboardView extends BasicLayout {
         }
     }
 
-    public List<AbstractDataProcessor.ProcessedData> processDurationSinceData(Integer selectedChannel, int intervalSizeInMinutes, String selectedMetric, boolean smoothingData) {
+    public List<AbstractDataProcessor.ProcessedData> processSinceLastActivityData(Integer selectedChannel, int intervalSizeInMinutes, String selectedMetric, boolean smoothingData) {
 
         // ist die gleiche Methode wie Duration einfach als platzhalter
 
@@ -409,7 +415,7 @@ public class DashboardView extends BasicLayout {
         if (selectedChannel != null && duration != null) {
             controller.setMetricProcessor(selectedMetric);
             controller.setShouldSmoothData(smoothingData);
-            controller.updateDashboard(selectedChannel, duration, intervalSizeInMinutes);
+            controller.updateDashboard(selectedChannel, duration, intervalSizeInMinutes); // hier muss richtige parameter geben.
             return controller.getResults();
         } else {
             Notification.show("Please select a bike channel and a duration.");

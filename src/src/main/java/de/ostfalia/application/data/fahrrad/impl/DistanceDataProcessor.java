@@ -40,14 +40,15 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
 
     // Implementierung für die Abfrage von Daten seit einem bestimmten Zeitpunkt
     @Override
-    protected List<Bicycle> fetchDataSince(int channel, LocalDateTime sinceTime) {
+    protected List<Bicycle> fetchDataDuration(int channel, LocalDateTime sinceTime) {
         return bikeService.findBicycleDataSince(channel, sinceTime);
     }
 
     // Implementierung für das Abrufen der letzten Aktivität eines Kanals
     @Override
-    protected LocalDateTime fetchLastActivity(int channel) {
-        return bikeService.findLastActivityByChannel(channel);
+    protected List<Bicycle> fetchLastActivity(int channel) {
+        //return bikeService.findLastActivityByChannel(channel);
+        return null;
     }
 
 

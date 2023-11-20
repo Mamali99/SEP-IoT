@@ -36,10 +36,11 @@ public abstract class AbstractDataProcessor {
     }
 
     // Verarbeitung basierend auf der letzten Nutzung vor/nach Zeit x mit Intervallgröße
-    public final void processSinceLastActivity(int channel, LocalDateTime sinceTime, int intervalInMinutes) {
-        List<Bicycle> bicycles = fetchDataSince(channel, sinceTime);
+    public final void process(int channel, LocalDateTime sinceTime, int intervalInMinutes) {
+        List<Bicycle> bicycles = fetchLastActivity(channel);
         processedData = calculateData(bicycles, intervalInMinutes);
     }
+
 
     protected List<ProcessedData> smoothData(List<ProcessedData> originalData, int windowSize) {
         List<ProcessedData> smoothedData = new ArrayList<>();
@@ -65,8 +66,8 @@ public abstract class AbstractDataProcessor {
 
 
     protected abstract List<Bicycle> fetchData(int channel, LocalDateTime startTime, LocalDateTime endTime);
-    protected abstract List<Bicycle> fetchDataSince(int channel, LocalDateTime sinceTime);
-    protected abstract LocalDateTime fetchLastActivity(int channel);
+    protected abstract List<Bicycle> fetchDataDuration(int channel, LocalDateTime sinceTime);
+    protected abstract List<Bicycle> fetchLastActivity(int channel);
 
     protected abstract List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInMinutes);
 

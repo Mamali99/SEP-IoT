@@ -83,9 +83,9 @@ public class BikeDashboardController {
     }
 
     // Overload for process since last activity with interval size
-    public void updateDashboardSinceLastActivity(int channel, LocalDateTime sinceTime, int intervalInMinutes) {
+    public void updateDashboard(int channel, LocalDateTime sinceTime, int intervalInMinutes) {
         if (abstractDataProcessor != null) {
-            abstractDataProcessor.processSinceLastActivity(channel, sinceTime, intervalInMinutes);
+            abstractDataProcessor.process(channel, sinceTime, intervalInMinutes);
         } else {
             throw new IllegalStateException("DataProcessor has not been set");
         }
