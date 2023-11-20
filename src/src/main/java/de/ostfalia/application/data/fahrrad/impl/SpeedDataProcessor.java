@@ -60,6 +60,10 @@ public class SpeedDataProcessor extends AbstractDataProcessor {
             }
         }
 
+        if (this.isShouldSmoothData()) {  // shouldSmoothData ist eine boolesche Variable
+            speedData = smoothData(speedData, 3);  // windowSize kann konfigurierbar sein
+        }
+
         return speedData;
     }
 

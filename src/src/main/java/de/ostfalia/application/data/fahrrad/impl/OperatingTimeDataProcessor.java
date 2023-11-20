@@ -51,6 +51,9 @@ public class OperatingTimeDataProcessor extends AbstractDataProcessor {
             ProcessedData processedData = new ProcessedData(bike.getChannel(), isActive, bike.getTime(), this.processorName);
             results.add(processedData);
         }
+        if (this.isShouldSmoothData()) {  // shouldSmoothData ist eine boolesche Variable
+            results = smoothData(results, 3);  // windowSize kann konfigurierbar sein
+        }
 
         return results;
     }

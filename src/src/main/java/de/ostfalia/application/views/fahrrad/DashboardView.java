@@ -2,6 +2,8 @@ package de.ostfalia.application.views.fahrrad;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.html.Div;
@@ -10,6 +12,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.listbox.ListBox;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -63,6 +66,9 @@ public class DashboardView extends BasicLayout {
     private VerticalLayout durationIntervall;
     private VerticalLayout startEndZeitInterval;
 
+    // Checkbox to enable or disable data smoothing
+    private Checkbox smoothDataCheckbox;
+
     private VerticalLayout verticalSlider;
 
     // Compare Bike
@@ -89,8 +95,13 @@ public class DashboardView extends BasicLayout {
         buildDefaultValues();
         buildStrategyTab();
         buildUpdateButton();
+        buildSmoothingOption();
         buildUI();
+
+
     }
+
+
 
     private void buildTitleGroup() {
         titleGroup = new HorizontalLayout();
@@ -98,6 +109,12 @@ public class DashboardView extends BasicLayout {
         H2 title = new H2("Bike Dashboard");
         titleGroup.add(dashicon, title);
     }
+
+    private void buildSmoothingOption() {
+        smoothDataCheckbox = new Checkbox("Smooth Data");
+    }
+
+
 
     private void buildBikeChannels(BikeService bikeService) {
         List<Integer> availableChannels = bikeService.getAvailableChannels();
@@ -254,6 +271,7 @@ public class DashboardView extends BasicLayout {
                 titleGroup,
                 strategyTab,
                 metricSelector,
+                smoothDataCheckbox,
                 tabSheet,
                 zeitintervall,
                 updateButton
@@ -263,6 +281,7 @@ public class DashboardView extends BasicLayout {
         layout.getElement().getThemeList().add(Material.DARK);
         splitLayout.addToPrimary(layout);
         setContent(splitLayout);
+
     }
 
     private void updateDashboardOnChange() {
