@@ -18,17 +18,14 @@ public interface BicycleRepository extends JpaRepository<Bicycle, Long> {
 
      //new Methoden
 
-    //Für den Vergleichsmodus
-    @Query("SELECT b FROM Bicycle b WHERE b.channel IN :channels AND b.time BETWEEN :startTime AND :endTime")
-    List<Bicycle> findAllBicyclesByChannelsAndTimeSpan(@Param("channels") List<Integer> channels,
-                                                       @Param("startTime") LocalDateTime startTime,
-                                                       @Param("endTime") LocalDateTime endTime);
-
-
-
      //die Leistungsdaten eines Fahrrads über einen längeren Zeitraum hinweg analysieren
     @Query("SELECT b FROM Bicycle b WHERE b.channel = :channel AND b.time > :sinceTime")
     List<Bicycle> findBicycleDataSince(@Param("channel") int channel, @Param("sinceTime") LocalDateTime sinceTime);
+
+    @Query("SELECT b FROM Bicycle b WHERE b.channel = :channel AND b.time > :sinceTime AND b.time <= :endTime")
+    List<Bicycle> findBicycleDataSinceLastActivity(@Param("channel") int channel,
+                                       @Param("sinceTime") LocalDateTime sinceTime,
+                                       @Param("endTime") LocalDateTime endTime);
 
 
     // Eine Methode, die den letzten Zeitstempel liefert, zu dem ein bestimmter Fahrradkanal Daten gesendet hat.

@@ -47,8 +47,8 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
     // Implementierung für das Abrufen der letzten Aktivität eines Kanals
     @Override
     protected List<Bicycle> fetchLastActivity(int channel) {
-        //return bikeService.findLastActivityByChannel(channel);
-        return null;
+        return bikeService.getBicyclesSinceLastActivity(channel);
+
     }
 
 

@@ -36,7 +36,7 @@ public abstract class AbstractDataProcessor {
     }
 
     // Verarbeitung basierend auf der letzten Nutzung vor/nach Zeit x mit Intervallgröße
-    public final void process(int channel, LocalDateTime sinceTime, int intervalInMinutes) {
+    public final void process(int channel, int intervalInMinutes) {
         List<Bicycle> bicycles = fetchLastActivity(channel);
         processedData = calculateData(bicycles, intervalInMinutes);
     }

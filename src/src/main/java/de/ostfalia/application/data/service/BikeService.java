@@ -29,30 +29,23 @@ public class BikeService {
         return bicycleRepository.getActiveChannels();
     }
 
-    public List<Bicycle> getBicyclesForLastDuration(int channel, Duration duration) {
-        LocalDateTime endTime = LocalDateTime.now();
-        LocalDateTime startTime = endTime.minus(duration);
-        return bicycleRepository.getBicycleByChannelAndAndTimeSpan(channel, startTime, endTime);
-    }
 
     public List<Bicycle> getBicyclesSinceLastActivity(int channel) {
         LocalDateTime lastActivityTime = bicycleRepository.findLastActivityByChannel(channel);
+        System.out.println(lastActivityTime.toString());
         if (lastActivityTime != null) {
-            return bicycleRepository.findBicycleDataSince(channel, lastActivityTime);
+            List<Bicycle> bicycles = bicycleRepository.findBicycleDataSinceLastActivity(channel,lastActivityTime.minusDays(1) , lastActivityTime);
+            for(Bicycle b: bicycles)
+                System.out.println(b.getRotations());
+            return bicycles;
         }
         return new ArrayList<>();
     }
+
 
 
     public List<Bicycle> findBicycleDataSince(int channel, LocalDateTime sinceTime) {
         return bicycleRepository.findBicycleDataSince(channel, sinceTime);
     }
 
-    public LocalDateTime findLastActivityByChannel(int channel) {
-        return bicycleRepository.findLastActivityByChannel(channel);
-    }
-
-    public List<Bicycle> findAllBicyclesByChannelsAndTimeSpan(List<Integer> channels, LocalDateTime startTime, LocalDateTime endTime){
-        return bicycleRepository.findAllBicyclesByChannelsAndTimeSpan(channels, startTime, endTime);
-    }
 }
