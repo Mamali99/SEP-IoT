@@ -50,6 +50,9 @@ public class RotationDataProcessor extends AbstractDataProcessor {
             rotationData.add(new ProcessedData(bike.getChannel(), rotationsPerSecond, bike.getTime(), processorName));
 
         }
+        if (this.isShouldSmoothData()) {  // shouldSmoothData ist eine boolesche Variable
+            rotationData = smoothData(rotationData, 3);  // windowSize kann konfigurierbar sein
+        }
         return rotationData;
     }
 
