@@ -64,6 +64,8 @@ public class DashboardView extends BasicLayout {
     private VerticalLayout durationIntervall;
     private VerticalLayout startEndZeitInterval;
 
+    private DateTimePicker durationSince;
+
     // Checkbox to enable or disable data smoothing
     private Checkbox smoothDataCheckbox;
 
@@ -159,14 +161,8 @@ public class DashboardView extends BasicLayout {
 
     private void buildDurationSince() {
         verticalSlider = new VerticalLayout();
-        PaperSlider slider = new PaperSlider();
-        slider.setMin(1);
-        slider.setMax(10);
-        slider.setWidth("500px");
-        slider.addValueChangeListener(event -> {
-            Notification.show("Answer: " + event.getValue());
-        });
-        verticalSlider.add(slider);
+        durationSince = new DateTimePicker("Data Since:");
+        verticalSlider.add(durationSince);
     }
 
     private void buildStartEndZeitintervall() {
