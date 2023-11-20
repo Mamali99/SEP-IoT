@@ -36,13 +36,10 @@ public class BikeDashboardController {
         return abstractDataProcessor.getResults();
     }
 
-    // Methode für Standard Start-/Endzeit mit Intervallgröße
     public void setMetricProcessor(String metric) {
         AbstractDataProcessor processor = getProcessorForMetric(metric);
         setDataProcessor(processor);
-
     }
-
 
     private AbstractDataProcessor getProcessorForMetric(String metric) {
         switch (metric) {
