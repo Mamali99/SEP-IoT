@@ -147,7 +147,7 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         // Create list items for total distance and average speed
         ListItem totalDistanceTitle = new ListItem("Total " + processorName + ": " + totalDistanceBRounded + metricValueEnding);
         ListItem speed = new ListItem("Average: " + average + metricValueEnding);
-        ListItem topSpeed = new ListItem("Top Speed " + totalSpeed);
+        ListItem topSpeed = new ListItem("Top Speed " + totalSpeed + " m/s");
 
 
         ul.add(totalDistanceTitle);
