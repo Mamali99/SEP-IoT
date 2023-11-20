@@ -24,8 +24,6 @@ public class BikeDashboardController {
 
     private AbstractDataProcessor abstractDataProcessor;
 
-    @Autowired
-    private DashboardViewContext viewContext;
 
     @Autowired
     BikeService bikeService;
@@ -39,23 +37,12 @@ public class BikeDashboardController {
     }
 
     // Methode für Standard Start-/Endzeit mit Intervallgröße
-    public void setMetricProcessor(String metric, int channel, LocalDateTime startTime, LocalDateTime endTime, int intervalInMinutes) {
+    public void setMetricProcessor(String metric) {
         AbstractDataProcessor processor = getProcessorForMetric(metric);
         setDataProcessor(processor);
 
     }
 
-    // Überladene Methode für die Dauer mit Intervallgröße
-    public void setMetricProcessor(String metric, int channel, Duration duration, int intervalInMinutes) {
-        AbstractDataProcessor processor = getProcessorForMetric(metric);
-        setDataProcessor(processor);
-    }
-
-    // Überladene Methode für die letzte Nutzung mit Intervallgröße
-    public void setMetricProcessor(String metric, int channel, LocalDateTime sinceTime, boolean sinceLastActivity, int intervalInMinutes) {
-        AbstractDataProcessor processor = getProcessorForMetric(metric);
-        setDataProcessor(processor);
-    }
 
     private AbstractDataProcessor getProcessorForMetric(String metric) {
         switch (metric) {

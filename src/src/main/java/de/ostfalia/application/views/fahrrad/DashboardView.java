@@ -245,9 +245,8 @@ public class DashboardView extends BasicLayout {
 
 
 
-        if (selectedMetric == null) {
-            Notification.show("Please select a metric.");
-            return;
+        if (selectedMetric != null) {
+            controller.setMetricProcessor(selectedMetric);
         }
 
         List<AbstractDataProcessor.ProcessedData> results;
@@ -268,7 +267,7 @@ public class DashboardView extends BasicLayout {
             }
 
             if (selectedChannel != null && duration != null) {
-                controller.setMetricProcessor(selectedMetric, selectedChannel, duration, intervalSizeInMinutes);
+
                 // This should be set before any processing happens
                 controller.setShouldSmoothData(smoothDataCheckbox.getValue());
                 controller.updateDashboard(selectedChannel, duration, intervalSizeInMinutes);
@@ -281,7 +280,7 @@ public class DashboardView extends BasicLayout {
             LocalDateTime startTime = startDateTimePicker.getValue();
             LocalDateTime endTime = endDateTimePicker.getValue();
             if (selectedChannel != null && startTime != null && endTime != null) {
-                controller.setMetricProcessor(selectedMetric, selectedChannel, startTime, endTime, intervalSizeInMinutes);
+                //controller.setMetricProcessor(selectedMetric);
                 // This should be set before any processing happens
                 controller.setShouldSmoothData(smoothDataCheckbox.getValue());
                 controller.updateDashboard(selectedChannel, startTime, endTime, intervalSizeInMinutes);
