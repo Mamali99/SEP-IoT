@@ -56,53 +56,67 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
 
     @Override
     protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInMinutes) {
-        List<ProcessedData> results = new ArrayList<>();
-        BigDecimal distancePerRotation = new BigDecimal("2.111"); // Distanz pro Rotation
+        if (intervalInMinutes == 0) {
+            List<ProcessedData> distanceData = new ArrayList<>();
+            for (Bicycle bike : bicycles) {
+                BigDecimal realRotationsPerSecond = bike.getRotations().divide(new BigDecimal(4), 2, RoundingMode.HALF_UP);
+                BigDecimal circumference = new BigDecimal("2.111"); // Radumfang in Metern
+                BigDecimal distance = realRotationsPerSecond.multiply(circumference);
+                distanceData.add(new ProcessedData(bike.getChannel(), distance, bike.getTime(), processorName));
+            }
+            if (this.isShouldSmoothData()) {  // shouldSmoothData ist eine boolesche Variable
+                distanceData = smoothData(distanceData, 3);  // windowSize kann konfigurierbar sein
+            }
+            return distanceData;
+
+        }
+        // Sortieren der Fahrraddaten nach Zeitstempel
+        bicycles.sort((b1, b2) -> b1.getTime().compareTo(b2.getTime()));
+
+        List<ProcessedData> intervalDataList = new ArrayList<>();
+        if (!bicycles.isEmpty()) {
+            // Initialisierung des ersten Intervalls
+            LocalDateTime intervalStart = bicycles.get(0).getTime();
+            BigDecimal intervalDistance = BigDecimal.ZERO;
+            BigDecimal totalDistance = BigDecimal.ZERO;
+
+            // Bestimmen der Intervallgröße
+            Duration intervalSize = Duration.ofMinutes(intervalInMinutes);
+
+            // Durchlaufen der Fahrraddaten und Aggregieren der Distanzen in Intervallen
+            for (Bicycle bike : bicycles) {
+                // Überprüfen, ob das aktuelle Fahrradobjekt zum nächsten Intervall gehört
+                while (bike.getTime().isAfter(intervalStart.plus(intervalSize))) {
+                    // Speichern der aggregierten Daten für das aktuelle Intervall
+                    intervalDataList.add(new ProcessedData(bike.getChannel(), intervalDistance, intervalStart, processorName));
+
+                    // Vorbereitung des nächsten Intervalls
+                    intervalStart = intervalStart.plus(intervalSize);
+                    intervalDistance = BigDecimal.ZERO;
+                }
+                // Aggregieren Sie die Distanz für dieses Intervall
+                BigDecimal realRotationsPerSecond = bike.getRotations().divide(new BigDecimal(4), 2, RoundingMode.HALF_UP);
+                BigDecimal circumference = new BigDecimal("2.111"); // Radumfang in Metern
+                BigDecimal distance = realRotationsPerSecond.multiply(circumference); // Distanz pro Minute
+                intervalDistance = intervalDistance.add(distance);
+                totalDistance = totalDistance.add(distance);
+            }
+
+            // Stellen Sie sicher, dass Sie die Daten für das letzte Intervall nicht verlieren
+            if (intervalDistance.compareTo(BigDecimal.ZERO) > 0) {
+                intervalDataList.add(new ProcessedData(bicycles.get(bicycles.size() - 1).getChannel(), intervalDistance, intervalStart, processorName));
+            }
+        }
+
+        // Ausgabe der Intervallstrecken
+        intervalDataList.forEach(p -> System.out.println("Interval Start: " + p.getTimestamp() + " Strecke: " + p.getValue() + "test" + p.getProcessorName()));
 
         if (this.isShouldSmoothData()) {  // shouldSmoothData ist eine boolesche Variable
-            results = smoothData(results, 3);  // windowSize kann konfigurierbar sein
+            intervalDataList = smoothData(intervalDataList, 3);  // windowSize kann konfigurierbar sein
         }
-
-        for (Bicycle bike : bicycles) {
-            BigDecimal realRotationFrequency = bike.getRotations().divide(BigDecimal.valueOf(4));
-            // Berechnung der Distanz für dieses Fahrrad
-            BigDecimal distance = realRotationFrequency.multiply(distancePerRotation);
-
-            // Runden der Distanz
-            distance = distance.setScale(2, RoundingMode.HALF_UP);
-
-            // Erstellen des ProcessedData Objekts
-            ProcessedData processedData = new ProcessedData(bike.getChannel(), distance, bike.getTime(), this.processorName);
-            results.add(processedData);
-        }
-        System.out.println("Beginn der Berechnun: ---------------");
-        for (ProcessedData b: results){
-            System.out.println("Channel: " + b.getChannel() + ", Time: " + b.getTimestamp() + ", distance: " + b.getValue());
-        }
-        calculateSumAndAverage(results);
-
-        return results;
+        return intervalDataList;
     }
 
-    // Method to calculate the sum and average of distances from a list of processed data
-    public void calculateSumAndAverage(List<ProcessedData> processedDataList) {
-        BigDecimal sum = BigDecimal.ZERO;
-        BigDecimal average = BigDecimal.ZERO;
-
-        // Calculate the sum of all distances
-        for (ProcessedData data : processedDataList) {
-            sum = sum.add(data.getValue());
-        }
-
-        // Calculate the average if the list is not empty
-        if (!processedDataList.isEmpty()) {
-            average = sum.divide(BigDecimal.valueOf(processedDataList.size()), 2, RoundingMode.HALF_UP);
-        }
-
-        // Output the results
-        System.out.println("Total Distance: " + sum + " meters");
-        System.out.println("Average Distance: " + average + " meters");
-    }
 
 
 

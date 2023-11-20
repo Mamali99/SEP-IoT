@@ -2,6 +2,7 @@ package de.ostfalia.application.views.fahrrad;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.html.Div;
@@ -25,7 +26,6 @@ import de.ostfalia.application.views.fahrrad.strategies.DashboardViewContext;
 import de.ostfalia.application.views.fahrrad.strategies.impl.CompareBikesViewStrategy;
 import de.ostfalia.application.views.fahrrad.strategies.impl.SingleBikeViewStrategie;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -59,6 +59,9 @@ public class DashboardView extends BasicLayout {
     private VerticalLayout durationIntervall;
     private VerticalLayout startEndZeitInterval;
 
+    // Checkbox to enable or disable data smoothing
+    private Checkbox smoothDataCheckbox;
+
     @Autowired
     public DashboardView(BikeDashboardController bikeDashboardController, DashboardViewContext dashboardViewContext, BikeService bikeService) {
         this.controller = bikeDashboardController;
@@ -79,8 +82,13 @@ public class DashboardView extends BasicLayout {
         buildDefaultValues();
         buildStrategyTab();
         buildUpdateButton();
+        buildSmoothingOption();
         buildUI();
+
+
     }
+
+
 
     private void buildTitleGroup() {
         titleGroup = new HorizontalLayout();
@@ -88,6 +96,12 @@ public class DashboardView extends BasicLayout {
         H2 title = new H2("Bike Dashboard");
         titleGroup.add(dashicon, title);
     }
+
+    private void buildSmoothingOption() {
+        smoothDataCheckbox = new Checkbox("Smooth Data");
+    }
+
+
 
     private void buildBikeChannels(BikeService bikeService) {
         List<Integer> availableChannels = bikeService.getAvailableChannels();
@@ -198,7 +212,7 @@ public class DashboardView extends BasicLayout {
         layout = new VerticalLayout(
                 titleGroup,
                 strategyTab,
-                metricSelector,
+                metricSelector, smoothDataCheckbox,
                 tabSheet,
                 intervalSizeField,
                 updateButton
@@ -207,6 +221,7 @@ public class DashboardView extends BasicLayout {
         layout.getElement().getThemeList().add(Material.DARK);
         splitLayout.addToPrimary(layout);
         setContent(splitLayout);
+
     }
 
     private void switchStrategy(String strategyName) {
@@ -227,6 +242,8 @@ public class DashboardView extends BasicLayout {
         Integer selectedChannel = bikeChannelSelector.getValue();
         String selectedMetric = metricSelector.getValue();
         int intervalSizeInMinutes = intervalSizeField.getValue().intValue();
+
+
 
         if (selectedMetric == null) {
             Notification.show("Please select a metric.");
@@ -252,6 +269,8 @@ public class DashboardView extends BasicLayout {
 
             if (selectedChannel != null && duration != null) {
                 controller.setMetricProcessor(selectedMetric, selectedChannel, duration, intervalSizeInMinutes);
+                // This should be set before any processing happens
+                controller.setShouldSmoothData(smoothDataCheckbox.getValue());
                 results = controller.getResults();
             } else {
                 Notification.show("Please select a bike channel and a duration.");
@@ -262,6 +281,8 @@ public class DashboardView extends BasicLayout {
             LocalDateTime endTime = endDateTimePicker.getValue();
             if (selectedChannel != null && startTime != null && endTime != null) {
                 controller.setMetricProcessor(selectedMetric, selectedChannel, startTime, endTime, intervalSizeInMinutes);
+                // This should be set before any processing happens
+                controller.setShouldSmoothData(smoothDataCheckbox.getValue());
                 results = controller.getResults();
             } else {
                 Notification.show("Please select a bike channel and a time interval.");
@@ -269,7 +290,9 @@ public class DashboardView extends BasicLayout {
             }
         }
 
+
         if (results != null && !results.isEmpty()) {
+
             List<Component> components = context.buildView(results);
             VerticalLayout singleLayout = new VerticalLayout();
             singleLayout.add(components);
