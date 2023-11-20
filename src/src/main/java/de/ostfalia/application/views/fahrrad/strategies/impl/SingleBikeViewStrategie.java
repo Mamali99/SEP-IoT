@@ -61,8 +61,7 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         h2.setWidthFull();
         h2Element.getStyle().set("display", "inline-block");
         h2Element.getStyle().set("margin-top", "40px");
-        String hexColoroForChannel = getHexColorForChannel(channel);
-        h2Element.getStyle().set("border", "2px solid " + hexColoroForChannel);
+        h2Element.getStyle().set("border", "2px solid ");
         return h2;
     }
 
@@ -162,20 +161,6 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         aside.add(headerSection, ul);
 
         return aside;
-    }
-
-    private String getHexColorForChannel(Integer channel) {
-        return switch (channel) {
-            case 1 -> "#FF0000";  // Red
-            case 2 -> "#00FF00";  // Green
-            case 3 -> "#0000FF";  // Blue
-            case 4 -> "#FFFF00";  // Yellow
-            case 5 -> "#FF00FF";  // Magenta
-            case 6 -> "#00FFFF";  // Cyan
-            case 7 -> "#800080";  // Purple
-            case 8 -> "#FFA500";  // Orange
-            default -> "#000000";  // Black
-        };
     }
 
 }
