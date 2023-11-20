@@ -14,6 +14,7 @@ import de.ostfalia.application.views.fahrrad.strategies.DashboardViewStrategy;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,7 +60,9 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         Element h2Element = h2.getElement();
         h2.setWidthFull();
         h2Element.getStyle().set("display", "inline-block");
-        h2Element.getStyle().set("border", "2px solid #008000");
+        h2Element.getStyle().set("margin-top", "40px");
+        String hexColoroForChannel = getHexColorForChannel(channel);
+        h2Element.getStyle().set("border", "2px solid " + hexColoroForChannel);
         return h2;
     }
 
@@ -105,7 +108,7 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         individualLine.plotOn(rc);
 
         SOChart soChart = new SOChart();
-        soChart.setSize("90%", "350px");
+        soChart.setSize("100%", "350px");
         soChart.add(new Legend());
         soChart.add(cumulativeLine);
         soChart.add(individualLine);
@@ -160,4 +163,19 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
 
         return aside;
     }
+
+    private String getHexColorForChannel(Integer channel) {
+        return switch (channel) {
+            case 1 -> "#FF0000";  // Red
+            case 2 -> "#00FF00";  // Green
+            case 3 -> "#0000FF";  // Blue
+            case 4 -> "#FFFF00";  // Yellow
+            case 5 -> "#FF00FF";  // Magenta
+            case 6 -> "#00FFFF";  // Cyan
+            case 7 -> "#800080";  // Purple
+            case 8 -> "#FFA500";  // Orange
+            default -> "#000000";  // Black
+        };
+    }
+
 }

@@ -53,6 +53,8 @@ public abstract class AbstractDataProcessor {
 
     public class ProcessedData {
         private int channel;
+
+        private String hexColor;
         private BigDecimal value; // Dies könnte Distanz, Geschwindigkeit oder Umdrehungen sein
         private LocalDateTime timestamp;
 
@@ -86,6 +88,10 @@ public abstract class AbstractDataProcessor {
             return timestamp;
         }
 
+        public void setHexColor(String hexColor) {
+            this.hexColor = hexColor;
+        }
+
         public void setTimestamp(LocalDateTime timestamp) {
             this.timestamp = timestamp;
         }
@@ -93,6 +99,8 @@ public abstract class AbstractDataProcessor {
         public String getProcessorName() {
             return processorName;
         }
+
+
 
 
     }
