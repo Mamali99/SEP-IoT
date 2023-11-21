@@ -23,16 +23,16 @@ public abstract class AbstractDataProcessor {
     private boolean shouldSmoothData = false;
 
     // Verarbeitung basierend auf Start- und Endzeit mit Intervallgröße
-    public final void process(int channel, LocalDateTime startTime, LocalDateTime endTime, int intervalInMinutes) {
+    public final void process(int channel, LocalDateTime startTime, LocalDateTime endTime, int intervalInSeconds) {
         List<Bicycle> bicycles = fetchData(channel, startTime, endTime);
-        processedData = calculateData(bicycles, intervalInMinutes);
+        processedData = calculateData(bicycles, intervalInSeconds);
     }
 
     // Verarbeitung basierend auf Dauer ab jetzt rückwärts mit Intervallgröße
-    public final void process(int channel, Duration duration, int intervalInMinutes) {
+    public final void process(int channel, Duration duration, int intervalInSeconds) {
         LocalDateTime endTime = LocalDateTime.now();
         LocalDateTime startTime = endTime.minus(duration);
-        process(channel, startTime, endTime, intervalInMinutes);
+        process(channel, startTime, endTime, intervalInSeconds);
     }
 
     // Verarbeitung basierend auf der letzten Nutzung vor/nach Zeit x mit Intervallgröße
@@ -69,7 +69,7 @@ public abstract class AbstractDataProcessor {
 
     protected abstract List<Bicycle> fetchLastActivity(int channel);
 
-    protected abstract List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInMinutes);
+    protected abstract List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInSeconds);
 
     public List<ProcessedData> getResults(){
         return processedData;
