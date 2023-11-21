@@ -36,6 +36,7 @@ public class OperatingTimeDataProcessor extends AbstractDataProcessor {
         return bikeService.getBicyclesSinceLastActivity(channel);
     }
 
+    /*
     @Override
     protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInMinutes) {
         List<ProcessedData> results = new ArrayList<>();
@@ -52,6 +53,51 @@ public class OperatingTimeDataProcessor extends AbstractDataProcessor {
 
         return results;
     }
+*/
+
+    @Override
+    protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInSeconds) {
+        // Sortieren der Fahrraddaten nach Zeitstempel
+        bicycles.sort((b1, b2) -> b1.getTime().compareTo(b2.getTime()));
+
+        List<ProcessedData> intervalDataList = new ArrayList<>();
+        LocalDateTime intervalStart = bicycles.get(0).getTime(); // Startzeit des ersten Intervalls
+        Duration intervalSize = Duration.ofSeconds(intervalInSeconds);
+        BigDecimal intervalOperatingTime = BigDecimal.ZERO;
+
+        for (Bicycle bike : bicycles) {
+            while (bike.getTime().isAfter(intervalStart.plus(intervalSize))) {
+                intervalDataList.add(new ProcessedData(bike.getChannel(), intervalOperatingTime, intervalStart, processorName));
+                intervalStart = intervalStart.plus(intervalSize);
+                intervalOperatingTime = BigDecimal.ZERO;
+            }
+            // Addieren der Betriebszeit für dieses Intervall
+            if (bike.getRotations().compareTo(BigDecimal.ZERO) > 0) {
+                intervalOperatingTime = intervalOperatingTime.add(berechneBetriebszeitFuerBike(bike, intervalSize));
+            }
+        }
+
+        // Daten für das letzte Intervall hinzufügen
+        if (intervalOperatingTime.compareTo(BigDecimal.ZERO) > 0) {
+            intervalDataList.add(new ProcessedData(bicycles.get(bicycles.size() - 1).getChannel(), intervalOperatingTime, intervalStart, processorName));
+        }
+        if (this.isShouldSmoothData()) {  // shouldSmoothData ist eine boolesche Variable
+            intervalDataList = smoothData(intervalDataList, 3);  // windowSize kann konfigurierbar sein
+        }
+
+
+        return intervalDataList;
+    }
+
+    private BigDecimal berechneBetriebszeitFuerBike(Bicycle bike, Duration intervalSize) {
+
+        if (bike.getRotations().compareTo(BigDecimal.ZERO) > 0) {
+            return BigDecimal.ONE;
+        } else {
+            return BigDecimal.ZERO;
+        }
+    }
+
 
 
 }
