@@ -106,18 +106,19 @@ public class OperatingTimeDataProcessor extends AbstractDataProcessor {
         LocalDateTime frühesterZeitstempel = bicycles.get(0).getTime();
         LocalDateTime spätesterZeitstempel = bicycles.get(bicycles.size() - 1).getTime();
         long datenZeitspanneInSekunden = Duration.between(frühesterZeitstempel, spätesterZeitstempel).getSeconds();
+        long zielIntervallInSekunden = datenZeitspanneInSekunden / 15; // Ziel ist 10-15 Datenpunkte
 
-        if(datenZeitspanneInSekunden <= 300){ // bis 5 Minuten soll in Sekunden zeigen. Danach in Minuten
-            return Duration.ofSeconds(1);
-        }
-        else if (datenZeitspanneInSekunden <= 10800) { // bis 3 Stunde
-            return Duration.ofMinutes(1); // Kurze Zeitspanne: 1-Minuten-Intervalle
-        } else if (datenZeitspanneInSekunden <= 172800) { // 48 Stunden
-            return Duration.ofHours(1); // Mittlere Zeitspanne: 1-Stunden-Intervalle
+        if (zielIntervallInSekunden <= 60) {
+            return Duration.ofSeconds(Math.max(1, zielIntervallInSekunden)); // Mindestens 1 Sekunde
+        } else if (zielIntervallInSekunden <= 3600) {
+            return Duration.ofMinutes(Math.max(1, zielIntervallInSekunden / 60));
+        } else if (zielIntervallInSekunden <= 86400) {
+            return Duration.ofHours(Math.max(1, zielIntervallInSekunden / 3600));
         } else {
-            return Duration.ofDays(1); // Lange Zeitspanne: 1-Tag-Intervalle
+            return Duration.ofDays(zielIntervallInSekunden / 86400);
         }
     }
+
 
 
     private BigDecimal berechneBetriebszeitFuerBike(Bicycle bike) {
