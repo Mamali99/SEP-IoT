@@ -112,6 +112,7 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
     }
 
  */
+    /*
 @Override
 protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInSeconds) {
     // Sortieren der Fahrraddaten nach Zeitstempel
@@ -139,6 +140,51 @@ protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int interval
 
     return intervalDataList;
 }
+
+     */
+@Override
+protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInSeconds) {
+    bicycles.sort((b1, b2) -> b1.getTime().compareTo(b2.getTime()));
+
+    // Bestimmen Sie das Intervall basierend auf der Eingabe oder berechnen Sie es automatisch
+    Duration intervalSize;
+    if (intervalInSeconds <= 0) {
+        // Automatische Bestimmung des Intervalls, z.B. basierend auf der Größe der Liste
+        intervalSize = bestimmeAutomatischesIntervall(bicycles);
+    } else {
+        intervalSize = Duration.ofSeconds(intervalInSeconds);
+    }
+
+    List<ProcessedData> intervalDataList = new ArrayList<>();
+    LocalDateTime intervalStart = bicycles.get(0).getTime();
+    BigDecimal intervalValue = BigDecimal.ZERO;
+
+    for (Bicycle bike : bicycles) {
+        while (bike.getTime().isAfter(intervalStart.plus(intervalSize))) {
+            intervalDataList.add(new ProcessedData(bike.getChannel(), intervalValue, intervalStart, processorName));
+            intervalStart = intervalStart.plus(intervalSize);
+            intervalValue = BigDecimal.ZERO;
+        }
+        intervalValue = intervalValue.add(berechneWertFuerBike(bike));
+    }
+
+    if (intervalValue.compareTo(BigDecimal.ZERO) > 0) {
+        intervalDataList.add(new ProcessedData(bicycles.get(bicycles.size() - 1).getChannel(), intervalValue, intervalStart, processorName));
+    }
+
+    return intervalDataList;
+}
+
+    private Duration bestimmeAutomatischesIntervall(List<Bicycle> bicycles) {
+        // die Logik zur automatischen Bestimmung des Intervalls
+        // Beispiel: Wenn die Liste groß ist, ein größeres Intervall, sonst ein kleineres wählen
+        int listSize = bicycles.size();
+        if (listSize < 600) { //für 10 Minuten
+            return Duration.ofMinutes(1); // Beispiel für kleinere Datenmengen
+        } else {
+            return Duration.ofHours(1); // Beispiel für größere Datenmengen
+        }
+    }
 
     private BigDecimal berechneWertFuerBike(Bicycle bike) {
         BigDecimal realRotationsPerSecond = bike.getRotations().divide(new BigDecimal(4), 2, RoundingMode.HALF_UP);
