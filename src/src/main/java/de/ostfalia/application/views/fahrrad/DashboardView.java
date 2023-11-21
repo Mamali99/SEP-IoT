@@ -198,7 +198,7 @@ public class DashboardView extends BasicLayout {
 
         // Duration Type ComboBox
         durationTypeSelect = new Select<>();
-        durationTypeSelect.setLabel("Duration Type");
+        durationTypeSelect.setLabel("Interval Duration Type");
         durationTypeSelect.setItems("Seconds", "Minutes", "Hours", "Days");
         durationTypeSelect.setValue("Minutes"); // Set default value
 
