@@ -22,10 +22,7 @@ public class BikeService {
     }
 
     public List<Bicycle> getDataWithTimeSpan(int id, LocalDateTime min, LocalDateTime max){
-        List<Bicycle> bicycles = bicycleRepository.getBicycleByChannelAndAndTimeSpan(id, max, min);
-        for(Bicycle b: bicycles)
-            System.out.println("Channel: "+b.getChannel()+" Time: "+b.getTime()+ " Rotation: " + b.getRotations() );
-        return bicycles;
+        return bicycleRepository.getBicycleByChannelAndAndTimeSpan(id, max, min);
     }
 
     public List<Integer> getAvailableChannels() {
