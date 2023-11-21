@@ -38,9 +38,45 @@ public class SpeedDataProcessor extends AbstractDataProcessor {
         return bikeService.getBicyclesSinceLastActivity(channel);
     }
 
-
     @Override
-    protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInMinutes) {
+    protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInSeconds) {
+        List<ProcessedData> speedData = new ArrayList<>();
+        LocalDateTime intervalStart = null;
+        BigDecimal totalSpeed = BigDecimal.ZERO;
+        int count = 0;
+
+        for (Bicycle bike : bicycles) {
+            if (intervalStart == null || bike.getTime().isAfter(intervalStart.plusSeconds(intervalInSeconds))) {
+                if (intervalStart != null) {
+                    BigDecimal averageSpeed = count > 0 ? totalSpeed.divide(BigDecimal.valueOf(count), RoundingMode.HALF_UP) : BigDecimal.ZERO;
+                    speedData.add(new ProcessedData(bike.getChannel(), averageSpeed, intervalStart, processorName));
+                }
+                intervalStart = bike.getTime();
+                totalSpeed = BigDecimal.ZERO;
+                count = 0;
+            }
+
+            BigDecimal distance = bike.getRotations().multiply(new BigDecimal("2.111")); // f_t * Umfang
+            totalSpeed = totalSpeed.add(distance); // Summieren der Geschwindigkeit
+            count++;
+        }
+
+        if (count > 0) {
+            BigDecimal averageSpeed = totalSpeed.divide(BigDecimal.valueOf(count), RoundingMode.HALF_UP);
+            speedData.add(new ProcessedData(bicycles.get(bicycles.size() - 1).getChannel(), averageSpeed, intervalStart, processorName));
+        }
+
+        if (this.isShouldSmoothData()) {
+            speedData = smoothData(speedData, 3);
+        }
+
+        return speedData;
+    }
+
+
+/*
+    @Override
+    protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInSeconds) {
         List<ProcessedData> speedData = new ArrayList<>();
         for (Bicycle bike : bicycles) {
             // Berechnen Sie die Geschwindigkeit für jedes Fahrrad
@@ -61,5 +97,7 @@ public class SpeedDataProcessor extends AbstractDataProcessor {
         return speedData;
     }
 
+
+ */
 
 }

@@ -38,7 +38,7 @@ public class RotationDataProcessor extends AbstractDataProcessor {
     }
 
     @Override
-    protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInMinutes) {
+    protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInSeconds) {
         List<ProcessedData> rotationData = new ArrayList<>();
         for (Bicycle bike : bicycles) {
             BigDecimal rotationsPerSecond = bike.getRotations().divide(new BigDecimal("4"), 2, RoundingMode.HALF_UP);
