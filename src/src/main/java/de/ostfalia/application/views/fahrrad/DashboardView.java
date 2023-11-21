@@ -14,6 +14,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.router.Route;
@@ -51,6 +52,8 @@ public class DashboardView extends BasicLayout {
     //Für Intervallgröße
     private Div intervalSliderValue;
     private PaperSlider intervalSizeField;
+
+    private Select<String> durationTypeSelect;
     private VerticalLayout layout;
     SplitLayout splitLayout;
     HorizontalLayout titleGroup;
@@ -206,13 +209,26 @@ public class DashboardView extends BasicLayout {
     }
 
     private void buildIntervalSizeInput() {
-
         VerticalLayout intervalVertical = new VerticalLayout();
-        intervalSizeField = new PaperSlider("Interval (in Minutes)");
+
+        // Duration Type ComboBox
+        durationTypeSelect = new Select<>();
+        durationTypeSelect.setLabel("Duration Type");
+        durationTypeSelect.setItems("Seconds", "Minutes", "Hours", "Days");
+        durationTypeSelect.setValue("Minutes"); // Set default value
+
+        // Interval Size PaperSlider
+        intervalSizeField = new PaperSlider("Interval Size");
         intervalSizeField.setTooltipText("How long are the intervals between data");
         intervalSliderValue = new Div();
-        intervalSliderValue.setText("Interval not specified.");
-        intervalSizeField.addValueChangeListener(event -> intervalSliderValue.setText("Interval size: " + event.getValue()));
+        intervalSliderValue.setText("Automatic Interval Calculation");
+        intervalSizeField.addValueChangeListener(event -> {
+            if (event.getValue() == 0) {
+                intervalSliderValue.setText("Automatic Interval Calculation");
+            } else {
+                intervalSliderValue.setText("Interval size: " + event.getValue());
+            }
+        });
         intervalSizeField.setMax(60);
         intervalSizeField.setMin(0);
         intervalSizeField.setValue(0);
@@ -221,14 +237,10 @@ public class DashboardView extends BasicLayout {
         intervalSizeField.setPinned(true);
         intervalSizeField.setSnaps(true);
         intervalSizeField.addThemeVariants(PaperSliderVariant.LUMO_SECONDARY);
-        intervalVertical.add(intervalSizeField, intervalSliderValue);
 
-        // Initialize the new field for the interval size
-        //intervalSizeField = new NumberField("Interval (in Minutes)");
-        //intervalSizeField.setValue(0.0); // Default value is 0
-        //intervalSizeField.setMin(0);
+        // Add components to the layout
+        intervalVertical.add(durationTypeSelect, intervalSizeField, intervalSliderValue);
         zeitintervall.add(intervalVertical);
-
     }
 
     private void buildDefaultValues() {
@@ -310,7 +322,11 @@ public class DashboardView extends BasicLayout {
         Integer compareChannelSelectorTwo = bikeChannelSelectorTwo.getValue();
 
         String selectedMetric = metricSelector.getValue();
-        int intervalSizeInMinutes = intervalSizeField.getValue();
+        // Interval
+        double intervalValue = intervalSizeField.getValue();
+        String durationType = durationTypeSelect.getValue();
+        int intervalSizeInSeconds = convertToSeconds(durationType, intervalValue);
+
         String currentStrategy = strategyTab.getSelectedTab().getLabel();
         boolean smoothingData = smoothDataCheckbox.getValue();
 
@@ -324,10 +340,10 @@ public class DashboardView extends BasicLayout {
         // If duration tab is selected
         if (tabSheet.getSelectedTab().getLabel().equals("Duration")) {
             if (currentStrategy.equals("Single Bike")) {
-                results = processDurationData(selectedChannel, intervalSizeInMinutes, selectedMetric, smoothingData);
+                results = processDurationData(selectedChannel, intervalSizeInSeconds, selectedMetric, smoothingData);
             } else {
-                List<AbstractDataProcessor.ProcessedData> result1 = processDurationData(compareChannelSelectorOne, intervalSizeInMinutes, selectedMetric, smoothingData);
-                List<AbstractDataProcessor.ProcessedData> result2 = processDurationData(compareChannelSelectorTwo, intervalSizeInMinutes, selectedMetric, smoothingData);
+                List<AbstractDataProcessor.ProcessedData> result1 = processDurationData(compareChannelSelectorOne, intervalSizeInSeconds, selectedMetric, smoothingData);
+                List<AbstractDataProcessor.ProcessedData> result2 = processDurationData(compareChannelSelectorTwo, intervalSizeInSeconds, selectedMetric, smoothingData);
 
                 // Merge the results
                 List<AbstractDataProcessor.ProcessedData> mergedResults = new ArrayList<>(result1);
@@ -342,22 +358,22 @@ public class DashboardView extends BasicLayout {
             LocalDateTime endTime = endDateTimePicker.getValue();
 
             if (currentStrategy.equals("Single Bike")) {
-                results = processStartEndData(selectedChannel, intervalSizeInMinutes, startTime, endTime, selectedMetric, smoothingData);
+                results = processStartEndData(selectedChannel, intervalSizeInSeconds, startTime, endTime, selectedMetric, smoothingData);
             } else {
-                List<AbstractDataProcessor.ProcessedData> result1 = processStartEndData(compareChannelSelectorOne, intervalSizeInMinutes, startTime, endTime, selectedMetric, smoothingData);
+                List<AbstractDataProcessor.ProcessedData> result1 = processStartEndData(compareChannelSelectorOne, intervalSizeInSeconds, startTime, endTime, selectedMetric, smoothingData);
 
                 // Merge the results
-                List<AbstractDataProcessor.ProcessedData> result2 = processStartEndData(compareChannelSelectorTwo, intervalSizeInMinutes, startTime, endTime, selectedMetric, smoothingData);
+                List<AbstractDataProcessor.ProcessedData> result2 = processStartEndData(compareChannelSelectorTwo, intervalSizeInSeconds, startTime, endTime, selectedMetric, smoothingData);
                 List<AbstractDataProcessor.ProcessedData> mergedResults = new ArrayList<>(result1);
                 mergedResults.addAll(result2);
                 results = mergedResults;
 
             }
-        } else if(tabSheet.getSelectedTab().getLabel().equals("Last activity")){
-            if(currentStrategy.equals("Single Bike")){
-                results = processSinceLastActivityData(selectedChannel, intervalSizeInMinutes, selectedMetric, smoothingData);
+        } else if (tabSheet.getSelectedTab().getLabel().equals("Last activity")) {
+            if (currentStrategy.equals("Single Bike")) {
+                results = processSinceLastActivityData(selectedChannel, intervalSizeInSeconds, selectedMetric, smoothingData);
 
-            }else{
+            } else {
 
             }
         }
@@ -432,4 +448,20 @@ public class DashboardView extends BasicLayout {
         }
         return duration;
     }
+
+    private int convertToSeconds(String durationType, double intervalValue) {
+        switch (durationType) {
+            case "Seconds":
+                return (int) intervalValue;
+            case "Minutes":
+                return (int) (intervalValue * 60); // convert minutes to seconds
+            case "Hours":
+                return (int) (intervalValue * 60 * 60); // convert hours to seconds
+            case "Days":
+                return (int) (intervalValue * 24 * 60 * 60); // convert days to seconds
+            default:
+                throw new IllegalArgumentException("Unknown duration type: " + durationType);
+        }
+    }
+
 }
