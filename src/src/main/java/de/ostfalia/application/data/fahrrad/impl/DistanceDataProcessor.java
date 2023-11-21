@@ -146,7 +146,7 @@ protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int interval
 protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInSeconds) {
     bicycles.sort((b1, b2) -> b1.getTime().compareTo(b2.getTime()));
 
-    // Bestimmen Sie das Intervall basierend auf der Eingabe oder berechnen Sie es automatisch
+    // Bestimmen das Intervall basierend auf der Eingabe oder berechnen Sie es automatisch
     Duration intervalSize;
     if (intervalInSeconds <= 0) {
         // Automatische Bestimmung des Intervalls, z.B. basierend auf der Größe der Liste
@@ -176,15 +176,26 @@ protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int interval
 }
 
     private Duration bestimmeAutomatischesIntervall(List<Bicycle> bicycles) {
-        // die Logik zur automatischen Bestimmung des Intervalls
-        // Beispiel: Wenn die Liste groß ist, ein größeres Intervall, sonst ein kleineres wählen
-        int listSize = bicycles.size();
-        if (listSize < 600) { //für 10 Minuten
-            return Duration.ofMinutes(1); // Beispiel für kleinere Datenmengen
+        if (bicycles.isEmpty()) {
+            return Duration.ofMinutes(1); // Standardintervall, falls keine Daten vorhanden sind
+        }
+
+        LocalDateTime frühesterZeitstempel = bicycles.get(0).getTime();
+        LocalDateTime spätesterZeitstempel = bicycles.get(bicycles.size() - 1).getTime();
+        long datenZeitspanneInSekunden = Duration.between(frühesterZeitstempel, spätesterZeitstempel).getSeconds();
+
+        if(datenZeitspanneInSekunden <= 300){ // bis 5 Minuten soll in Sekunden zeigen. Danach in Minuten
+            return Duration.ofSeconds(1);
+        }
+        else if (datenZeitspanneInSekunden <= 3600) { // 1 Stunde
+            return Duration.ofMinutes(1); // Kurze Zeitspanne: 1-Minuten-Intervalle
+        } else if (datenZeitspanneInSekunden <= 172800) { // 48 Stunden 86400
+            return Duration.ofHours(1); // Mittlere Zeitspanne: 1-Stunden-Intervalle
         } else {
-            return Duration.ofHours(1); // Beispiel für größere Datenmengen
+            return Duration.ofDays(1); // Lange Zeitspanne: 1-Tag-Intervalle
         }
     }
+
 
     private BigDecimal berechneWertFuerBike(Bicycle bike) {
         BigDecimal realRotationsPerSecond = bike.getRotations().divide(new BigDecimal(4), 2, RoundingMode.HALF_UP);
