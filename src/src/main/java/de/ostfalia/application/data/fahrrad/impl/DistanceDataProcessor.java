@@ -38,11 +38,6 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
         return bicycles;
     }
 
-    // Implementierung für die Abfrage von Daten seit einem bestimmten Zeitpunkt
-    @Override
-    protected List<Bicycle> fetchDataDuration(int channel, LocalDateTime sinceTime) {
-        return bikeService.findBicycleDataSince(channel, sinceTime);
-    }
 
     // Implementierung für das Abrufen der letzten Aktivität eines Kanals
     @Override
@@ -51,70 +46,96 @@ public class DistanceDataProcessor extends AbstractDataProcessor {
 
     }
 
+@Override
+protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInSeconds) {
+    bicycles.sort((b1, b2) -> b1.getTime().compareTo(b2.getTime()));
 
-
-    @Override
-    protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInMinutes) {
-        if (intervalInMinutes == 0) {
-            List<ProcessedData> distanceData = new ArrayList<>();
-            for (Bicycle bike : bicycles) {
-                BigDecimal realRotationsPerSecond = bike.getRotations().divide(new BigDecimal(4), 2, RoundingMode.HALF_UP);
-                BigDecimal circumference = new BigDecimal("2.111"); // Radumfang in Metern
-                BigDecimal distance = realRotationsPerSecond.multiply(circumference);
-                distanceData.add(new ProcessedData(bike.getChannel(), distance, bike.getTime(), processorName));
-            }
-            if (this.isShouldSmoothData()) {  // shouldSmoothData ist eine boolesche Variable
-                distanceData = smoothData(distanceData, 3);  // windowSize kann konfigurierbar sein
-            }
-            return distanceData;
-
-        }
-        // Sortieren der Fahrraddaten nach Zeitstempel
-        bicycles.sort((b1, b2) -> b1.getTime().compareTo(b2.getTime()));
-
-        List<ProcessedData> intervalDataList = new ArrayList<>();
-        if (!bicycles.isEmpty()) {
-            // Initialisierung des ersten Intervalls
-            LocalDateTime intervalStart = bicycles.get(0).getTime();
-            BigDecimal intervalDistance = BigDecimal.ZERO;
-            BigDecimal totalDistance = BigDecimal.ZERO;
-
-            // Bestimmen der Intervallgröße
-            Duration intervalSize = Duration.ofMinutes(intervalInMinutes);
-
-            // Durchlaufen der Fahrraddaten und Aggregieren der Distanzen in Intervallen
-            for (Bicycle bike : bicycles) {
-                // Überprüfen, ob das aktuelle Fahrradobjekt zum nächsten Intervall gehört
-                while (bike.getTime().isAfter(intervalStart.plus(intervalSize))) {
-                    // Speichern der aggregierten Daten für das aktuelle Intervall
-                    intervalDataList.add(new ProcessedData(bike.getChannel(), intervalDistance, intervalStart, processorName));
-
-                    // Vorbereitung des nächsten Intervalls
-                    intervalStart = intervalStart.plus(intervalSize);
-                    intervalDistance = BigDecimal.ZERO;
-                }
-                // Aggregieren Sie die Distanz für dieses Intervall
-                BigDecimal realRotationsPerSecond = bike.getRotations().divide(new BigDecimal(4), 2, RoundingMode.HALF_UP);
-                BigDecimal circumference = new BigDecimal("2.111"); // Radumfang in Metern
-                BigDecimal distance = realRotationsPerSecond.multiply(circumference); // Distanz pro Minute
-                intervalDistance = intervalDistance.add(distance);
-                totalDistance = totalDistance.add(distance);
-            }
-
-            // Stellen Sie sicher, dass Sie die Daten für das letzte Intervall nicht verlieren
-            if (intervalDistance.compareTo(BigDecimal.ZERO) > 0) {
-                intervalDataList.add(new ProcessedData(bicycles.get(bicycles.size() - 1).getChannel(), intervalDistance, intervalStart, processorName));
-            }
-        }
-
-        // Ausgabe der Intervallstrecken
-        intervalDataList.forEach(p -> System.out.println("Interval Start: " + p.getTimestamp() + " Strecke: " + p.getValue() + "test" + p.getProcessorName()));
-
-        if (this.isShouldSmoothData()) {  // shouldSmoothData ist eine boolesche Variable
-            intervalDataList = smoothData(intervalDataList, 3);  // windowSize kann konfigurierbar sein
-        }
-        return intervalDataList;
+    // Bestimmen das Intervall basierend auf der Eingabe oder berechnen Sie es automatisch
+    Duration intervalSize;
+    if (intervalInSeconds <= 0) {
+        // Automatische Bestimmung des Intervalls, z.B. basierend auf der Größe der Liste
+        intervalSize = bestimmeAutomatischesIntervall(bicycles);
+    } else {
+        intervalSize = Duration.ofSeconds(intervalInSeconds);
     }
+
+    List<ProcessedData> intervalDataList = new ArrayList<>();
+    LocalDateTime intervalStart = bicycles.get(0).getTime();
+    BigDecimal intervalValue = BigDecimal.ZERO;
+
+    for (Bicycle bike : bicycles) {
+        while (bike.getTime().isAfter(intervalStart.plus(intervalSize))) {
+            intervalDataList.add(new ProcessedData(bike.getChannel(), intervalValue, intervalStart, processorName));
+            intervalStart = intervalStart.plus(intervalSize);
+            intervalValue = BigDecimal.ZERO;
+        }
+        intervalValue = intervalValue.add(berechneWertFuerBike(bike));
+    }
+
+    if (intervalValue.compareTo(BigDecimal.ZERO) > 0) {
+        intervalDataList.add(new ProcessedData(bicycles.get(bicycles.size() - 1).getChannel(), intervalValue, intervalStart, processorName));
+    }
+
+    return intervalDataList;
+}
+
+    private Duration bestimmeAutomatischesIntervall(List<Bicycle> bicycles) {
+        if (bicycles.isEmpty()) {
+            return Duration.ofMinutes(1); // Standardintervall, falls keine Daten vorhanden sind
+        }
+
+        LocalDateTime frühesterZeitstempel = bicycles.get(0).getTime();
+        LocalDateTime spätesterZeitstempel = bicycles.get(bicycles.size() - 1).getTime();
+        long datenZeitspanneInSekunden = Duration.between(frühesterZeitstempel, spätesterZeitstempel).getSeconds();
+        long zielIntervallInSekunden = datenZeitspanneInSekunden / 15; // Ziel ist 10-15 Datenpunkte
+
+        if (zielIntervallInSekunden <= 60) {
+            return Duration.ofSeconds(Math.max(1, zielIntervallInSekunden)); // Mindestens 1 Sekunde
+        } else if (zielIntervallInSekunden <= 3600) {
+            return Duration.ofMinutes(Math.max(1, zielIntervallInSekunden / 60));
+        } else if (zielIntervallInSekunden <= 86400) {
+            return Duration.ofHours(Math.max(1, zielIntervallInSekunden / 3600));
+        } else {
+            return Duration.ofDays(zielIntervallInSekunden / 86400);
+        }
+    }
+
+
+/*
+    private Duration bestimmeAutomatischesIntervall(List<Bicycle> bicycles) {
+        if (bicycles.isEmpty()) {
+            return Duration.ofMinutes(1); // Standardintervall, falls keine Daten vorhanden sind
+        }
+
+        LocalDateTime frühesterZeitstempel = bicycles.get(0).getTime();
+        LocalDateTime spätesterZeitstempel = bicycles.get(bicycles.size() - 1).getTime();
+        long datenZeitspanneInSekunden = Duration.between(frühesterZeitstempel, spätesterZeitstempel).getSeconds();
+
+        if(datenZeitspanneInSekunden <= 300){ // bis 5 Minuten soll in Sekunden zeigen. Danach in Minuten
+            return Duration.ofSeconds(1);
+        }
+        else if (datenZeitspanneInSekunden <= 10800) { // bis 3 Stunde
+            return Duration.ofMinutes(1); // Kurze Zeitspanne: 1-Minuten-Intervalle
+        } else if (datenZeitspanneInSekunden <= 172800) { // 48 Stunden
+            return Duration.ofHours(1); // Mittlere Zeitspanne: 1-Stunden-Intervalle
+        } else {
+            return Duration.ofDays(1); // Lange Zeitspanne: 1-Tag-Intervalle
+        }
+    }
+
+ */
+
+
+    private BigDecimal berechneWertFuerBike(Bicycle bike) {
+        BigDecimal realRotationsPerSecond = bike.getRotations().divide(new BigDecimal(4), 2, RoundingMode.HALF_UP);
+        BigDecimal circumference = new BigDecimal("2.111"); // Radumfang in Metern
+
+        // Berechnen der Distanz pro Sekunde
+        BigDecimal distancePerSecond = realRotationsPerSecond.multiply(circumference);
+
+        return distancePerSecond;
+    }
+
 
 
 

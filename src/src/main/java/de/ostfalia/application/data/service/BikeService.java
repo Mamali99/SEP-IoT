@@ -32,20 +32,12 @@ public class BikeService {
 
     public List<Bicycle> getBicyclesSinceLastActivity(int channel) {
         LocalDateTime lastActivityTime = bicycleRepository.findLastActivityByChannel(channel);
-        System.out.println(lastActivityTime.toString());
         if (lastActivityTime != null) {
-            List<Bicycle> bicycles = bicycleRepository.findBicycleDataSinceLastActivity(channel,lastActivityTime.minusDays(1) , lastActivityTime);
-            for(Bicycle b: bicycles)
-                System.out.println(b.getRotations());
-            return bicycles;
+            return bicycleRepository.findBicycleDataSinceLastActivity(channel, lastActivityTime, LocalDateTime.now());
         }
         return new ArrayList<>();
     }
 
 
-
-    public List<Bicycle> findBicycleDataSince(int channel, LocalDateTime sinceTime) {
-        return bicycleRepository.findBicycleDataSince(channel, sinceTime);
-    }
 
 }

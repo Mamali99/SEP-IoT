@@ -17,11 +17,6 @@ public interface BicycleRepository extends JpaRepository<Bicycle, Long> {
     List<Bicycle> getBicycleByChannelAndAndTimeSpan(@Param("id") int id, @Param("min") LocalDateTime min, @Param("max") LocalDateTime max);
 
      //new Methoden
-
-     //die Leistungsdaten eines Fahrrads über einen längeren Zeitraum hinweg analysieren
-    @Query("SELECT b FROM Bicycle b WHERE b.channel = :channel AND b.time > :sinceTime")
-    List<Bicycle> findBicycleDataSince(@Param("channel") int channel, @Param("sinceTime") LocalDateTime sinceTime);
-
     @Query("SELECT b FROM Bicycle b WHERE b.channel = :channel AND b.time > :sinceTime AND b.time <= :endTime")
     List<Bicycle> findBicycleDataSinceLastActivity(@Param("channel") int channel,
                                        @Param("sinceTime") LocalDateTime sinceTime,
