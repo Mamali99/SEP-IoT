@@ -48,8 +48,6 @@ public class DashboardView extends BasicLayout {
     private VerticalLayout zeitintervall;
     private TabSheet tabSheet;
     private TabSheet strategyTab;
-
-    //Für Intervallgröße
     private Div intervalSliderValue;
     private PaperSlider intervalSizeField;
 
@@ -67,12 +65,8 @@ public class DashboardView extends BasicLayout {
     private VerticalLayout durationIntervall;
     private VerticalLayout startEndZeitInterval;
 
-    private DateTimePicker durationSince;
-
     // Checkbox to enable or disable data smoothing
     private Checkbox smoothDataCheckbox;
-
-    private VerticalLayout verticalSlider;
 
     // Compare Bike
     ComboBox<Integer> bikeChannelSelectorOne;
@@ -82,8 +76,7 @@ public class DashboardView extends BasicLayout {
     public DashboardView(BikeDashboardController bikeDashboardController, DashboardViewContext dashboardViewContext, BikeService bikeService) {
         this.controller = bikeDashboardController;
         this.context = dashboardViewContext;
-
-        // Default Stategy
+        // Default Strategy
         this.context.setStrategy(new SingleBikeViewStrategie());
 
         // Split Layer und Title
@@ -150,7 +143,6 @@ public class DashboardView extends BasicLayout {
         buildStartEndZeitintervall();
         buildDurationIntervall();
         buildIntervalSizeInput();
-        buildDurationSince();
 
         // Add components to the layout
         zeitintervall.add(startEndZeitInterval, durationIntervall);
@@ -159,13 +151,6 @@ public class DashboardView extends BasicLayout {
         tabSheet = new TabSheet();
         tabSheet.add("Start and Endtime", new Div(startEndZeitInterval));
         tabSheet.add("Duration", new Div(durationIntervall));
-        tabSheet.add("Last activity", new Div(verticalSlider));
-    }
-
-    private void buildDurationSince() {
-        verticalSlider = new VerticalLayout();
-        durationSince = new DateTimePicker("Data Since:");
-        verticalSlider.add(durationSince);
     }
 
     private void buildStartEndZeitintervall() {
@@ -335,7 +320,7 @@ public class DashboardView extends BasicLayout {
         }
 
 
-        List<AbstractDataProcessor.ProcessedData> results = null;
+        List<AbstractDataProcessor.ProcessedData> results;
 
         // If duration tab is selected
         if (tabSheet.getSelectedTab().getLabel().equals("Duration")) {
@@ -362,7 +347,7 @@ public class DashboardView extends BasicLayout {
             }
 
 
-        } else if (tabSheet.getSelectedTab().getLabel().equals("Start and Endtime")) { // "Start und Endzeit" tab is selected
+        } else { // "Start und Endzeit" tab is selected
             LocalDateTime startTime = startDateTimePicker.getValue();
             LocalDateTime endTime = endDateTimePicker.getValue();
 
@@ -384,13 +369,6 @@ public class DashboardView extends BasicLayout {
                 List<AbstractDataProcessor.ProcessedData> mergedResults = new ArrayList<>(result1);
                 mergedResults.addAll(result2);
                 results = mergedResults;
-
-            }
-        } else if (tabSheet.getSelectedTab().getLabel().equals("Last activity")) {
-            if (currentStrategy.equals("Single Bike")) {
-                results = processSinceLastActivityData(selectedChannel, intervalSizeInSeconds, selectedMetric, smoothingData);
-
-            } else {
 
             }
         }
@@ -439,19 +417,6 @@ public class DashboardView extends BasicLayout {
         }
     }
 
-    public List<AbstractDataProcessor.ProcessedData> processSinceLastActivityData(Integer selectedChannel, int intervalSizeInMinutes, String selectedMetric, boolean smoothingData) {
-
-        if (selectedChannel != null) {
-            controller.setMetricProcessor(selectedMetric);
-            controller.setShouldSmoothData(smoothingData);
-            controller.updateDashboard(selectedChannel, 0);
-            return controller.getResults();
-        } else {
-            Notification.show("Please select a bike channel and a duration.");
-            return null;
-        }
-    }
-
     private Duration getDuration() {
         Duration duration = null;
         if (durationValueField != null && durationValueField.getValue() != null) {
@@ -469,18 +434,13 @@ public class DashboardView extends BasicLayout {
     }
 
     private int convertToSeconds(String durationType, double intervalValue) {
-        switch (durationType) {
-            case "Seconds":
-                return (int) intervalValue;
-            case "Minutes":
-                return (int) (intervalValue * 60); // convert minutes to seconds
-            case "Hours":
-                return (int) (intervalValue * 60 * 60); // convert hours to seconds
-            case "Days":
-                return (int) (intervalValue * 24 * 60 * 60); // convert days to seconds
-            default:
-                throw new IllegalArgumentException("Unknown duration type: " + durationType);
-        }
+        return switch (durationType) {
+            case "Seconds" -> (int) intervalValue;
+            case "Minutes" -> (int) (intervalValue * 60); // convert minutes to seconds
+            case "Hours" -> (int) (intervalValue * 60 * 60); // convert hours to seconds
+            case "Days" -> (int) (intervalValue * 24 * 60 * 60); // convert days to seconds
+            default -> throw new IllegalArgumentException("Unknown duration type: " + durationType);
+        };
     }
 
 }
