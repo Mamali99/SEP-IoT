@@ -3,9 +3,10 @@ package de.ostfalia.application.views.fahrrad.strategies.impl;
 import com.storedobject.chart.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import de.ostfalia.application.data.fahrrad.controller.DataAnalysisService;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
@@ -14,7 +15,6 @@ import de.ostfalia.application.views.fahrrad.strategies.DashboardViewStrategy;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,13 +56,18 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
 
 
     private Component createTitle(Integer channel) {
+        Icon bicycleIcon = VaadinIcon.CHART.create();
+        bicycleIcon.setSize("24px"); // Set the size as needed
+
         H2 h2 = new H2("Bike " + channel);
-        Element h2Element = h2.getElement();
-        h2.setWidthFull();
-        h2Element.getStyle().set("display", "inline-block");
-        h2Element.getStyle().set("margin-top", "40px");
-        h2Element.getStyle().set("border", "2px solid ");
-        return h2;
+        h2.getStyle().set("padding-left", "8px");
+
+        Div titleWrapper = new Div(bicycleIcon, h2);
+        titleWrapper.getStyle().set("display", "flex");
+        titleWrapper.getStyle().set("align-items", "center");
+        titleWrapper.getStyle().set("margin-top", "40px");
+
+        return titleWrapper;
     }
 
     private Component createLineChart(List<AbstractDataProcessor.ProcessedData> dataList) {

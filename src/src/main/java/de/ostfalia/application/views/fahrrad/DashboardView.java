@@ -108,6 +108,7 @@ public class DashboardView extends BasicLayout {
     private void buildTitleGroup() {
         titleGroup = new HorizontalLayout();
         Icon dashicon = VaadinIcon.DASHBOARD.create();
+        dashicon.setSize("30px");
         H2 title = new H2("Bike Dashboard");
         titleGroup.add(dashicon, title);
     }
@@ -159,7 +160,6 @@ public class DashboardView extends BasicLayout {
         tabSheet.add("Start and Endtime", new Div(startEndZeitInterval));
         tabSheet.add("Duration", new Div(durationIntervall));
         tabSheet.add("Last activity", new Div(verticalSlider));
-        tabSheet.getSelectedTab().getStyle().set("color", "green");
     }
 
     private void buildDurationSince() {
@@ -263,7 +263,6 @@ public class DashboardView extends BasicLayout {
         strategyTab.addSelectedChangeListener(event -> switchStrategy(event.getSelectedTab().getLabel()));
         bikeChannelOne.addClickListener(event -> switchStrategy("Single Bike"));
         bikeChannelTwo.addClickListener(event -> switchStrategy("Compare Bikes"));
-        strategyTab.getSelectedTab().getStyle().set("color", "green");
     }
 
     private void buildUpdateButton() {
@@ -335,10 +334,20 @@ public class DashboardView extends BasicLayout {
             return;
         }
 
+
         List<AbstractDataProcessor.ProcessedData> results = null;
 
         // If duration tab is selected
         if (tabSheet.getSelectedTab().getLabel().equals("Duration")) {
+
+            // Validate if the selected duration is not shorter than the interval size
+            Duration selectedDuration = getDuration();
+            if (selectedDuration != null && selectedDuration.getSeconds() < intervalSizeInSeconds) {
+                Notification notification = new Notification("Selected duration is shorter than the interval size. Please adjust your selection.", 3000, Notification.Position.BOTTOM_CENTER);
+                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                notification.open();
+                return;
+            }
             if (currentStrategy.equals("Single Bike")) {
                 results = processDurationData(selectedChannel, intervalSizeInSeconds, selectedMetric, smoothingData);
             } else {
@@ -356,6 +365,14 @@ public class DashboardView extends BasicLayout {
         } else if (tabSheet.getSelectedTab().getLabel().equals("Start and Endtime")) { // "Start und Endzeit" tab is selected
             LocalDateTime startTime = startDateTimePicker.getValue();
             LocalDateTime endTime = endDateTimePicker.getValue();
+
+            if (startTime != null && endTime != null && startTime.plusSeconds(intervalSizeInSeconds).isAfter(endTime)) {
+                Notification notification = new Notification("Selected duration is shorter than the interval size. Please adjust your selection.", 3000, Notification.Position.BOTTOM_CENTER);
+                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                notification.open();
+                return;
+            }
+
 
             if (currentStrategy.equals("Single Bike")) {
                 results = processStartEndData(selectedChannel, intervalSizeInSeconds, startTime, endTime, selectedMetric, smoothingData);
@@ -409,6 +426,8 @@ public class DashboardView extends BasicLayout {
     }
 
     public List<AbstractDataProcessor.ProcessedData> processStartEndData(Integer selectedChannel, int intervalSizeInMinutes, LocalDateTime startTime, LocalDateTime endTime, String selectedMetric, boolean smoothingData) {
+
+
         if (selectedChannel != null && startTime != null && endTime != null) {
             controller.setMetricProcessor(selectedMetric);
             controller.setShouldSmoothData(smoothingData);
