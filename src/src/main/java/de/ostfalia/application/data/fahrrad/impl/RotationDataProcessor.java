@@ -30,17 +30,11 @@ public class RotationDataProcessor extends AbstractDataProcessor {
     protected List<Bicycle> fetchData(int channel, LocalDateTime startTime, LocalDateTime endTime) {
         return bikeService.getDataWithTimeSpan(channel, startTime, endTime);
     }
-    // Implementierung für die Abfrage von Daten seit einem bestimmten Zeitpunkt
-    @Override
-    protected List<Bicycle> fetchDataDuration(int channel, LocalDateTime sinceTime) {
-        return bikeService.findBicycleDataSince(channel, sinceTime);
-    }
 
     // Implementierung für das Abrufen der letzten Aktivität eines Kanals
     @Override
     protected List<Bicycle> fetchLastActivity(int channel) {
-        //return bikeService.findLastActivityByChannel(channel);
-        return null;
+        return bikeService.getBicyclesSinceLastActivity(channel);
     }
 
     @Override

@@ -66,7 +66,7 @@ public abstract class AbstractDataProcessor {
 
 
     protected abstract List<Bicycle> fetchData(int channel, LocalDateTime startTime, LocalDateTime endTime);
-    protected abstract List<Bicycle> fetchDataDuration(int channel, LocalDateTime sinceTime);
+
     protected abstract List<Bicycle> fetchLastActivity(int channel);
 
     protected abstract List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInMinutes);
