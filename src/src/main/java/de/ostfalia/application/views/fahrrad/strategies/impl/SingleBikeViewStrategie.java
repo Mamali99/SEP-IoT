@@ -108,13 +108,20 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         yAxis.setName(processorName);
 
         RectangularCoordinate rc = new RectangularCoordinate(xAxis, yAxis);
-        cumulativeLine.plotOn(rc);
+
+
+        if (!processorName.equals("Speed")) {
+            cumulativeLine.plotOn(rc);
+        }
         individualLine.plotOn(rc);
+
 
         SOChart soChart = new SOChart();
         soChart.setSize("100%", "350px");
         soChart.add(new Legend());
-        soChart.add(cumulativeLine);
+        if (!processorName.equals("Speed")) {
+            soChart.add(cumulativeLine);
+        }
         soChart.add(individualLine);
 
         return soChart;
