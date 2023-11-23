@@ -1,7 +1,6 @@
 package de.ostfalia.application.views.fahrrad;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -18,9 +17,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.material.Material;
 import de.ostfalia.application.data.fahrrad.controller.BikeDashboardController;
@@ -39,8 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Route("/SE/BikeDashboard")
-@PreserveOnRefresh
-public class DashboardView extends BasicLayout implements BeforeEnterObserver {
+public class DashboardView extends BasicLayout {
 
     private final DashboardViewContext context;
     private final BikeDashboardController controller;
@@ -446,26 +441,6 @@ public class DashboardView extends BasicLayout implements BeforeEnterObserver {
             default -> throw new IllegalArgumentException("Unknown duration type: " + durationType);
         };
     }
-
-    /**
-     * This method is called before the view is shown on the screen.
-     * @param event the before navigation event with event details
-     */
-    @Override
-    public void beforeEnter(BeforeEnterEvent event) {
-        updateDashboard();
-
-        UI.getCurrent().getPage().executeJs(
-                "window.addEventListener('beforeunload', function (e) { " +
-                        "    updateDashboardOnRefresh(); " +
-                        "});"
-        );
-    }
-
-    private void updateDashboardOnRefresh() {
-        updateDashboard();
-    }
-
 
 
 }
