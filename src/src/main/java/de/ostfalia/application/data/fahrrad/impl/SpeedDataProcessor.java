@@ -58,6 +58,7 @@ public class SpeedDataProcessor extends AbstractDataProcessor {
         for (Bicycle bike : bicycles) {
             // Neues Intervall starten, wenn nötig
             if (intervalStart == null || bike.getTime().isAfter(intervalStart.plus(intervalSize))) {
+
                 if (intervalStart != null) {
                     BigDecimal averageSpeed = count > 0 ? totalSpeed.divide(BigDecimal.valueOf(count), RoundingMode.HALF_UP) : BigDecimal.ZERO;
                     speedData.add(new ProcessedData(bike.getChannel(), averageSpeed, intervalStart, processorName));
@@ -67,7 +68,8 @@ public class SpeedDataProcessor extends AbstractDataProcessor {
                 count = 0;
             }
 
-            BigDecimal distance = bike.getRotations().multiply(new BigDecimal("2.111"));
+            //BigDecimal distance = bike.getRotations().multiply(new BigDecimal("2.111"));
+            BigDecimal distance = berechneWertFuerBike(bike);
             totalSpeed = totalSpeed.add(distance);
             count++;
         }
@@ -77,11 +79,6 @@ public class SpeedDataProcessor extends AbstractDataProcessor {
             BigDecimal averageSpeed = totalSpeed.divide(BigDecimal.valueOf(count), RoundingMode.HALF_UP);
             speedData.add(new ProcessedData(bicycles.get(bicycles.size() - 1).getChannel(), averageSpeed, intervalStart, processorName));
         }
-
-        if (this.isShouldSmoothData()) {
-            speedData = smoothData(speedData, 3);
-        }
-
         return speedData;
     }
 
@@ -105,6 +102,17 @@ public class SpeedDataProcessor extends AbstractDataProcessor {
         } else {
             return Duration.ofDays(zielIntervallInSekunden / 86400);
         }
+    }
+
+    //calculate distance
+    private BigDecimal berechneWertFuerBike(Bicycle bike) {
+        BigDecimal realRotationsPerSecond = bike.getRotations().divide(new BigDecimal(4), 2, RoundingMode.HALF_UP);
+        BigDecimal circumference = new BigDecimal("2.111"); // Radumfang in Metern
+
+        // Berechnen der Distanz pro Sekunde
+        BigDecimal distancePerSecond = realRotationsPerSecond.multiply(circumference);
+
+        return distancePerSecond;
     }
 
 

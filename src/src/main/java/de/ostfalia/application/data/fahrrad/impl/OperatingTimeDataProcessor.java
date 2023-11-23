@@ -73,9 +73,6 @@ public class OperatingTimeDataProcessor extends AbstractDataProcessor {
         if (intervalOperatingTime.compareTo(BigDecimal.ZERO) > 0) {
             intervalDataList.add(new ProcessedData(bicycles.get(bicycles.size() - 1).getChannel(), intervalOperatingTime, intervalStart, processorName));
         }
-        if (this.isShouldSmoothData()) {  // shouldSmoothData ist eine boolesche Variable
-            intervalDataList = smoothData(intervalDataList, 3);  // windowSize kann konfigurierbar sein
-        }
 
 
         return intervalDataList;

@@ -7,10 +7,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 @Component
 public abstract class AbstractDataProcessor {
@@ -25,6 +28,12 @@ public abstract class AbstractDataProcessor {
     // Verarbeitung basierend auf Start- und Endzeit mit Intervallgröße
     public final void process(int channel, LocalDateTime startTime, LocalDateTime endTime, int intervalInSeconds) {
         List<Bicycle> bicycles = fetchData(channel, startTime, endTime);
+        if(shouldSmoothData){
+            List<Bicycle> bicycleListSmooth = smoothData(bicycles, 3);
+            processedData = calculateData(bicycleListSmooth, intervalInSeconds);
+            return;
+        }
+
         processedData = calculateData(bicycles, intervalInSeconds);
     }
 
@@ -36,11 +45,41 @@ public abstract class AbstractDataProcessor {
     }
 
     // Verarbeitung basierend auf der letzten Nutzung vor/nach Zeit x mit Intervallgröße
-    public final void process(int channel, int intervalInMinutes) {
+    public final void process(int channel, int intervalInSeconds) {
         List<Bicycle> bicycles = fetchLastActivity(channel);
-        processedData = calculateData(bicycles, intervalInMinutes);
+        if(shouldSmoothData){
+            List<Bicycle> bicycleListSmooth = smoothData(bicycles, 3);
+            processedData = calculateData(bicycleListSmooth, intervalInSeconds);
+            return;
+        }
+        processedData = calculateData(bicycles, intervalInSeconds);
+
     }
 
+    protected List<Bicycle> smoothData(List<Bicycle> rawBicycles, int windowSize) {
+        List<Bicycle> smoothedBicycles = new ArrayList<>();
+        Queue<BigDecimal> rotationWindow = new LinkedList<>();
+
+        for (Bicycle bike : rawBicycles) {
+            rotationWindow.add(bike.getRotations());
+            if (rotationWindow.size() > windowSize) {
+                rotationWindow.remove();
+            }
+
+            BigDecimal sum = rotationWindow.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal averageRotations = sum.divide(BigDecimal.valueOf(rotationWindow.size()), RoundingMode.HALF_UP);
+
+            Bicycle smoothedBike = new Bicycle();
+            smoothedBike.setChannel(bike.getChannel());
+            smoothedBike.setTime(bike.getTime());
+            smoothedBike.setRotations(averageRotations);
+            smoothedBicycles.add(smoothedBike);
+        }
+
+        return smoothedBicycles;
+    }
+
+    /*
 
     protected List<ProcessedData> smoothData(List<ProcessedData> originalData, int windowSize) {
         List<ProcessedData> smoothedData = new ArrayList<>();
@@ -62,7 +101,9 @@ public abstract class AbstractDataProcessor {
         }
         return smoothedData;
     }
-        
+
+
+     */
 
 
     protected abstract List<Bicycle> fetchData(int channel, LocalDateTime startTime, LocalDateTime endTime);

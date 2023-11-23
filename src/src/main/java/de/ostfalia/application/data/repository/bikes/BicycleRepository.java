@@ -29,6 +29,7 @@ public interface BicycleRepository extends JpaRepository<Bicycle, Long> {
 
 
     // alle Kanäle zurückgibt, die mindestens einen Datensatz haben
+    // Auswählbar sollen immer nur Channel sein, für die es mindestens einen Datensatz gibt!!!!!!!!!!!!!!!!!!!!!!!
     @Query("SELECT DISTINCT b.channel FROM Bicycle b WHERE b.time IS NOT NULL")
     List<Integer> getActiveChannels();
 

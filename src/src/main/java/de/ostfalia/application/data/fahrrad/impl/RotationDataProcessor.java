@@ -79,10 +79,6 @@ public class RotationDataProcessor extends AbstractDataProcessor {
             rotationData.add(new ProcessedData(bicycles.get(bicycles.size() - 1).getChannel(), averageRotations, intervalStart, processorName));
         }
 
-        if (this.isShouldSmoothData()) {
-            rotationData = smoothData(rotationData, 3);
-        }
-
         return rotationData;
     }
 
