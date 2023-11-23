@@ -84,7 +84,7 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
 
         // Plot cumulative line
         LineChart cumulativeLine = new LineChart(timestamp, cumulativeValue);
-        cumulativeLine.setName("Cumulated");
+        cumulativeLine.setName("Total " + processorName + " values");
 
 
         // Plot individual points line
@@ -94,7 +94,7 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         }
 
         LineChart individualLine = new LineChart(timestamp, individualValue);
-        individualLine.setName("Individual");
+        individualLine.setName("Individual " + processorName + " values");
 
 
         // Reduce number of points on the X-axis
