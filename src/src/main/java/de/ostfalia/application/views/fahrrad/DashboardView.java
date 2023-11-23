@@ -1,6 +1,8 @@
 package de.ostfalia.application.views.fahrrad;
 
+import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -14,6 +16,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
@@ -93,9 +96,30 @@ public class DashboardView extends BasicLayout {
         buildUpdateButton();
         buildSmoothingOption();
         buildUI();
+        addF5KeyPressListener();
 
 
     }
+
+    private void addF5KeyPressListener() {
+        UI ui = UI.getCurrent();
+        if (ui != null) {
+            ui.getPage().executeJs(
+                    "window.addEventListener('keydown', function(e) {" +
+                            "   if (e.keyCode === 116) {" +
+                            "       e.preventDefault();" +
+                            "       $0.$server.onF5KeyPress();" +
+                            "   }" +
+                            "});", getElement());
+        }
+    }
+
+    // Server-side method called from JavaScript
+    @ClientCallable
+    public void onF5KeyPress() {
+        updateDashboard();
+    }
+
 
 
     private void buildTitleGroup() {
