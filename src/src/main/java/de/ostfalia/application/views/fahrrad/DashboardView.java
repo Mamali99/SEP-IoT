@@ -16,7 +16,6 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
@@ -32,6 +31,7 @@ import de.ostfalia.application.views.fahrrad.strategies.impl.SingleBikeViewStrat
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.addons.componentfactory.PaperSlider;
 import org.vaadin.addons.componentfactory.PaperSliderVariant;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -118,7 +118,6 @@ public class DashboardView extends BasicLayout {
     public void onF5KeyPress() {
         updateDashboard();
     }
-
 
 
     private void buildTitleGroup() {
@@ -296,6 +295,7 @@ public class DashboardView extends BasicLayout {
         setContent(splitLayout);
 
     }
+
     private void updateDashboardOnChange() {
         // Call the updateDashboard function
         updateDashboard();
