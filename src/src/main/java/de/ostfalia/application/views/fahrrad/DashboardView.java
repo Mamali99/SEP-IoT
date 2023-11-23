@@ -1,6 +1,7 @@
 package de.ostfalia.application.views.fahrrad;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -17,6 +18,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.material.Material;
 import de.ostfalia.application.data.fahrrad.controller.BikeDashboardController;
@@ -29,14 +33,14 @@ import de.ostfalia.application.views.fahrrad.strategies.impl.SingleBikeViewStrat
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.addons.componentfactory.PaperSlider;
 import org.vaadin.addons.componentfactory.PaperSliderVariant;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Route("/SE/BikeDashboard")
-public class DashboardView extends BasicLayout {
+@PreserveOnRefresh
+public class DashboardView extends BasicLayout implements BeforeEnterObserver {
 
     private final DashboardViewContext context;
     private final BikeDashboardController controller;
@@ -122,8 +126,10 @@ public class DashboardView extends BasicLayout {
 
         bikeChannelSelectorOne = new ComboBox<>("First Bike Channel");
         bikeChannelSelectorOne.setItems(availableChannels);
+        bikeChannelSelectorOne.setValue(1);
         bikeChannelSelectorTwo = new ComboBox<>("Second Bike Channel");
         bikeChannelSelectorTwo.setItems(availableChannels);
+        bikeChannelSelectorTwo.setValue(2);
 
         bikeChannelTwo = new VerticalLayout();
         bikeChannelTwo.add(bikeChannelSelectorOne, bikeChannelSelectorTwo);
@@ -230,8 +236,8 @@ public class DashboardView extends BasicLayout {
 
     private void buildDefaultValues() {
         // Festlegen der Standardwerte für das Start- und Enddatum/-zeit
-        LocalDateTime defaultStartTime = LocalDateTime.of(2023, 9, 8, 16, 8, 0); // 8. September 2023, 16:08:01
-        LocalDateTime defaultEndTime = LocalDateTime.of(2023, 9, 8, 16, 9, 0); // 8. September 2023, 16:08:31
+        LocalDateTime defaultStartTime = LocalDateTime.now().minusMinutes(1);
+        LocalDateTime defaultEndTime = LocalDateTime.now();
         startDateTimePicker.setValue(defaultStartTime.minusSeconds(defaultStartTime.getSecond()));
         endDateTimePicker.setValue(defaultEndTime.minusSeconds(defaultEndTime.getSecond()));
 
@@ -271,7 +277,6 @@ public class DashboardView extends BasicLayout {
         setContent(splitLayout);
 
     }
-
     private void updateDashboardOnChange() {
         // Call the updateDashboard function
         updateDashboard();
@@ -313,6 +318,7 @@ public class DashboardView extends BasicLayout {
 
         String currentStrategy = strategyTab.getSelectedTab().getLabel();
         boolean smoothingData = smoothDataCheckbox.getValue();
+
 
         if (selectedMetric == null) {
             Notification.show("Please select a metric.");
@@ -386,8 +392,6 @@ public class DashboardView extends BasicLayout {
             buildUI();
             splitLayout.addToSecondary(singleLayout);
         }
-
-
     }
 
     public List<AbstractDataProcessor.ProcessedData> processDurationData(Integer selectedChannel, int intervalSizeInMinutes, String selectedMetric, boolean smoothingData) {
@@ -442,5 +446,26 @@ public class DashboardView extends BasicLayout {
             default -> throw new IllegalArgumentException("Unknown duration type: " + durationType);
         };
     }
+
+    /**
+     * This method is called before the view is shown on the screen.
+     * @param event the before navigation event with event details
+     */
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        updateDashboard();
+
+        UI.getCurrent().getPage().executeJs(
+                "window.addEventListener('beforeunload', function (e) { " +
+                        "    updateDashboardOnRefresh(); " +
+                        "});"
+        );
+    }
+
+    private void updateDashboardOnRefresh() {
+        updateDashboard();
+    }
+
+
 
 }

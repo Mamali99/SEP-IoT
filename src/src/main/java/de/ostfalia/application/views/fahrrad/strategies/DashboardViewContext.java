@@ -1,7 +1,6 @@
 package de.ostfalia.application.views.fahrrad.strategies;
 
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

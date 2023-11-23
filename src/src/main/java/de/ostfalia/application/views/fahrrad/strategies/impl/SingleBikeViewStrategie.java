@@ -11,7 +11,6 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 import de.ostfalia.application.data.fahrrad.controller.DataAnalysisService;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
 import de.ostfalia.application.views.fahrrad.strategies.DashboardViewStrategy;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -174,5 +173,8 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
 
         return aside;
     }
+
+
+
 
 }
