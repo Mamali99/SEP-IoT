@@ -36,24 +36,7 @@ public class OperatingTimeDataProcessor extends AbstractDataProcessor {
         return bikeService.getBicyclesSinceLastActivity(channel);
     }
 
-    /*
-    @Override
-    protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInMinutes) {
-        List<ProcessedData> results = new ArrayList<>();
 
-        for (Bicycle bike : bicycles) {
-            // Überprüfen, ob das Fahrrad aktiv ist (Rotationen > 0)
-            BigDecimal isActive = bike.getRotations().compareTo(BigDecimal.ZERO) > 0 ? BigDecimal.ONE : BigDecimal.ZERO;
-            ProcessedData processedData = new ProcessedData(bike.getChannel(), isActive, bike.getTime(), this.processorName);
-            results.add(processedData);
-        }
-        if (this.isShouldSmoothData()) {  // shouldSmoothData ist eine boolesche Variable
-            results = smoothData(results, 3);  // windowSize kann konfigurierbar sein
-        }
-
-        return results;
-    }
-*/
 
     @Override
     protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInSeconds) {

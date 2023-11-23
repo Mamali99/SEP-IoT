@@ -107,30 +107,6 @@ public class SpeedDataProcessor extends AbstractDataProcessor {
         }
     }
 
-/*
-    @Override
-    protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInSeconds) {
-        List<ProcessedData> speedData = new ArrayList<>();
-        for (Bicycle bike : bicycles) {
-            // Berechnen Sie die Geschwindigkeit für jedes Fahrrad
-            BigDecimal distance = bike.getRotations().multiply(new BigDecimal("2.111")); // f_t * Umfang
-            LocalDateTime endTime = bike.getTime().minusSeconds(bike.getTime().getSecond());
-            BigDecimal duration = BigDecimal.valueOf(ChronoUnit.SECONDS.between(endTime, bike.getTime())); // t_end - t_start
 
-            if (duration.compareTo(BigDecimal.ZERO) > 0) { //divide by zero verhindern
-                BigDecimal speed = distance.divide(duration, RoundingMode.HALF_UP);
-                speedData.add(new ProcessedData(bike.getChannel(), speed, bike.getTime(), processorName));
-            }
-        }
-
-        if (this.isShouldSmoothData()) {  // shouldSmoothData ist eine boolesche Variable
-            speedData = smoothData(speedData, 3);  // windowSize kann konfigurierbar sein
-        }
-
-        return speedData;
-    }
-
-
- */
 
 }

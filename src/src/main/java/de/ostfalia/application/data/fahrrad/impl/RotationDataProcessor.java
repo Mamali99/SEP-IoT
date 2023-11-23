@@ -38,22 +38,7 @@ public class RotationDataProcessor extends AbstractDataProcessor {
         return bikeService.getBicyclesSinceLastActivity(channel);
     }
 
-    /*
-    @Override
-    protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInSeconds) {
-        List<ProcessedData> rotationData = new ArrayList<>();
-        for (Bicycle bike : bicycles) {
-            BigDecimal rotationsPerSecond = bike.getRotations().divide(new BigDecimal("4"), 2, RoundingMode.HALF_UP);
-            rotationData.add(new ProcessedData(bike.getChannel(), rotationsPerSecond, bike.getTime(), processorName));
 
-        }
-        if (this.isShouldSmoothData()) {  // shouldSmoothData ist eine boolesche Variable
-            rotationData = smoothData(rotationData, 3);  // windowSize kann konfigurierbar sein
-        }
-        return rotationData;
-    }
-
-     */
     @Override
     protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int intervalInSeconds) {
         bicycles.sort((b1, b2) -> b1.getTime().compareTo(b2.getTime()));

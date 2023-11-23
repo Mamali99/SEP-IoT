@@ -101,29 +101,7 @@ protected List<ProcessedData> calculateData(List<Bicycle> bicycles, int interval
     }
 
 
-/*
-    private Duration bestimmeAutomatischesIntervall(List<Bicycle> bicycles) {
-        if (bicycles.isEmpty()) {
-            return Duration.ofMinutes(1); // Standardintervall, falls keine Daten vorhanden sind
-        }
 
-        LocalDateTime frühesterZeitstempel = bicycles.get(0).getTime();
-        LocalDateTime spätesterZeitstempel = bicycles.get(bicycles.size() - 1).getTime();
-        long datenZeitspanneInSekunden = Duration.between(frühesterZeitstempel, spätesterZeitstempel).getSeconds();
-
-        if(datenZeitspanneInSekunden <= 300){ // bis 5 Minuten soll in Sekunden zeigen. Danach in Minuten
-            return Duration.ofSeconds(1);
-        }
-        else if (datenZeitspanneInSekunden <= 10800) { // bis 3 Stunde
-            return Duration.ofMinutes(1); // Kurze Zeitspanne: 1-Minuten-Intervalle
-        } else if (datenZeitspanneInSekunden <= 172800) { // 48 Stunden
-            return Duration.ofHours(1); // Mittlere Zeitspanne: 1-Stunden-Intervalle
-        } else {
-            return Duration.ofDays(1); // Lange Zeitspanne: 1-Tag-Intervalle
-        }
-    }
-
- */
 
 
     private BigDecimal berechneWertFuerBike(Bicycle bike) {
