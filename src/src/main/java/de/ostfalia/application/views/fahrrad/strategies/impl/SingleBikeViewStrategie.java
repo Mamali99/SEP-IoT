@@ -11,7 +11,6 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 import de.ostfalia.application.data.fahrrad.controller.DataAnalysisService;
 import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
 import de.ostfalia.application.views.fahrrad.strategies.DashboardViewStrategy;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -85,7 +84,7 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
 
         // Plot cumulative line
         LineChart cumulativeLine = new LineChart(timestamp, cumulativeValue);
-        cumulativeLine.setName("Cumulated");
+        cumulativeLine.setName("Total " + processorName + " values");
 
 
         // Plot individual points line
@@ -95,7 +94,7 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         }
 
         LineChart individualLine = new LineChart(timestamp, individualValue);
-        individualLine.setName("Individual");
+        individualLine.setName("Individual " + processorName + " values");
 
 
         // Reduce number of points on the X-axis
@@ -108,13 +107,20 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         yAxis.setName(processorName);
 
         RectangularCoordinate rc = new RectangularCoordinate(xAxis, yAxis);
-        cumulativeLine.plotOn(rc);
+
+
+        if (!processorName.equals("Speed")) {
+            cumulativeLine.plotOn(rc);
+        }
         individualLine.plotOn(rc);
+
 
         SOChart soChart = new SOChart();
         soChart.setSize("100%", "350px");
         soChart.add(new Legend());
-        soChart.add(cumulativeLine);
+        if (!processorName.equals("Speed")) {
+            soChart.add(cumulativeLine);
+        }
         soChart.add(individualLine);
 
         return soChart;
@@ -167,5 +173,8 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
 
         return aside;
     }
+
+
+
 
 }

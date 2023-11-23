@@ -32,7 +32,6 @@ import de.ostfalia.application.views.fahrrad.strategies.impl.SingleBikeViewStrat
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.addons.componentfactory.PaperSlider;
 import org.vaadin.addons.componentfactory.PaperSliderVariant;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -146,8 +145,10 @@ public class DashboardView extends BasicLayout {
 
         bikeChannelSelectorOne = new ComboBox<>("First Bike Channel");
         bikeChannelSelectorOne.setItems(availableChannels);
+        bikeChannelSelectorOne.setValue(1);
         bikeChannelSelectorTwo = new ComboBox<>("Second Bike Channel");
         bikeChannelSelectorTwo.setItems(availableChannels);
+        bikeChannelSelectorTwo.setValue(2);
 
         bikeChannelTwo = new VerticalLayout();
         bikeChannelTwo.add(bikeChannelSelectorOne, bikeChannelSelectorTwo);
@@ -254,8 +255,8 @@ public class DashboardView extends BasicLayout {
 
     private void buildDefaultValues() {
         // Festlegen der Standardwerte für das Start- und Enddatum/-zeit
-        LocalDateTime defaultStartTime = LocalDateTime.of(2023, 9, 8, 16, 8, 0); // 8. September 2023, 16:08:01
-        LocalDateTime defaultEndTime = LocalDateTime.of(2023, 9, 8, 16, 9, 0); // 8. September 2023, 16:08:31
+        LocalDateTime defaultStartTime = LocalDateTime.now().minusMinutes(1);
+        LocalDateTime defaultEndTime = LocalDateTime.now();
         startDateTimePicker.setValue(defaultStartTime.minusSeconds(defaultStartTime.getSecond()));
         endDateTimePicker.setValue(defaultEndTime.minusSeconds(defaultEndTime.getSecond()));
 
@@ -295,7 +296,6 @@ public class DashboardView extends BasicLayout {
         setContent(splitLayout);
 
     }
-
     private void updateDashboardOnChange() {
         // Call the updateDashboard function
         updateDashboard();
@@ -337,6 +337,7 @@ public class DashboardView extends BasicLayout {
 
         String currentStrategy = strategyTab.getSelectedTab().getLabel();
         boolean smoothingData = smoothDataCheckbox.getValue();
+
 
         if (selectedMetric == null) {
             Notification.show("Please select a metric.");
@@ -410,8 +411,6 @@ public class DashboardView extends BasicLayout {
             buildUI();
             splitLayout.addToSecondary(singleLayout);
         }
-
-
     }
 
     public List<AbstractDataProcessor.ProcessedData> processDurationData(Integer selectedChannel, int intervalSizeInMinutes, String selectedMetric, boolean smoothingData) {
@@ -466,5 +465,6 @@ public class DashboardView extends BasicLayout {
             default -> throw new IllegalArgumentException("Unknown duration type: " + durationType);
         };
     }
+
 
 }
