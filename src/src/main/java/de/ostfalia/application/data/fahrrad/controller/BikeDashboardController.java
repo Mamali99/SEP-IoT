@@ -23,7 +23,7 @@ public class BikeDashboardController {
 
 
     @Autowired
-    BikeService bikeService;
+    private BikeService bikeService;
 
 
     public void setDataProcessor(AbstractDataProcessor abstractDataProcessor) {
@@ -83,6 +83,7 @@ public class BikeDashboardController {
     }
 
     // Overload for process since last activity with interval size
+    // Die Methode werden wir nicht nutzen, obwohl die Funktionalität ist da!!!
     public void updateDashboard(int channel, int intervalInMinutes) {
         if (abstractDataProcessor != null) {
             abstractDataProcessor.process(channel, intervalInMinutes);

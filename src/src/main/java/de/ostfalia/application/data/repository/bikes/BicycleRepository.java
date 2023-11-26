@@ -11,8 +11,7 @@ import java.util.List;
 
 public interface BicycleRepository extends JpaRepository<Bicycle, Long> {
 
-    @Query("Select distinct b.channel from Bicycle b")
-    List<Integer> getAllBicycles();
+
      @Query ("Select b from Bicycle b where b.channel=:id and  b.time between :max and  :min")
     List<Bicycle> getBicycleByChannelAndAndTimeSpan(@Param("id") int id, @Param("min") LocalDateTime min, @Param("max") LocalDateTime max);
 
@@ -29,7 +28,6 @@ public interface BicycleRepository extends JpaRepository<Bicycle, Long> {
 
 
     // alle Kanäle zurückgibt, die mindestens einen Datensatz haben
-    // Auswählbar sollen immer nur Channel sein, für die es mindestens einen Datensatz gibt!!!!!!!!!!!!!!!!!!!!!!!
     @Query("SELECT DISTINCT b.channel FROM Bicycle b WHERE b.time IS NOT NULL")
     List<Integer> getActiveChannels();
 

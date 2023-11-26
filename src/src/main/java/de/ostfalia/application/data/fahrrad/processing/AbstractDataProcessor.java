@@ -28,7 +28,7 @@ public abstract class AbstractDataProcessor {
     // Verarbeitung basierend auf Start- und Endzeit mit Intervallgröße
     public final void process(int channel, LocalDateTime startTime, LocalDateTime endTime, int intervalInSeconds) {
         List<Bicycle> bicycles = fetchData(channel, startTime, endTime);
-        if(shouldSmoothData){
+        if(isShouldSmoothData()){
             List<Bicycle> bicycleListSmooth = smoothData(bicycles, 3);
             processedData = calculateData(bicycleListSmooth, intervalInSeconds);
             return;
@@ -79,31 +79,6 @@ public abstract class AbstractDataProcessor {
         return smoothedBicycles;
     }
 
-    /*
-
-    protected List<ProcessedData> smoothData(List<ProcessedData> originalData, int windowSize) {
-        List<ProcessedData> smoothedData = new ArrayList<>();
-        for (int i = 0; i < originalData.size(); i++) {
-            BigDecimal sum = BigDecimal.ZERO;
-            int count = 0;
-            for (int j = i; j < i + windowSize && j < originalData.size(); j++) {
-                sum = sum.add(originalData.get(j).getValue());
-                count++;
-            }
-            BigDecimal average = sum.divide(BigDecimal.valueOf(count), BigDecimal.ROUND_HALF_UP);
-            ProcessedData smoothedPoint = new ProcessedData(
-                    originalData.get(i).getChannel(),
-                    average,
-                    originalData.get(i).getTimestamp(),
-                    originalData.get(i).getProcessorName()
-            );
-            smoothedData.add(smoothedPoint);
-        }
-        return smoothedData;
-    }
-
-
-     */
 
 
     protected abstract List<Bicycle> fetchData(int channel, LocalDateTime startTime, LocalDateTime endTime);
@@ -126,8 +101,6 @@ public abstract class AbstractDataProcessor {
 
     public class ProcessedData {
         private int channel;
-
-        private String hexColor;
         private BigDecimal value; // Dies könnte Distanz, Geschwindigkeit oder Umdrehungen sein
         private LocalDateTime timestamp;
 
@@ -161,9 +134,6 @@ public abstract class AbstractDataProcessor {
             return timestamp;
         }
 
-        public void setHexColor(String hexColor) {
-            this.hexColor = hexColor;
-        }
 
         public void setTimestamp(LocalDateTime timestamp) {
             this.timestamp = timestamp;
@@ -172,8 +142,6 @@ public abstract class AbstractDataProcessor {
         public String getProcessorName() {
             return processorName;
         }
-
-
 
 
     }
