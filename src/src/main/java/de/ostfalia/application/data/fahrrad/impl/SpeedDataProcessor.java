@@ -185,10 +185,11 @@ public class SpeedDataProcessor extends AbstractDataProcessor {
         LocalDateTime intervalStart = bicycles.get(0).getTime();
         BigDecimal totalSpeed = BigDecimal.ZERO;
         int count = 0;
+        int channel= bicycles.get(0).getChannel();
 
         for (Bicycle bike : bicycles) {
             if (bike.getTime().isAfter(intervalStart.plus(intervalSize))) {
-                addProcessedData(speedData, totalSpeed, count, intervalStart);
+                addProcessedData(channel, speedData, totalSpeed, count, intervalStart);
                 intervalStart = bike.getTime();
                 totalSpeed = BigDecimal.ZERO;
                 count = 0;
@@ -198,7 +199,7 @@ public class SpeedDataProcessor extends AbstractDataProcessor {
             count++;
         }
 
-        addProcessedData(speedData, totalSpeed, count, intervalStart);
+        addProcessedData(channel, speedData, totalSpeed, count, intervalStart);
         return speedData;
     }
 
@@ -206,12 +207,11 @@ public class SpeedDataProcessor extends AbstractDataProcessor {
         return bike.getRotations().divide(ROTATION_DIVISOR, 2, RoundingMode.HALF_UP).multiply(CIRCUMFERENCE);
     }
 
-    //muss checken, ob es funktoniert
 
-    private void addProcessedData(List<ProcessedData> data, BigDecimal totalSpeed, int count, LocalDateTime intervalStart) {
+    private void addProcessedData(int channel, List<ProcessedData> data, BigDecimal totalSpeed, int count, LocalDateTime intervalStart) {
         if (count > 0) {
             BigDecimal averageSpeed = totalSpeed.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_UP);
-            data.add(new ProcessedData(data.get(0).getChannel(), averageSpeed,intervalStart, PROCESSOR_NAME));
+            data.add(new ProcessedData(channel, averageSpeed,intervalStart, PROCESSOR_NAME));
         }
     }
 }
