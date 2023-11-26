@@ -298,6 +298,7 @@ public class DashboardView extends BasicLayout {
     }
 
 
+
     private void updateDashboard() {
         //Single
         Integer selectedChannel = bikeChannelSelector.getValue();

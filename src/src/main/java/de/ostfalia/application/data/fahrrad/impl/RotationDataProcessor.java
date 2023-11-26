@@ -97,7 +97,6 @@ public class RotationDataProcessor extends AbstractDataProcessor {
         if (this.isShouldSmoothData()) {
             rotationData = smoothData(rotationData, 3);
         }
-
         return rotationData;
     }
 

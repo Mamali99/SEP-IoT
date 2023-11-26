@@ -122,13 +122,14 @@ public class OperatingTimeDataProcessor extends AbstractDataProcessor {
 
 
     private BigDecimal berechneBetriebszeitFuerBike(Bicycle bike) {
-
         if (bike.getRotations().compareTo(BigDecimal.ZERO) > 0) {
             return BigDecimal.ONE;
         } else {
             return BigDecimal.ZERO;
         }
     }
+
+
 
 
 
