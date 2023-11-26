@@ -16,6 +16,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @org.springframework.stereotype.Component
 public class SingleBikeViewStrategie implements DashboardViewStrategy {
@@ -149,18 +150,12 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
                 LumoUtility.FlexDirection.COLUMN,
                 LumoUtility.Gap.MEDIUM);
 
-        String metricValueEnding = switch (processorName) {
-            case "Distance" -> " m";
-            case "Speed" -> " m/s";
-            case "Rotation" -> " RPM";
-            default -> ""; // Rotations per minute
 
-        };
 
-        // Create list items for total distance and average speed
-        ListItem totalDistanceTitle = new ListItem("Total " + processorName + ": " + totalDistanceBRounded + metricValueEnding);
-        ListItem speed = new ListItem("Average: " + average + metricValueEnding);
-        ListItem topSpeed = new ListItem("Top Speed " + totalSpeed + " m/s");
+
+        ListItem totalDistanceTitle = new ListItem(formatMetric(totalDistanceBRounded, processorName, "Total"));
+        ListItem speed = new ListItem(formatMetric(average, processorName, "Average"));
+        ListItem topSpeed = new ListItem(formatMetric(totalSpeed, processorName, "Top Speed"));
 
 
         ul.add(totalDistanceTitle);
@@ -174,7 +169,68 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
         return aside;
     }
 
+    private String formatOperatingTime(BigDecimal operatingTime) {
+        long seconds = operatingTime.longValue();
 
+        if (seconds < 60) {
+            return seconds + " s";
+        } else if (seconds < 3600) {
+            long minutes = TimeUnit.SECONDS.toMinutes(seconds);
+            long remainingSeconds = seconds % 60;
+            if (remainingSeconds > 0) {
+                return minutes + " min " + remainingSeconds + " s";
+            } else {
+                return minutes + " min";
+            }
+        } else if (seconds < 86400) {
+            long hours = TimeUnit.SECONDS.toHours(seconds);
+            long remainingMinutes = (seconds % 3600) / 60;
+            if (remainingMinutes > 0) {
+                return hours + " h " + remainingMinutes + " min";
+            } else {
+                return hours + " h";
+            }
+        } else {
+            long days = TimeUnit.SECONDS.toDays(seconds);
+            long remainingHours = (seconds % 86400) / 3600;
+            if (remainingHours > 0) {
+                return days + " days " + remainingHours + " h";
+            } else {
+                return days + " days";
+            }
+        }
+    }
 
+    private String formatMetric(BigDecimal value, String processorName, String metricType) {
+        String metricValueEnding;
+
+        switch (processorName) {
+            case "Distance":
+                metricValueEnding = value + " m";
+                break;
+            case "Speed":
+                metricValueEnding = value + " m/s";
+                break;
+            case "Rotation":
+                metricValueEnding = value + " RPM";
+                break;
+            case "Operating Time":
+                metricValueEnding = formatOperatingTime(value);
+                break;
+            default:
+                metricValueEnding = "";
+        }
+
+        switch (metricType) {
+            case "Total":
+                return "Total " + processorName + ": " + metricValueEnding;
+            case "Average":
+                return "Average: " + metricValueEnding;
+            case "Top Speed":
+                return "Top Speed " + metricValueEnding;
+            default:
+                return "";
+        }
+    }
 
 }
