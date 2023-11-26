@@ -23,8 +23,6 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
 
     private final DataAnalysisService dataAnalysisService = new DataAnalysisService();
 
-    public SingleBikeViewStrategie() {
-    }
 
     @Override
     public List<Component> buildView(List<AbstractDataProcessor.ProcessedData> dataList) {
