@@ -57,7 +57,7 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
 
     private Component createTitle(Integer channel) {
         Icon bicycleIcon = VaadinIcon.CHART.create();
-        bicycleIcon.setSize("24px"); // Set the size as needed
+        bicycleIcon.setSize("24px");
 
         H2 h2 = new H2("Bike " + channel);
         h2.getStyle().set("padding-left", "8px");
@@ -149,9 +149,6 @@ public class SingleBikeViewStrategie implements DashboardViewStrategy {
                 LumoUtility.Display.FLEX,
                 LumoUtility.FlexDirection.COLUMN,
                 LumoUtility.Gap.MEDIUM);
-
-
-
 
         ListItem totalDistanceTitle = new ListItem(formatMetric(totalDistanceBRounded, processorName, "Total"));
         ListItem speed = new ListItem(formatMetric(average, processorName, "Average"));
