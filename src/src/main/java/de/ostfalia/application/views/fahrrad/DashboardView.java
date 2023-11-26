@@ -57,8 +57,6 @@ public class DashboardView extends BasicLayout {
     private VerticalLayout layout;
     SplitLayout splitLayout;
     HorizontalLayout titleGroup;
-
-    // Neue UI-Komponenten für die Dauer hinzufügen
     private PaperSlider durationValueField;
     private ComboBox<String> durationUnitSelector;
     private VerticalLayout bikeChannelOne;
@@ -66,11 +64,7 @@ public class DashboardView extends BasicLayout {
 
     private VerticalLayout durationIntervall;
     private VerticalLayout startEndZeitInterval;
-
-    // Checkbox to enable or disable data smoothing
     private Checkbox smoothDataCheckbox;
-
-    // Compare Bike
     ComboBox<Integer> bikeChannelSelectorOne;
     ComboBox<Integer> bikeChannelSelectorTwo;
 
@@ -157,7 +151,6 @@ public class DashboardView extends BasicLayout {
         metricSelector = new ListBox<>();
         metricSelector.setItems("Distance", "Rotation", "Speed", "Operating time");
         metricSelector.setValue("Speed");
-        //metricSelector.addValueChangeListener(event -> updateMetricSelection(event.getValue()));
     }
 
     private void buildZeitintervall() {
@@ -204,6 +197,7 @@ public class DashboardView extends BasicLayout {
         durationValueField.addValueChangeListener(e -> sliderValue.setText("Duration value: " + e.getValue()));
         durationValueField.setMax(60);
         durationValueField.setMin(0);
+        durationValueField.setValue(1);
         durationValueField.setWidth("300px");
         durationValueField.setMaxMarkers(6);
         durationValueField.setPinned(true);
@@ -338,9 +332,11 @@ public class DashboardView extends BasicLayout {
         String currentStrategy = strategyTab.getSelectedTab().getLabel();
         boolean smoothingData = smoothDataCheckbox.getValue();
 
-
-        if (selectedMetric == null) {
-            Notification.show("Please select a metric.");
+        if (compareChannelSelectorOne.equals(compareChannelSelectorTwo)) {
+            Notification notification = new Notification(
+                    "Selected bikes to compare are the same. Please select a different bike to compare.", 3000, Notification.Position.BOTTOM_CENTER);
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            notification.open();
             return;
         }
 
@@ -353,7 +349,8 @@ public class DashboardView extends BasicLayout {
             // Validate if the selected duration is not shorter than the interval size
             Duration selectedDuration = getDuration();
             if (selectedDuration != null && selectedDuration.getSeconds() < intervalSizeInSeconds) {
-                Notification notification = new Notification("Selected duration is shorter than the interval size. Please adjust your selection.", 3000, Notification.Position.BOTTOM_CENTER);
+                Notification notification = new Notification(
+                        "Selected duration is shorter than the interval size. Please adjust your selection.", 3000, Notification.Position.BOTTOM_CENTER);
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
                 notification.open();
                 return;
@@ -377,7 +374,8 @@ public class DashboardView extends BasicLayout {
             LocalDateTime endTime = endDateTimePicker.getValue();
 
             if (startTime != null && endTime != null && startTime.plusSeconds(intervalSizeInSeconds).isAfter(endTime)) {
-                Notification notification = new Notification("Selected duration is shorter than the interval size. Please adjust your selection.", 3000, Notification.Position.BOTTOM_CENTER);
+                Notification notification = new Notification(
+                        "Selected duration is shorter than the interval size. Please adjust your selection.", 3000, Notification.Position.BOTTOM_CENTER);
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
                 notification.open();
                 return;
@@ -397,8 +395,6 @@ public class DashboardView extends BasicLayout {
 
             }
         }
-
-        // hier kommt duration since
 
 
         if (results == null || results.isEmpty()) {
@@ -426,7 +422,8 @@ public class DashboardView extends BasicLayout {
         }
     }
 
-    public List<AbstractDataProcessor.ProcessedData> processStartEndData(Integer selectedChannel, int intervalSizeInMinutes, LocalDateTime startTime, LocalDateTime endTime, String selectedMetric, boolean smoothingData) {
+    public List<AbstractDataProcessor.ProcessedData> processStartEndData(
+            Integer selectedChannel, int intervalSizeInMinutes, LocalDateTime startTime, LocalDateTime endTime, String selectedMetric, boolean smoothingData) {
 
 
         if (selectedChannel != null && startTime != null && endTime != null) {
