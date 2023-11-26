@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Component
@@ -43,7 +44,7 @@ public class OperatingTimeDataProcessor extends AbstractDataProcessor {
             return new ArrayList<>();
         }
 
-        bicycles.sort((b1, b2) -> b1.getTime().compareTo(b2.getTime()));
+        bicycles.sort(Comparator.comparing(Bicycle::getTime));
 
         Duration intervalSize = determineIntervalSize(bicycles, intervalInSeconds);
         List<ProcessedData> intervalDataList = new ArrayList<>();
