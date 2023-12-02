@@ -1,4 +1,4 @@
-package de.ostfalia.application.data.lamp.adapter;
+package de.ostfalia.application.data.lamp.service;
 
 
 import com.fasterxml.jackson.databind.JsonNode;

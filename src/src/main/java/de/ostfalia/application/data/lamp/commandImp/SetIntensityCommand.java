@@ -1,6 +1,7 @@
-package de.ostfalia.application.data.lamp.adapter;
+package de.ostfalia.application.data.lamp.commandImp;
 
 import de.ostfalia.application.data.lamp.model.Command;
+import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
 
 import java.io.IOException;
 
