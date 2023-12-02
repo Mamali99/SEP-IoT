@@ -13,7 +13,6 @@ import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-import de.ostfalia.application.data.lamp.lampController.LampController;
 import de.ostfalia.application.views.BasicLayout;
 import org.vaadin.addons.tatu.ColorPicker;
 
