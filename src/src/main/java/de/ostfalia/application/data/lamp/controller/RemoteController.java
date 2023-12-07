@@ -18,6 +18,7 @@ public class RemoteController {
     public void undoLastCommand(){
         if(!commandStack.isEmpty()){
             Command lastCommand = commandStack.pop();
+
             // Logik implementieren
         }
     }
