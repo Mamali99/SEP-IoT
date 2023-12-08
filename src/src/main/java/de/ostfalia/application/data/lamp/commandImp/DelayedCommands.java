@@ -16,9 +16,12 @@ public class DelayedCommands implements Command {
         this.commands = commands;
         this.delay = delay;
     }
+
+    //Nach eine Zeitverzögerung werden alle Commands hintereinander ausgeführt.
     @Override
     public void execute() throws IOException {
         try {
+
             Thread.sleep(delay);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

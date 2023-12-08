@@ -16,5 +16,6 @@ public class TurnOnCommand implements Command {
     public void execute() throws IOException {
 
         this.lamp.switchOn();
+        System.out.println("Lampe ist On....");
     }
 }

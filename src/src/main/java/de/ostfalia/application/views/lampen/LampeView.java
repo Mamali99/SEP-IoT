@@ -14,6 +14,7 @@ import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import de.ostfalia.application.data.lamp.commandImp.BlinkCommand;
+import de.ostfalia.application.data.lamp.commandImp.DelayedCommands;
 import de.ostfalia.application.data.lamp.commandImp.TurnOffCommand;
 import de.ostfalia.application.data.lamp.commandImp.TurnOnCommand;
 import de.ostfalia.application.data.lamp.controller.RemoteController;
@@ -41,15 +42,32 @@ public class LampeView extends BasicLayout {
         Button turnOnButton = new Button("Turn On", e -> turnOnLamp());
         Button turnOffButton = new Button("Turn Off", e -> turnOffLamp());
         Button blinkButton = new Button("Blink", e -> blinkLamp());
+        Button delayedCommandButton = new Button("Execute Delayed Commands", e -> executeDelayedCommands());
+
 
 
         // Füge die Buttons zum Layout hinzu
         VerticalLayout layout = new VerticalLayout();
-        layout.add(turnOnButton, turnOffButton, blinkButton);
+        layout.add(turnOnButton, turnOffButton, blinkButton, delayedCommandButton);
 
         // Setze das Layout als Inhalt der View
         this.setContent(layout);
 
+    }
+
+    private void executeDelayedCommands() {
+        try {
+            Command turnOnCommand = new TurnOnCommand(new Java2NodeRedLampAdapter());
+            Command turnOffCommand = new TurnOffCommand(new Java2NodeRedLampAdapter());
+
+            Command[] commands = { turnOnCommand, turnOffCommand };
+            long delay = 5000; // Verzögerung in Millisekunden, z.B. 5 Sekunden
+
+            Command delayedCommands = new DelayedCommands(new Java2NodeRedLampAdapter(), commands, delay);
+            remoteController.executeCommand(delayedCommands);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void turnOffLamp() {
