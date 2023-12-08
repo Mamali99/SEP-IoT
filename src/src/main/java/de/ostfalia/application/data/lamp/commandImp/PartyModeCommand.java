@@ -24,12 +24,14 @@ public class PartyModeCommand implements Command {
             // Wechsel zwischen Farben und Intensitäten
             lamp.setColor(colors[i % colors.length]);
             lamp.setIntensity(intensities[i % intensities.length]);
+            System.out.println("Count: "+ i+  " => Lampe mit Color: "+colors[i % colors.length]+ " und Intensität: " +  intensities[i % intensities.length]);
             try {
                 Thread.sleep(500); // Wartezeit zwischen den Blinken
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
             lamp.switchOff();
+            System.out.println("Lampe ist aus...");
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {

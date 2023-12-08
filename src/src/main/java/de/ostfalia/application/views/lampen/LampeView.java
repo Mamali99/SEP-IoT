@@ -13,10 +13,7 @@ import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-import de.ostfalia.application.data.lamp.commandImp.BlinkCommand;
-import de.ostfalia.application.data.lamp.commandImp.DelayedCommands;
-import de.ostfalia.application.data.lamp.commandImp.TurnOffCommand;
-import de.ostfalia.application.data.lamp.commandImp.TurnOnCommand;
+import de.ostfalia.application.data.lamp.commandImp.*;
 import de.ostfalia.application.data.lamp.controller.RemoteController;
 import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
@@ -43,16 +40,30 @@ public class LampeView extends BasicLayout {
         Button turnOffButton = new Button("Turn Off", e -> turnOffLamp());
         Button blinkButton = new Button("Blink", e -> blinkLamp());
         Button delayedCommandButton = new Button("Execute Delayed Commands", e -> executeDelayedCommands());
+        Button partyModeButton = new Button("Party Mode", e -> activatePartyMode());
 
 
 
         // Füge die Buttons zum Layout hinzu
         VerticalLayout layout = new VerticalLayout();
-        layout.add(turnOnButton, turnOffButton, blinkButton, delayedCommandButton);
+        layout.add(turnOnButton, turnOffButton, blinkButton, delayedCommandButton, partyModeButton);
 
         // Setze das Layout als Inhalt der View
         this.setContent(layout);
 
+    }
+
+    private void activatePartyMode() {
+        try {
+            Color[] colors = { Color.RED, Color.GREEN, Color.BLUE };
+            int[] intensities = { 100, 200, 254 }; // Beispielintensitäten
+            int blinkCount = 5;
+
+            Command partyModeCommand = new PartyModeCommand(new Java2NodeRedLampAdapter(), blinkCount, colors, intensities);
+            remoteController.executeCommand(partyModeCommand);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void executeDelayedCommands() {
