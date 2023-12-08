@@ -34,6 +34,16 @@ public class RaceCommand implements Command {
 
     }
 
+    @Override
+    public void saveCurrentState() {
+
+    }
+
+    @Override
+    public void undo() throws IOException {
+
+    }
+
     private BigDecimal calculateTotalDistance(List<Bicycle> bikeData) {
         return BigDecimal.ZERO;
     }

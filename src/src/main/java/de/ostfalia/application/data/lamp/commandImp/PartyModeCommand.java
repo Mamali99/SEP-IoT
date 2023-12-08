@@ -1,5 +1,6 @@
 package de.ostfalia.application.data.lamp.commandImp;
 
+import de.ostfalia.application.data.entity.LampState;
 import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
 
@@ -11,6 +12,7 @@ public class PartyModeCommand implements Command {
     private int blinkCount;
     private Color[] colors;
     private int[] intensities;
+    private LampState previousState;
 
     public PartyModeCommand(Java2NodeRedLampAdapter lamp, int blinkCount, Color[] colors, int[] intensities) {
         this.lamp = lamp;
@@ -20,6 +22,7 @@ public class PartyModeCommand implements Command {
     }
     @Override
     public void execute() throws IOException {
+        saveCurrentState();
         for (int i = 0; i < blinkCount; i++) {
             // Wechsel zwischen Farben und Intensitäten
             lamp.setColor(colors[i % colors.length]);
@@ -38,5 +41,26 @@ public class PartyModeCommand implements Command {
                 Thread.currentThread().interrupt();
             }
         }
+    }
+
+    @Override
+    public void saveCurrentState() throws IOException {
+        previousState = new LampState(lamp.getColor(), lamp.getIntensity(), lamp.getState());
+    }
+
+    @Override
+    public void undo() throws IOException {
+        // Setze den Zustand der Lampe auf den vorher gespeicherten Zustand zurück
+        lamp.setColor(previousState.getColor());
+        lamp.setIntensity(previousState.getIntensity());
+        if (previousState.isOn()) {
+            lamp.switchOn();
+        } else {
+            lamp.switchOff();
+        }
+    }
+    @Override
+    public String toString() {
+        return "Party Mode Command [Blinkanzahl: " + blinkCount + "]";
     }
 }

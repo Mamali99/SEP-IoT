@@ -1,17 +1,8 @@
 package de.ostfalia.application.views.lampen;
 
-import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.Hr;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
-import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
-import com.vaadin.flow.component.textfield.IntegerField;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import de.ostfalia.application.data.lamp.commandImp.*;
 import de.ostfalia.application.data.lamp.controller.RemoteController;
@@ -20,97 +11,93 @@ import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
 import de.ostfalia.application.views.BasicLayout;
 import org.vaadin.addons.tatu.ColorPicker;
 
-import java.awt.*;
+import java.awt.Color;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Route("/SE/LightAdapter")
-
 public class LampeView extends BasicLayout {
 
     private RemoteController remoteController;
-
-
-
+    private ColorPicker colorPicker;
+    private ComboBox<String> commandHistoryDropdown;
 
     public LampeView(RemoteController remoteController) throws IOException {
-
         this.remoteController = remoteController;
-        Button turnOnButton = new Button("Turn On", e -> turnOnLamp());
-        Button turnOffButton = new Button("Turn Off", e -> turnOffLamp());
-        Button blinkButton = new Button("Blink", e -> blinkLamp());
+
+        setupLayout();
+    }
+
+    private void setupLayout() {
+        // Initialisiere die Buttons und ColorPicker
+        Button turnOnButton = new Button("Turn On", e -> executeCommand(new TurnOnCommand(new Java2NodeRedLampAdapter())));
+        Button turnOffButton = new Button("Turn Off", e -> executeCommand(new TurnOffCommand(new Java2NodeRedLampAdapter())));
+        Button blinkButton = new Button("Blink", e -> executeCommand(new BlinkCommand(new Java2NodeRedLampAdapter(), 2, 5000)));
         Button delayedCommandButton = new Button("Execute Delayed Commands", e -> executeDelayedCommands());
         Button partyModeButton = new Button("Party Mode", e -> activatePartyMode());
+        colorPicker = new ColorPicker();
+        colorPicker.setLabel("Farbe wählen");
+        colorPicker.addValueChangeListener(e -> executeCommand(new SetColorCommand(new Java2NodeRedLampAdapter(), hex2Rgb(e.getValue()))));
+
+        // Dropdown-Menü für die Befehlshistorie
+        commandHistoryDropdown = new ComboBox<>("Befehlshistorie", e -> undoSelectedCommand(e.getValue()));
+        updateCommandHistoryDropdown();
 
 
-
-        // Füge die Buttons zum Layout hinzu
-        VerticalLayout layout = new VerticalLayout();
-        layout.add(turnOnButton, turnOffButton, blinkButton, delayedCommandButton, partyModeButton);
-
-        // Setze das Layout als Inhalt der View
+        // Layout
+        VerticalLayout layout = new VerticalLayout(turnOnButton, turnOffButton, blinkButton, delayedCommandButton, partyModeButton, colorPicker, commandHistoryDropdown);
         this.setContent(layout);
+    }
 
+    private void executeCommand(Command command) {
+        try {
+            remoteController.executeCommand(command);
+            updateCommandHistoryDropdown();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void updateCommandHistoryDropdown() {
+        List<String> historyItems = remoteController.getLastFiveCommands()
+                .stream()
+                .map(Command::toString)
+                .collect(Collectors.toList());
+        commandHistoryDropdown.setItems(historyItems);
+    }
+
+    private void undoSelectedCommand(String commandDescription) {
+        int commandIndex = remoteController.getLastFiveCommands()
+                .stream()
+                .map(Command::toString)
+                .collect(Collectors.toList())
+                .indexOf(commandDescription);
+        if (commandIndex != -1) {
+            try {
+                remoteController.undoCommand(commandIndex);
+                updateCommandHistoryDropdown();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void activatePartyMode() {
-        try {
-            Color[] colors = { Color.RED, Color.GREEN, Color.BLUE };
-            int[] intensities = { 100, 200, 254 }; // Beispielintensitäten
-            int blinkCount = 5;
+        Color[] colors = { Color.RED, Color.GREEN, Color.BLUE };
+        int[] intensities = { 100, 200, 254 };
+        int blinkCount = 5;
 
-            Command partyModeCommand = new PartyModeCommand(new Java2NodeRedLampAdapter(), blinkCount, colors, intensities);
-            remoteController.executeCommand(partyModeCommand);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        executeCommand(new PartyModeCommand(new Java2NodeRedLampAdapter(), blinkCount, colors, intensities));
     }
 
     private void executeDelayedCommands() {
-        try {
-            Command turnOnCommand = new TurnOnCommand(new Java2NodeRedLampAdapter());
-            Command turnOffCommand = new TurnOffCommand(new Java2NodeRedLampAdapter());
+        Command turnOnCommand = new TurnOnCommand(new Java2NodeRedLampAdapter());
+        Command turnOffCommand = new TurnOffCommand(new Java2NodeRedLampAdapter());
+        Command[] commands = { turnOnCommand, turnOffCommand };
+        long delay = 5000;
 
-            Command[] commands = { turnOnCommand, turnOffCommand };
-            long delay = 5000; // Verzögerung in Millisekunden, z.B. 5 Sekunden
-
-            Command delayedCommands = new DelayedCommands(new Java2NodeRedLampAdapter(), commands, delay);
-            remoteController.executeCommand(delayedCommands);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void turnOffLamp() {
-        try {
-            Command turnOffCommand = new TurnOffCommand(new Java2NodeRedLampAdapter());
-            remoteController.executeCommand(turnOffCommand);
-
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-
-    }
-
-    // Funktionen
-    private void turnOnLamp() {
-        try {
-            // Erstelle und führe TurnOnCommand aus
-            Command turnOnCommand = new TurnOnCommand(new Java2NodeRedLampAdapter());
-            remoteController.executeCommand(turnOnCommand);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void blinkLamp() {
-        try {
-            // Erstelle und führe BlinkCommand aus
-            Command blinkCommand = new BlinkCommand(new Java2NodeRedLampAdapter(), 2, 5000);
-            remoteController.executeCommand(blinkCommand);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        executeCommand(new DelayedCommands(new Java2NodeRedLampAdapter(), commands, delay));
     }
 
     private Color hex2Rgb(String colorStr) {
@@ -120,57 +107,4 @@ public class LampeView extends BasicLayout {
                 Integer.valueOf(colorStr.substring(5, 7), 16)
         );
     }
-
-    private String rgb2Hex(Color color) {
-        return String.format("#%02X%02X%02X", color.getRed(), color.getGreen(), color.getBlue());
-    }
-
-
-    private int mapPercentageToInt(int percentage) {
-        return (int) Math.round(percentage * 2.54); // Umrechnung von Prozent in den Bereich von 0 bis 254
-    }
-
-    private int mapIntToPercentage(float intensity) {
-        return (int) (intensity / 254) * 100;
-    }
-
-    private String getStateAsString() throws IOException {
-        return null;
-
-    }
-
-
-    private void changeColor(Color color) throws IOException {
-
-
-    }
-
-    private void changeIntensity(float intensity) throws IOException {
-
-    }
-
-    private void enableNameChange() {
-
-
-    }
-
-    private void turnOnOffWithSettings(String value) throws IOException {
-
-
-    }
-
-    private void switchState() throws IOException {
-
-    }
-
-    private void switchStateWithIntensity() throws IOException {
-
-    }
-
-    private void switchStateWithColor() throws IOException {
-
-
-    }
-
-
 }

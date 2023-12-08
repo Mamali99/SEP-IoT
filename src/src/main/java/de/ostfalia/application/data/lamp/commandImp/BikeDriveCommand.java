@@ -26,6 +26,16 @@ public class BikeDriveCommand implements Command {
 
     }
 
+    @Override
+    public void saveCurrentState() {
+
+    }
+
+    @Override
+    public void undo() throws IOException {
+
+    }
+
     private BigDecimal calculateSpeed(List<Bicycle> bikeData) {
         return BigDecimal.ZERO;
     }
