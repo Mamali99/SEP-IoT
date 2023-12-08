@@ -13,6 +13,6 @@ public class TurnOffCommand implements Command {
     }
     @Override
     public void execute() throws IOException {
-
+        this.lamp.switchOff();
     }
 }

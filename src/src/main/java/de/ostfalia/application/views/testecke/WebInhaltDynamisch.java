@@ -12,6 +12,7 @@ import java.io.IOException;
 
 @Route("/dynamisch")
 public class WebInhaltDynamisch extends BasicLayout {
+    /*
     private VerticalLayout colorfulBox = new VerticalLayout();
     LampController adapter;
     public WebInhaltDynamisch(LampController lamp) {
@@ -85,6 +86,8 @@ public class WebInhaltDynamisch extends BasicLayout {
     private void clearBox() {
         this.colorfulBox.removeAll();
     }
+
+     */
 
 
 }

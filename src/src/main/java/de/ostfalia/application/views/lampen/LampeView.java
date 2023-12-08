@@ -13,6 +13,12 @@ import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import de.ostfalia.application.data.lamp.commandImp.BlinkCommand;
+import de.ostfalia.application.data.lamp.commandImp.TurnOffCommand;
+import de.ostfalia.application.data.lamp.commandImp.TurnOnCommand;
+import de.ostfalia.application.data.lamp.controller.RemoteController;
+import de.ostfalia.application.data.lamp.model.Command;
+import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
 import de.ostfalia.application.views.BasicLayout;
 import org.vaadin.addons.tatu.ColorPicker;
 
@@ -24,155 +30,59 @@ import java.util.Arrays;
 
 public class LampeView extends BasicLayout {
 
-    private final LampController lampController;
-    private String onOffEinstellung;
-    private int intensity;
-    private Color awtColor;
-    private H4 nameLabel;
-    private TextField nameField;
-    private TextField stateField;
-    private final Button onOffButton;
-    private Icon icon;
-    private final Button nameButton;
+    private RemoteController remoteController;
 
 
-    public LampeView(LampController lampController) throws IOException {
-
-        this.lampController = lampController;
-
-        //Titel
-        Hr hr = new Hr();
-        Hr hr2 = new Hr();
-
-        // Name mit Icon - Horizontal
-        HorizontalLayout layoutRow = new HorizontalLayout();
-        icon = VaadinIcon.LIGHTBULB.create();
-        nameLabel = new H4();
-        // Rest der GUI
-
-        // Zustand
-        stateField = new TextField("Lampenzustand");
-        stateField.setReadOnly(true);
-        stateField.setValue(getStateAsString());
-
-        // Intensität
-        IntegerField integerField = new IntegerField();
-        integerField.setLabel("Intensität");
-        integerField.setHelperText("Die aktuelle Intensität");
-        integerField.setMin(0);
-        integerField.setMax(100);
-        integerField.setStep(5);
-        integerField.setValue(mapIntToPercentage(lampController.getIntensity()));
-        // soll nacher mit getter gemacht werden
-
-        intensity = integerField.getValue();
-
-        HtmlComponent suffix = new HtmlComponent("div");
-        suffix.getElement().setText("%");
-        integerField.setSuffixComponent(suffix);
-        integerField.setStepButtonsVisible(true);
-
-        integerField.addValueChangeListener(event -> {
-            intensity = event.getValue();
-            int intensityValue = mapPercentageToInt(intensity);
-            try {
-                changeIntensity(intensityValue);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
 
 
-        // Color Picker
-        ColorPicker colorPicker = new ColorPicker();
-        colorPicker.setLabel("Farbauswahl");
-        colorPicker
-                .setPresets(Arrays.asList(
-                        new ColorPicker.ColorPreset("#6499E9", "Blau"),
-                        new ColorPicker.ColorPreset("#FF4B91", "Pink"),
-                        new ColorPicker.ColorPreset("#F99417", "Orange"),
-                        new ColorPicker.ColorPreset("#FFCF96", "Warmes Gelb")
+    public LampeView(RemoteController remoteController) throws IOException {
 
-                ));
-
-        colorPicker.setHelperText("Hier können Sie eine Farbe auswählen");
-        colorPicker.setValue(rgb2Hex(lampController.getColor()));
-        colorPicker.addValueChangeListener(event -> {
-            String hexColor = event.getValue();
-            awtColor = hex2Rgb(hexColor);
-            try {
-                changeColor(awtColor);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        this.remoteController = remoteController;
+        Button turnOnButton = new Button("Turn On", e -> turnOnLamp());
+        Button turnOffButton = new Button("Turn Off", e -> turnOffLamp());
+        Button blinkButton = new Button("Blink", e -> blinkLamp());
 
 
-        // ON/OFF Button
-        onOffButton = new Button("ON/OFF", e -> {
-            try {
-                turnOnOffWithSettings(onOffEinstellung);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
+        // Füge die Buttons zum Layout hinzu
+        VerticalLayout layout = new VerticalLayout();
+        layout.add(turnOnButton, turnOffButton, blinkButton);
 
+        // Setze das Layout als Inhalt der View
+        this.setContent(layout);
 
-        // Zusatzeinstellung für ON/OFF
-        // bei change sollte nut die eintellung set
-        // wenn on off soll dan geprüft werden welches setting
-
-        RadioButtonGroup<String> radioGroup = new RadioButtonGroup<>();
-        radioGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
-        radioGroup.setLabel("Zusatzeinstellung zum Einschalten");
-        radioGroup.setItems("Mit Intensität", "Mit Farbe", "Ohne Zusatzangaben");
-        radioGroup.setValue("Ohne Zusatzangaben");
-        onOffEinstellung = radioGroup.getValue();
-
-        radioGroup.addValidationStatusChangeListener(event -> {
-            onOffEinstellung = event.getSource().getValue();
-        });
-
-
-        // Name Ändern
-        nameField = new TextField("Namen Ändern");
-        nameField.setReadOnly(true);
-        nameButton = new Button("Ändern", e -> enableNameChange());
-        nameField.addValueChangeListener(event -> {
-            String text = event.getValue();
-            try {
-                lampController.setName(text);
-                nameLabel.setText(lampController.getName());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-        });
-
-        //Farben auswahl Radio Buttons
-
-
-        icon.getElement().setAttribute("icon", "vaadin:lightbulb");
-        nameLabel.setText(lampController.getName());
-        VerticalLayout pageLayout = new VerticalLayout();
-        pageLayout.add(hr);
-        layoutRow.add(icon);
-        layoutRow.add(nameLabel);
-        pageLayout.add(layoutRow);
-        pageLayout.add(hr2);
-        pageLayout.add(stateField);
-        pageLayout.add(integerField);
-        pageLayout.add(colorPicker);
-        pageLayout.add(radioGroup);
-        pageLayout.add(onOffButton);
-        pageLayout.add(nameField);
-        pageLayout.add(nameButton);
-
-
-        this.setContent(pageLayout);
-        this.getTitle().setText("Lampensteuerung");
     }
+
+    private void turnOffLamp() {
+        try {
+            Command turnOffCommand = new TurnOffCommand(new Java2NodeRedLampAdapter());
+            remoteController.executeCommand(turnOffCommand);
+
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+
+    }
+
     // Funktionen
+    private void turnOnLamp() {
+        try {
+            // Erstelle und führe TurnOnCommand aus
+            Command turnOnCommand = new TurnOnCommand(new Java2NodeRedLampAdapter());
+            remoteController.executeCommand(turnOnCommand);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void blinkLamp() {
+        try {
+            // Erstelle und führe BlinkCommand aus
+            Command blinkCommand = new BlinkCommand(new Java2NodeRedLampAdapter(), 2, 5000);
+            remoteController.executeCommand(blinkCommand);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private Color hex2Rgb(String colorStr) {
         return new Color(
@@ -196,82 +106,41 @@ public class LampeView extends BasicLayout {
     }
 
     private String getStateAsString() throws IOException {
-        if (lampController.getState()) {
-            return "Angeschaltet";
-        } else {
-            return "Ausgeschaltet";
-        }
+        return null;
+
     }
 
 
     private void changeColor(Color color) throws IOException {
-        if (lampController.getState()) {
-            lampController.setColor(color);
-        }
+
 
     }
 
     private void changeIntensity(float intensity) throws IOException {
-        if (lampController.getState()) {
-            lampController.setIntensity(intensity);
-        }
+
     }
 
     private void enableNameChange() {
-        if (nameField.isReadOnly()) {
-            nameField.setReadOnly(false);
-            nameButton.setText("Speichern");
-        } else {
-            nameField.setReadOnly(true);
-            nameButton.setText("Ändern");
-        }
 
 
     }
 
     private void turnOnOffWithSettings(String value) throws IOException {
 
-        if (lampController.getState()) {
-            lampController.switchOff();
-            stateField.setValue(getStateAsString());
-            onOffButton.setText("On");
-            icon.setColor("black");
-        } else {
-            if (value.equals("Mit Intensität")) {
-                switchStateWithIntensity();
-            } else if (value.equals("Mit Farbe")) {
-                switchStateWithColor();
-            } else {
-                switchState();
-            }
-        }
 
     }
 
     private void switchState() throws IOException {
 
-        lampController.switchOn();
-        stateField.setValue(getStateAsString());
-        onOffButton.setText("Off");
-        icon.setColor("orange");
-
     }
 
     private void switchStateWithIntensity() throws IOException {
-
-        lampController.switchOn(intensity);
-        stateField.setValue(getStateAsString());
-        onOffButton.setText("Off");
-        icon.setColor("orange");
 
     }
 
     private void switchStateWithColor() throws IOException {
 
-        lampController.switchOn(awtColor);
-        stateField.setValue(getStateAsString());
-        onOffButton.setText("Off");
-        icon.setColor("orange");
+
     }
 
 

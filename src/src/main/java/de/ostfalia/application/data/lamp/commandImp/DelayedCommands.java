@@ -18,6 +18,15 @@ public class DelayedCommands implements Command {
     }
     @Override
     public void execute() throws IOException {
+        try {
+            Thread.sleep(delay);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return;
+        }
+        for (Command command : commands) {
+            command.execute();
+        }
 
     }
 }
