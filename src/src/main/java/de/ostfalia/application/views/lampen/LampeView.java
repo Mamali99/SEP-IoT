@@ -11,7 +11,7 @@ import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
 import de.ostfalia.application.views.BasicLayout;
 import org.vaadin.addons.tatu.ColorPicker;
 
-import java.awt.Color;
+import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,13 +19,12 @@ import java.util.stream.Collectors;
 @Route("/SE/LightAdapter")
 public class LampeView extends BasicLayout {
 
-    private RemoteController remoteController;
+    private final RemoteController remoteController;
     private ColorPicker colorPicker;
     private ComboBox<String> commandHistoryDropdown;
 
     public LampeView(RemoteController remoteController) throws IOException {
         this.remoteController = remoteController;
-
         setupLayout();
     }
 
@@ -84,8 +83,8 @@ public class LampeView extends BasicLayout {
     }
 
     private void activatePartyMode() {
-        Color[] colors = { Color.RED, Color.GREEN, Color.BLUE };
-        int[] intensities = { 100, 200, 254 };
+        Color[] colors = {Color.RED, Color.GREEN, Color.BLUE};
+        int[] intensities = {100, 200, 254};
         int blinkCount = 5;
 
         executeCommand(new PartyModeCommand(new Java2NodeRedLampAdapter(), blinkCount, colors, intensities));
@@ -94,7 +93,7 @@ public class LampeView extends BasicLayout {
     private void executeDelayedCommands() {
         Command turnOnCommand = new TurnOnCommand(new Java2NodeRedLampAdapter());
         Command turnOffCommand = new TurnOffCommand(new Java2NodeRedLampAdapter());
-        Command[] commands = { turnOnCommand, turnOffCommand };
+        Command[] commands = {turnOnCommand, turnOffCommand};
         long delay = 5000;
 
         executeCommand(new DelayedCommands(new Java2NodeRedLampAdapter(), commands, delay));
