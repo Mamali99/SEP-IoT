@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.listbox.ListBox;
@@ -37,19 +38,22 @@ public class LampeView extends BasicLayout {
 
     private List<Button> possibleButtons = new ArrayList<>();
     private HorizontalLayout buttonLayout = new HorizontalLayout();
-    private VerticalLayout rightLayout = new VerticalLayout();
+    private HorizontalLayout rightLayout = new HorizontalLayout();
+
+    private VerticalLayout rightLayoutFirstRow = new VerticalLayout();
     private VerticalLayout initialButtonLayout = new VerticalLayout();
     private VerticalLayout newButtonLayout = new VerticalLayout();
     private Dialog buttonDialog = new Dialog();
-    private Dialog undoDialog;
+
     private List<Button> customCommandButtons = new ArrayList<>();
 
-    public LampeView(RemoteController remoteController) throws IOException {
+    public LampeView(RemoteController remoteController, Java2NodeRedLampAdapter lampAdapter) throws IOException {
         this.remoteController = remoteController;
+        this.lampAdapter = lampAdapter;
         setupLayout();
     }
 
-    private void setupLayout() {
+    private void setupLayout() throws IOException {
 
         // Initialisiere die Buttons und ColorPicker
         Button turnOnButton = createButton("Turn On", VaadinIcon.POWER_OFF);
@@ -83,12 +87,21 @@ public class LampeView extends BasicLayout {
         newButtonLayout.add(plusButton);
 
         colorPicker = new ColorPicker();
+        colorPicker.setValue(colorToCss(lampAdapter.getColor()));
         colorPicker.setLabel("Farbe wählen");
-        colorPicker.addValueChangeListener(e -> executeCommand(new SetColorCommand(lampAdapter, hex2Rgb(e.getValue()))));
+        colorPicker.addValueChangeListener(e -> {
+            Color selectedColor = hex2Rgb(e.getValue());
+            executeCommand(new SetColorCommand(lampAdapter, selectedColor));
+            try {
+                updateLampColor(selectedColor);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
 
         // Dropdown-Menü für die Befehlshistorie
         commandListBox = new ListBox<>();
-        undoDialog = new Dialog(commandListBox);
+        commandListBox.addValueChangeListener(e -> undoSelectedCommand(e.getValue()));
         updateCommandHistoryDropdown();
 
         // Layout
@@ -111,33 +124,48 @@ public class LampeView extends BasicLayout {
         VerticalLayout virtualLamp = new VerticalLayout(createLamp());
 
         buttonLayout.add(initialButtonLayout, newButtonLayout);
-        rightLayout.add(virtualLamp, colorPicker, setupCustomCommandCreation());
+        rightLayoutFirstRow.add(virtualLamp, colorPicker);
+        rightLayout.add(rightLayoutFirstRow, setupCustomCommandCreation());
 
         HorizontalLayout mainLayout = new HorizontalLayout(buttonLayout, rightLayout);
         this.setContent(mainLayout);
     }
 
-    private void openUndoDialog() {
-        List<Command> historyCommands = remoteController.getLastFiveCommands();
+    private Div undoDialog;
 
-        if (historyCommands.isEmpty()) {
-            Notification.show("Keine Befehle verfügbar");
-            return;
+    private Div createUndoDialog() {
+        // Create the title, list box, and close button
+        H4 UndoTitel = new H4("Letzten 5 Befehle");
+        UndoTitel.getStyle().set("text-align", "center"); // Center the title
+
+        Button closeButton = new Button("Close");
+        closeButton.getStyle().set("margin-top", "10px"); // Add space above the button
+
+        // Create a Div and add the components to it
+        Div dialogDiv = new Div();
+        dialogDiv.add(UndoTitel, commandListBox, closeButton);
+
+        // Style the Div
+        dialogDiv.getStyle().set("width", "200px"); // Set the width
+        dialogDiv.getStyle().set("padding", "20px"); // Set the width
+        dialogDiv.getStyle().set("border-radius", "10px"); // Round the corners
+        dialogDiv.getStyle().set("background-color", "rgb(255, 247, 138, 0.2)"); // Set a light purple transparent background
+
+        // Add a click listener to the close button to remove the Div when clicked
+        closeButton.addClickListener(event -> dialogDiv.setVisible(false));
+
+        return dialogDiv;
+    }
+
+    private void openUndoDialog() {
+        // Remove the old undo dialog from the layout
+        if (undoDialog != null) {
+            rightLayoutFirstRow.remove(undoDialog);
         }
 
-        ListBox<Command> commandListBox = new ListBox<>();
-        commandListBox.setItems(historyCommands);
-        commandListBox.setItemLabelGenerator(Command::toString);
-
-        Dialog undoDialog = new Dialog(commandListBox);
-        undoDialog.open();
-
-        commandListBox.addValueChangeListener(event -> {
-            Command selectedCommand = event.getValue();
-            if (selectedCommand != null) {
-                executeCommand(selectedCommand);
-            }
-        });
+        // Create a new undo dialog and add it to the layout
+        undoDialog = createUndoDialog();
+        rightLayoutFirstRow.add(undoDialog);
     }
 
 
@@ -202,25 +230,36 @@ public class LampeView extends BasicLayout {
         return layout;
     }
 
-    private Component createLamp() {
-        Icon lampIcon = new Icon(VaadinIcon.LIGHTBULB);
-        lampIcon.setSize("80px"); // Sie können die Größe an Ihre Bedürfnisse anpassen
+    Icon lampIcon;
+    Div lampBox;
 
+    private Component createLamp() throws IOException {
+        lampIcon = new Icon(VaadinIcon.LIGHTBULB);
+        lampIcon.setSize("100px"); // Sie können die Größe an Ihre Bedürfnisse anpassen
+        String selectedColorCss = colorToCss(lampAdapter.getColor());
+        lampIcon.setColor(selectedColorCss);
         // Erstellen Sie die Box
-        Div box = new Div(lampIcon);
-        box.getStyle()
+        lampBox = new Div(lampIcon);
+        lampBox.getStyle()
                 .set("background-color", "lightgray") // Hintergrundfarbe
+                .set("border", "2px solid " + selectedColorCss)
                 .set("border-radius", "25px") // Abgerundete Kanten
                 .set("padding", "10px") // Innenabstand
-                .set("width", "120px") // Breite
-                .set("height", "120px") // Höhe
+                .set("width", "200px") // Breite
+                .set("height", "200px") // Höhe
                 .set("display", "flex") // Flexbox-Layout verwenden
                 .set("justify-content", "center") // Zentrieren Sie den Inhalt horizontal
                 .set("align-items", "center"); // Zentrieren Sie den Inhalt vertikal
 
-        return box;
+        return lampBox;
     }
 
+    private void updateLampColor(Color color) throws IOException {
+        // Update the Icon and Div colors
+        String selectedColorCss = colorToCss(color);
+        lampIcon.setColor(selectedColorCss);
+        lampBox.getStyle().set("border", "2px solid " + selectedColorCss);
+    }
 
     private Button createButton(String text, VaadinIcon icon) {
         Button button = new Button(text);
@@ -271,6 +310,7 @@ public class LampeView extends BasicLayout {
             try {
                 remoteController.undoCommand(commandIndex);
                 updateCommandHistoryDropdown();
+                Notification.show("Undo operation performed for: " + commandDescription);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -300,5 +340,12 @@ public class LampeView extends BasicLayout {
                 Integer.valueOf(colorStr.substring(3, 5), 16),
                 Integer.valueOf(colorStr.substring(5, 7), 16)
         );
+    }
+
+    public String colorToCss(Color color) {
+        // Convert the Color to a CSS color string
+        String colorString = String.format("#%02x%02x%02x",
+                color.getRed(), color.getGreen(), color.getBlue());
+        return colorString;
     }
 }
