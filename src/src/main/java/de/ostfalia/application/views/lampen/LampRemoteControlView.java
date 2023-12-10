@@ -102,6 +102,7 @@ public class LampRemoteControlView extends BasicLayout {
         commandSelect.setItems(availableCommands);
 
         Button submitButton = new Button("Create Custom Command");
+        StringBuilder buttonName = new StringBuilder();
 
         submitButton.addClickListener(event -> {
             CustomCommand customCommand = new CustomCommand();
@@ -119,12 +120,16 @@ public class LampRemoteControlView extends BasicLayout {
                         break;
                     // Add remaining cases for the rest of your commands
                 }
+                buttonName.append(selectedCommand).append(" and ");
             }
-            Button newCustomCommandButton = new Button("Custom Command " + (customCommandButtons.size() + 1), e -> executeCommand(customCommand));
+            if(!buttonName.isEmpty()){
+                buttonName.setLength(buttonName.length() - 5);
+            }
+            Button newCustomCommandButton = new Button(buttonName.toString(),
+                    e -> executeCommand(customCommand));
             customCommandButtons.add(newCustomCommandButton);
             layout.add(newCustomCommandButton);
 
-            executeCommand(customCommand);
             commandSelect.clear();
         });
 
