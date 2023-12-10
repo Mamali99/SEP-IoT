@@ -1,9 +1,14 @@
 package de.ostfalia.application.views.lampen;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.listbox.ListBox;
+import com.vaadin.flow.component.listbox.MultiSelectListBox;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
@@ -17,6 +22,7 @@ import org.vaadin.addons.tatu.ColorPicker;
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +31,7 @@ public class LampeView extends BasicLayout {
 
     private final RemoteController remoteController;
     private ColorPicker colorPicker;
-    private ComboBox<String> commandHistoryDropdown;
+    private ListBox<String> commandListBox;
 
     private List<Button> possibleButtons = new ArrayList<>();
     private HorizontalLayout buttonLayout = new HorizontalLayout();
@@ -33,6 +39,8 @@ public class LampeView extends BasicLayout {
     private VerticalLayout initialButtonLayout = new VerticalLayout();
     private VerticalLayout newButtonLayout = new VerticalLayout();
     private Dialog buttonDialog = new Dialog();
+    private Dialog undoDialog;
+    private List<Button> customCommandButtons = new ArrayList<>();
 
     public LampeView(RemoteController remoteController) throws IOException {
         this.remoteController = remoteController;
@@ -51,14 +59,17 @@ public class LampeView extends BasicLayout {
         Button blinkButton = createButton("Blink", VaadinIcon.LIGHTBULB);
         blinkButton.addClickListener(e -> executeCommand(new BlinkCommand(new Java2NodeRedLampAdapter(), 2, 5000)));
 
-        Button delayedCommandButton = createButton("Execute Delayed Commands", VaadinIcon.HOURGLASS);
+        Button delayedCommandButton = createButton("Delayed Mode", VaadinIcon.HOURGLASS);
         delayedCommandButton.addClickListener(e -> executeDelayedCommands());
 
         Button partyModeButton = createButton("Party Mode", VaadinIcon.MUSIC);
         partyModeButton.addClickListener(e -> activatePartyMode());
 
+        Button undoButton = createButton("Undo", VaadinIcon.ADJUST);
+        undoButton.addClickListener(e -> openUndoDialog());
+
         // Füge die initialen Buttons zum Layout hinzu
-        initialButtonLayout.add(turnOnButton, turnOffButton, blinkButton, delayedCommandButton, partyModeButton);
+        initialButtonLayout.add(turnOnButton, turnOffButton, blinkButton, delayedCommandButton, partyModeButton, undoButton);
 
         // Initialisiere die zusätzlichen Buttons
         possibleButtons.add(createButton("Button 1", VaadinIcon.ABACUS));
@@ -74,19 +85,121 @@ public class LampeView extends BasicLayout {
         colorPicker.addValueChangeListener(e -> executeCommand(new SetColorCommand(new Java2NodeRedLampAdapter(), hex2Rgb(e.getValue()))));
 
         // Dropdown-Menü für die Befehlshistorie
-        commandHistoryDropdown = new ComboBox<>("Befehlshistorie", e -> undoSelectedCommand(e.getValue()));
+        commandListBox = new ListBox<>();
+        undoDialog = new Dialog(commandListBox);
         updateCommandHistoryDropdown();
 
         // Layout
+
+        buttonLayout.getStyle().set("background-color", "rgba(128, 128, 128, 0.2)"); // Transparent Grau
+        buttonLayout.getStyle().set("border-radius", "20px"); // Abgerundete Kanten
+        buttonLayout.getStyle().set("padding", "30px");
+
+        rightLayout.getStyle().set("background-color", "rgba(128, 128, 128, 0.2)"); // Transparent Grau
+        rightLayout.getStyle().set("border-radius", "20px"); // Abgerundete Kanten
+        rightLayout.getStyle().set("padding", "30px");
+
+
         initialButtonLayout.getStyle().set("margin", "2px");
+        initialButtonLayout.getStyle().set("padding", "2px");
+        newButtonLayout.getStyle().set("padding", "2px");
         newButtonLayout.getStyle().set("margin", "2px");
-        initialButtonLayout.getStyle().set("padding", "0px");
-        newButtonLayout.getStyle().set("padding", "0px");
+
+        //virtuelle lampe
+        VerticalLayout virtualLamp = new VerticalLayout(createLamp());
+
         buttonLayout.add(initialButtonLayout, newButtonLayout);
-        rightLayout.add(colorPicker, commandHistoryDropdown);
+        rightLayout.add(virtualLamp, colorPicker, setupCustomCommandCreation());
+
         HorizontalLayout mainLayout = new HorizontalLayout(buttonLayout, rightLayout);
         this.setContent(mainLayout);
     }
+
+    private void openUndoDialog() {
+        List<String> historyItems = remoteController.getLastFiveCommands()
+                .stream()
+                .map(Command::toString)
+                .collect(Collectors.toList());
+
+        if (historyItems.isEmpty()) {
+            historyItems.add("Keine Befehle verfügbar");
+        }
+
+        commandListBox.setItems(historyItems);
+        commandListBox.addValueChangeListener(e -> {
+            if (!e.getValue().equals("Keine Befehle verfügbar")) {
+                undoSelectedCommand(e.getValue());
+                undoDialog.close(); // Schließen Sie den Dialog
+                Notification.show("Das Undo ist erfolgt."); // Zeigen Sie eine Benachrichtigung an
+            }
+        });
+        undoDialog.open();
+    }
+
+
+    private Component setupCustomCommandCreation() {
+        List<String> availableCommands = Arrays.asList("Turn On", "Turn Off", "Blink");
+
+        MultiSelectListBox<String> commandSelect = new MultiSelectListBox<>();
+        commandSelect.setItems(availableCommands);
+
+        Button submitButton = new Button("Create Custom Command");
+        StringBuilder buttonName = new StringBuilder();
+
+        submitButton.addClickListener(event -> {
+            CustomCommand customCommand = new CustomCommand();
+
+            for (String selectedCommand : commandSelect.getSelectedItems()) {
+                switch (selectedCommand) {
+                    case "Turn On":
+                        customCommand.addCommand(new TurnOnCommand(new Java2NodeRedLampAdapter()));
+                        break;
+                    case "Turn Off":
+                        customCommand.addCommand(new TurnOffCommand(new Java2NodeRedLampAdapter()));
+                        break;
+                    case "Blink":
+                        customCommand.addCommand(new BlinkCommand(new Java2NodeRedLampAdapter(), 2, 5000)); // replace with actual params
+                        break;
+                    // Add remaining cases for the rest of your commands
+                }
+                buttonName.append(selectedCommand).append(" and ");
+            }
+            if (!buttonName.isEmpty()) {
+                buttonName.setLength(buttonName.length() - 5);
+            }
+            Button newCustomCommandButton = createButton(buttonName.toString(), VaadinIcon.ABACUS); // You can change the icon as needed
+            newCustomCommandButton.addClickListener(e -> executeCommand(customCommand));
+            customCommandButtons.add(newCustomCommandButton);
+            addButton(newCustomCommandButton);
+
+            commandSelect.clear();
+        });
+
+        // Erstelle ein Layout und füge die Komponenten hinzu
+        VerticalLayout layout = new VerticalLayout();
+        layout.add(commandSelect, submitButton);
+        return layout;
+    }
+
+    private Component createLamp() {
+        Icon lampIcon = new Icon(VaadinIcon.LIGHTBULB);
+        lampIcon.setSize("80px"); // Sie können die Größe an Ihre Bedürfnisse anpassen
+
+        // Erstellen Sie die Box
+        Div box = new Div(lampIcon);
+        box.getStyle()
+                .set("background-color", "lightgray") // Hintergrundfarbe
+                .set("border-radius", "25px") // Abgerundete Kanten
+                .set("padding", "10px") // Innenabstand
+                .set("width", "120px") // Breite
+                .set("height", "120px") // Höhe
+                .set("display", "flex") // Flexbox-Layout verwenden
+                .set("justify-content", "center") // Zentrieren Sie den Inhalt horizontal
+                .set("align-items", "center"); // Zentrieren Sie den Inhalt vertikal
+
+        return box;
+    }
+
 
     private Button createButton(String text, VaadinIcon icon) {
         Button button = new Button(text);
@@ -106,6 +219,7 @@ public class LampeView extends BasicLayout {
     private void addButton(Button button) {
         newButtonLayout.addComponentAtIndex(newButtonLayout.getComponentCount() - 1, button);
     }
+
 
     private void openButtonDialog() {
         buttonDialog.removeAll();
@@ -138,7 +252,7 @@ public class LampeView extends BasicLayout {
                 .stream()
                 .map(Command::toString)
                 .collect(Collectors.toList());
-        commandHistoryDropdown.setItems(historyItems);
+        commandListBox.setItems(historyItems);
     }
 
     private void undoSelectedCommand(String commandDescription) {
