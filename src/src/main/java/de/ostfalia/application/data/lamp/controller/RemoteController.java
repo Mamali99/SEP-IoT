@@ -21,12 +21,22 @@ public class RemoteController {
         commandHistory.add(command);
     }
 
+    /**
+     * Undoes the specified command at the given index in the command history.
+     *
+     * @param commandIndex the index of the command to undo
+     * @throws IOException if an I/O error occurs
+     */
     public void undoCommand(int commandIndex) throws IOException {
-        if (commandIndex >= 0 && commandIndex < commandHistory.size()) {
+        if (isValidCommandIndex(commandIndex)) {
             Command commandToUndo = commandHistory.get(commandIndex);
             commandToUndo.undo();
             commandHistory.remove(commandIndex); // Entferne den rückgängig gemachten Befehl aus der Historie
         }
+    }
+
+    private boolean isValidCommandIndex(int commandIndex) {
+        return commandIndex >= 0 && commandIndex < commandHistory.size();
     }
 
     // Eine Methode, um die letzten 5 Befehle abzurufen
