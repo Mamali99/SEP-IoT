@@ -5,13 +5,17 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.listbox.MultiSelectListBox;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
+import de.ostfalia.application.data.entity.BicycleID;
 import de.ostfalia.application.data.lamp.commandImp.*;
 import de.ostfalia.application.data.lamp.controller.RemoteController;
 import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
+import de.ostfalia.application.data.service.BikeService;
 import de.ostfalia.application.views.BasicLayout;
 import org.vaadin.addons.tatu.ColorPicker;
 
@@ -22,6 +26,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.vaadin.flow.dom.ElementFactory.createButton;
+
 @Route("/SE/LampControl")
 public class LampRemoteControlView extends BasicLayout {
 
@@ -29,14 +35,17 @@ public class LampRemoteControlView extends BasicLayout {
     private ColorPicker colorPicker;
     private ComboBox<String> commandHistoryDropdown;
 
+    private BikeService bikeService;
+
     List<Button> customCommandButtons = new ArrayList<>();
 
     VerticalLayout layout = new VerticalLayout();
 
     private Div lampRepresentation;
 
-    public LampRemoteControlView(RemoteController remoteController) throws IOException {
+    public LampRemoteControlView(RemoteController remoteController, BikeService bikeService) throws IOException {
         this.remoteController = remoteController;
+        this.bikeService = bikeService;
 
         setupLayout();
     }
@@ -46,12 +55,15 @@ public class LampRemoteControlView extends BasicLayout {
         this.lampRepresentation.getStyle().set("width", "50px").set("height", "50px");
 
         // Initialisiere die Buttons und ColorPicker
+        // Button für BikeDriveCommand hinzufügen
+        Button bikeDriveButton = new Button("Bike Drive", e -> executeCommand(new BikeDriveCommand(new Java2NodeRedLampAdapter(), bikeService, 5)));
         Button turnOnButton = new Button("Turn On", e -> executeCommand(new TurnOnCommand(new Java2NodeRedLampAdapter())));
         Button turnOffButton = new Button("Turn Off", e -> executeCommand(new TurnOffCommand(new Java2NodeRedLampAdapter())));
         Button blinkButton = new Button("Blink", e -> executeCommand(new BlinkCommand(new Java2NodeRedLampAdapter(), 2, 5000)));
         Button delayedCommandButton = new Button("Execute Delayed Commands", e -> executeDelayedCommands());
         Button partyModeButton = new Button("Party Mode", e -> activatePartyMode());
         Button customButton = new Button("Turn On and Blink", e -> createAndExecuteCustomCommand());
+
 
         colorPicker = new ColorPicker();
         colorPicker.setLabel("Farbe wählen");
@@ -65,13 +77,12 @@ public class LampRemoteControlView extends BasicLayout {
         // Layout
         layout = new VerticalLayout(turnOnButton, customButton, turnOffButton,
                 blinkButton, delayedCommandButton, partyModeButton, colorPicker, commandHistoryDropdown,
-                lampRepresentation);
+                lampRepresentation, bikeDriveButton);
         List<Component> customCommandComponents = setupCustomCommandCreation();
         for (Button customCommandButton : customCommandButtons) {
             layout.add(customCommandButton);
         }
         customCommandComponents.stream().forEach(layout::add);
-
         this.setContent(layout);
     }
 
