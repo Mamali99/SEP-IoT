@@ -17,6 +17,7 @@ import de.ostfalia.application.data.lamp.controller.RemoteController;
 import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
 import de.ostfalia.application.views.BasicLayout;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.addons.tatu.ColorPicker;
 
 import java.awt.*;
@@ -28,7 +29,8 @@ import java.util.stream.Collectors;
 
 @Route("/SE/LightAdapter")
 public class LampeView extends BasicLayout {
-
+    @Autowired
+    private Java2NodeRedLampAdapter lampAdapter;
     private final RemoteController remoteController;
     private ColorPicker colorPicker;
     private ListBox<String> commandListBox;
@@ -51,13 +53,13 @@ public class LampeView extends BasicLayout {
 
         // Initialisiere die Buttons und ColorPicker
         Button turnOnButton = createButton("Turn On", VaadinIcon.POWER_OFF);
-        turnOnButton.addClickListener(e -> executeCommand(new TurnOnCommand(new Java2NodeRedLampAdapter())));
+        turnOnButton.addClickListener(e -> executeCommand(new TurnOnCommand(lampAdapter)));
 
         Button turnOffButton = createButton("Turn Off", VaadinIcon.CLOSE);
-        turnOffButton.addClickListener(e -> executeCommand(new TurnOffCommand(new Java2NodeRedLampAdapter())));
+        turnOffButton.addClickListener(e -> executeCommand(new TurnOffCommand(lampAdapter)));
 
         Button blinkButton = createButton("Blink", VaadinIcon.LIGHTBULB);
-        blinkButton.addClickListener(e -> executeCommand(new BlinkCommand(new Java2NodeRedLampAdapter(), 2, 5000)));
+        blinkButton.addClickListener(e -> executeCommand(new BlinkCommand(lampAdapter, 2, 5000)));
 
         Button delayedCommandButton = createButton("Delayed Mode", VaadinIcon.HOURGLASS);
         delayedCommandButton.addClickListener(e -> executeDelayedCommands());
@@ -82,7 +84,7 @@ public class LampeView extends BasicLayout {
 
         colorPicker = new ColorPicker();
         colorPicker.setLabel("Farbe wählen");
-        colorPicker.addValueChangeListener(e -> executeCommand(new SetColorCommand(new Java2NodeRedLampAdapter(), hex2Rgb(e.getValue()))));
+        colorPicker.addValueChangeListener(e -> executeCommand(new SetColorCommand(lampAdapter, hex2Rgb(e.getValue()))));
 
         // Dropdown-Menü für die Befehlshistorie
         commandListBox = new ListBox<>();
@@ -116,24 +118,43 @@ public class LampeView extends BasicLayout {
     }
 
     private void openUndoDialog() {
-        List<String> historyItems = remoteController.getLastFiveCommands()
-                .stream()
-                .map(Command::toString)
-                .collect(Collectors.toList());
+        List<Command> historyCommands = remoteController.getLastFiveCommands();
 
-        if (historyItems.isEmpty()) {
-            historyItems.add("Keine Befehle verfügbar");
+        if (historyCommands.isEmpty()) {
+            Notification.show("Keine Befehle verfügbar");
+            return;
         }
 
-        commandListBox.setItems(historyItems);
-        commandListBox.addValueChangeListener(e -> {
-            if (!e.getValue().equals("Keine Befehle verfügbar")) {
-                undoSelectedCommand(e.getValue());
-                undoDialog.close(); // Schließen Sie den Dialog
-                Notification.show("Das Undo ist erfolgt."); // Zeigen Sie eine Benachrichtigung an
+        ListBox<Command> commandListBox = new ListBox<>();
+        commandListBox.setItems(historyCommands);
+        commandListBox.setItemLabelGenerator(Command::toString);
+
+        Dialog undoDialog = new Dialog(commandListBox);
+        undoDialog.open();
+
+        commandListBox.addValueChangeListener(event -> {
+            Command selectedCommand = event.getValue();
+            if (selectedCommand != null) {
+                executeCommand(selectedCommand);
             }
         });
-        undoDialog.open();
+    }
+
+
+    // Select Buttons to Add Option
+    private void openButtonDialog() {
+        buttonDialog.removeAll();
+
+        for (Button button : possibleButtons) {
+            button.addClickListener(e -> {
+                addButton(button);
+                possibleButtons.remove(button);
+                buttonDialog.close();
+            });
+            buttonDialog.add(button);
+        }
+
+        buttonDialog.open();
     }
 
 
@@ -152,13 +173,13 @@ public class LampeView extends BasicLayout {
             for (String selectedCommand : commandSelect.getSelectedItems()) {
                 switch (selectedCommand) {
                     case "Turn On":
-                        customCommand.addCommand(new TurnOnCommand(new Java2NodeRedLampAdapter()));
+                        customCommand.addCommand(new TurnOnCommand(lampAdapter));
                         break;
                     case "Turn Off":
-                        customCommand.addCommand(new TurnOffCommand(new Java2NodeRedLampAdapter()));
+                        customCommand.addCommand(new TurnOffCommand(lampAdapter));
                         break;
                     case "Blink":
-                        customCommand.addCommand(new BlinkCommand(new Java2NodeRedLampAdapter(), 2, 5000)); // replace with actual params
+                        customCommand.addCommand(new BlinkCommand(lampAdapter, 2, 5000)); // replace with actual params
                         break;
                     // Add remaining cases for the rest of your commands
                 }
@@ -221,21 +242,6 @@ public class LampeView extends BasicLayout {
     }
 
 
-    private void openButtonDialog() {
-        buttonDialog.removeAll();
-
-        for (Button button : possibleButtons) {
-            button.addClickListener(e -> {
-                addButton(button);
-                possibleButtons.remove(button);
-                buttonDialog.close();
-            });
-            buttonDialog.add(button);
-        }
-
-        buttonDialog.open();
-    }
-
     // vom Event Ausgelöst
 
     private void executeCommand(Command command) {
@@ -276,16 +282,16 @@ public class LampeView extends BasicLayout {
         int[] intensities = {100, 200, 254};
         int blinkCount = 5;
 
-        executeCommand(new PartyModeCommand(new Java2NodeRedLampAdapter(), blinkCount, colors, intensities));
+        executeCommand(new PartyModeCommand(lampAdapter, blinkCount, colors, intensities));
     }
 
     private void executeDelayedCommands() {
-        Command turnOnCommand = new TurnOnCommand(new Java2NodeRedLampAdapter());
-        Command turnOffCommand = new TurnOffCommand(new Java2NodeRedLampAdapter());
+        Command turnOnCommand = new TurnOnCommand(lampAdapter);
+        Command turnOffCommand = new TurnOffCommand(lampAdapter);
         Command[] commands = {turnOnCommand, turnOffCommand};
         long delay = 5000;
 
-        executeCommand(new DelayedCommands(new Java2NodeRedLampAdapter(), commands, delay));
+        executeCommand(new DelayedCommands(lampAdapter, commands, delay));
     }
 
     private Color hex2Rgb(String colorStr) {
