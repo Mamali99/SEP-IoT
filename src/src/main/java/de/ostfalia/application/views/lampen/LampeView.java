@@ -2,6 +2,8 @@ package de.ostfalia.application.views.lampen;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import de.ostfalia.application.data.lamp.commandImp.*;
@@ -30,11 +32,21 @@ public class LampeView extends BasicLayout {
 
     private void setupLayout() {
         // Initialisiere die Buttons und ColorPicker
-        Button turnOnButton = new Button("Turn On", e -> executeCommand(new TurnOnCommand(new Java2NodeRedLampAdapter())));
-        Button turnOffButton = new Button("Turn Off", e -> executeCommand(new TurnOffCommand(new Java2NodeRedLampAdapter())));
-        Button blinkButton = new Button("Blink", e -> executeCommand(new BlinkCommand(new Java2NodeRedLampAdapter(), 2, 5000)));
-        Button delayedCommandButton = new Button("Execute Delayed Commands", e -> executeDelayedCommands());
-        Button partyModeButton = new Button("Party Mode", e -> activatePartyMode());
+        Button turnOnButton = createButton("Turn On", VaadinIcon.POWER_OFF);
+        turnOnButton.addClickListener(e -> executeCommand(new TurnOnCommand(new Java2NodeRedLampAdapter())));
+
+        Button turnOffButton = createButton("Turn Off", VaadinIcon.CLOSE);
+        turnOffButton.addClickListener(e -> executeCommand(new TurnOffCommand(new Java2NodeRedLampAdapter())));
+
+        Button blinkButton = createButton("Blink", VaadinIcon.LIGHTBULB);
+        blinkButton.addClickListener(e -> executeCommand(new BlinkCommand(new Java2NodeRedLampAdapter(), 2, 5000)));
+
+        Button delayedCommandButton = createButton("Execute Delayed Commands", VaadinIcon.HOURGLASS);
+        delayedCommandButton.addClickListener(e -> executeDelayedCommands());
+
+        Button partyModeButton = createButton("Party Mode", VaadinIcon.MUSIC);
+        partyModeButton.addClickListener(e -> activatePartyMode());
+
         colorPicker = new ColorPicker();
         colorPicker.setLabel("Farbe wählen");
         colorPicker.addValueChangeListener(e -> executeCommand(new SetColorCommand(new Java2NodeRedLampAdapter(), hex2Rgb(e.getValue()))));
@@ -43,11 +55,29 @@ public class LampeView extends BasicLayout {
         commandHistoryDropdown = new ComboBox<>("Befehlshistorie", e -> undoSelectedCommand(e.getValue()));
         updateCommandHistoryDropdown();
 
-
         // Layout
-        VerticalLayout layout = new VerticalLayout(turnOnButton, turnOffButton, blinkButton, delayedCommandButton, partyModeButton, colorPicker, commandHistoryDropdown);
+        HorizontalLayout buttonLayout1 = new HorizontalLayout(turnOnButton, turnOffButton);
+        HorizontalLayout buttonLayout2 = new HorizontalLayout(blinkButton, delayedCommandButton);
+        HorizontalLayout buttonLayout3 = new HorizontalLayout(partyModeButton, colorPicker);
+
+        VerticalLayout layout = new VerticalLayout(buttonLayout1, buttonLayout2, buttonLayout3, commandHistoryDropdown);
         this.setContent(layout);
     }
+
+    // Buttons Generieren
+    private Button createButton(String text, VaadinIcon icon) {
+        Button button = new Button(text);
+        button.setIcon(icon.create());
+        button.getStyle().set("width", "100px");
+        button.getStyle().set("height", "100px");
+        button.getStyle().set("position", "relative");
+        button.getIcon().getStyle().set("position", "absolute");
+        button.getIcon().getStyle().set("bottom", "10px");
+        button.getIcon().getStyle().set("left", "50%");
+        button.getIcon().getStyle().set("transform", "translateX(-50%)");
+        return button;
+    }
+    // vom Event Ausgelöst
 
     private void executeCommand(Command command) {
         try {
