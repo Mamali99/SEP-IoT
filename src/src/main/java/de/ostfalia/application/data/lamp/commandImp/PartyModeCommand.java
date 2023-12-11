@@ -1,6 +1,7 @@
 package de.ostfalia.application.data.lamp.commandImp;
 
 import de.ostfalia.application.data.entity.LampState;
+import de.ostfalia.application.data.entity.PartyModeSettings;
 import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
 
@@ -12,7 +13,8 @@ public class PartyModeCommand implements Command {
     private int blinkCount;
     private Color[] colors;
     private int[] intensities;
-    private LampState previousState;
+
+    private PartyModeSettings previousState;
 
     public PartyModeCommand(Java2NodeRedLampAdapter lamp, int blinkCount, Color[] colors, int[] intensities) {
         this.lamp = lamp;
@@ -27,7 +29,6 @@ public class PartyModeCommand implements Command {
             // Wechsel zwischen Farben und Intensitäten
             lamp.setColor(colors[i % colors.length]);
             lamp.setIntensity(intensities[i % intensities.length]);
-            System.out.println("Count: "+ i+  " => Lampe mit Color: "+colors[i % colors.length]+ " und Intensität: " +  intensities[i % intensities.length]);
             try {
                 Thread.sleep(500); // Wartezeit zwischen den Blinken
             } catch (InterruptedException e) {
@@ -45,19 +46,17 @@ public class PartyModeCommand implements Command {
 
     @Override
     public void saveCurrentState() throws IOException {
-        previousState = new LampState(lamp.getColor(), lamp.getIntensity(), lamp.getState());
+        previousState.setBlinkCount(this.blinkCount);
+        previousState.setColors(this.colors);
+        previousState.setIntensities(this.intensities);
     }
 
     @Override
     public void undo() throws IOException {
         // Setze den Zustand der Lampe auf den vorher gespeicherten Zustand zurück
-        lamp.setColor(previousState.getColor());
-        lamp.setIntensity(previousState.getIntensity());
-        if (previousState.isOn()) {
-            lamp.switchOn();
-        } else {
-            lamp.switchOff();
-        }
+       this.blinkCount = previousState.getBlinkCount();
+       this.colors = previousState.getColors();
+       this.intensities = previousState.getIntensities();
     }
     @Override
     public String toString() {

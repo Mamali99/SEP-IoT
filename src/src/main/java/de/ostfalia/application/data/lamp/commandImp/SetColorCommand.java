@@ -31,16 +31,8 @@ public class SetColorCommand implements Command {
     @Override
     public void undo() throws IOException {
 
-        // Setze den Zustand der Lampe auf den vorher gespeicherten Zustand zurück
         lamp.setColor(previousState.getColor());
-        /*lamp.setIntensity(previousState.getIntensity());
-        if (previousState.isOn()) {
-            lamp.switchOn();
-        } else {
-            lamp.switchOff();
-        }
 
-         */
     }
 
     //Es muss alte Zustand angezeigt werden
