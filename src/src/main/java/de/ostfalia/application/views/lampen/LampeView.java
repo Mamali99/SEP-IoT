@@ -390,7 +390,7 @@ public class LampeView extends BasicLayout {
         if (commandIndex != -1) {
             try {
                 remoteController.undoCommand(commandIndex);
-                updateCommandHistoryDropdown();
+                updateGUI();
                 Notification.show("Undo operation performed for: " + commandDescription);
             } catch (IOException e) {
                 e.printStackTrace();
