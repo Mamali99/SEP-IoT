@@ -5,14 +5,20 @@ import de.ostfalia.application.data.entity.LampState;
 import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
 
+import java.awt.*;
 import java.io.IOException;
 
 public class BlinkCommand implements Command {
     private Java2NodeRedLampAdapter lamp;
     private int blinkCount;
     private long blinkDuration;
+    private float intensity;
+    private Color color;
     private BlinkSettings previousState;
 
+    private LampState previousStateLampe;
+
+    //hier muss ich vieleicht der alte Zusatand von der Lampe speichern
     public BlinkCommand(Java2NodeRedLampAdapter lamp, int blinkCount, long blinkDuration) {
         this.lamp = lamp;
         this.blinkCount = blinkCount;
@@ -45,6 +51,9 @@ public class BlinkCommand implements Command {
     public void saveCurrentState() throws IOException {
        previousState.setBlinkCount(this.blinkCount);
        previousState.setBlinkDuration(this.blinkDuration);
+       previousStateLampe.setColor(this.color);
+       previousStateLampe.setIntensity(this.intensity);
+
     }
 
     @Override
@@ -52,6 +61,11 @@ public class BlinkCommand implements Command {
 
         this.blinkCount = previousState.getBlinkCount();
         this.blinkDuration = previousState.getBlinkDuration();
+        this.color = previousStateLampe.getColor();
+        this.intensity = previousStateLampe.getIntensity();
+
+        lamp.setColor(this.color);
+        lamp.setIntensity(this.intensity);
 
     }
     @Override

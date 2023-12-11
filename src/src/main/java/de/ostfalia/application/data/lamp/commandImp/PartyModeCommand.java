@@ -16,6 +16,8 @@ public class PartyModeCommand implements Command {
 
     private PartyModeSettings previousState;
 
+
+
     public PartyModeCommand(Java2NodeRedLampAdapter lamp, int blinkCount, Color[] colors, int[] intensities) {
         this.lamp = lamp;
         this.blinkCount = blinkCount;
