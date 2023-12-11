@@ -1,5 +1,6 @@
 package de.ostfalia.application.data.lamp.commandImp;
 
+import de.ostfalia.application.data.entity.BlinkSettings;
 import de.ostfalia.application.data.entity.LampState;
 import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
@@ -10,7 +11,7 @@ public class BlinkCommand implements Command {
     private Java2NodeRedLampAdapter lamp;
     private int blinkCount;
     private long blinkDuration;
-    private LampState previousState;
+    private BlinkSettings previousState;
 
     public BlinkCommand(Java2NodeRedLampAdapter lamp, int blinkCount, long blinkDuration) {
         this.lamp = lamp;
@@ -42,19 +43,16 @@ public class BlinkCommand implements Command {
 
     @Override
     public void saveCurrentState() throws IOException {
-        previousState = new LampState(lamp.getColor(), lamp.getIntensity(), lamp.getState());
+       previousState.setBlinkCount(this.blinkCount);
+       previousState.setBlinkDuration(this.blinkDuration);
     }
 
     @Override
     public void undo() throws IOException {
-// Setze den Zustand der Lampe auf den vorher gespeicherten Zustand zurück
-        lamp.setColor(previousState.getColor());
-        lamp.setIntensity(previousState.getIntensity());
-        if (previousState.isOn()) {
-            lamp.switchOn();
-        } else {
-            lamp.switchOff();
-        }
+
+        this.blinkCount = previousState.getBlinkCount();
+        this.blinkDuration = previousState.getBlinkDuration();
+
     }
     @Override
     public String toString() {
