@@ -13,6 +13,7 @@ import com.vaadin.flow.component.listbox.MultiSelectListBox;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.router.Route;
 import de.ostfalia.application.data.lamp.commandImp.*;
 import de.ostfalia.application.data.lamp.controller.RemoteController;
@@ -34,7 +35,6 @@ public class LampeView extends BasicLayout {
     @Autowired
     private Java2NodeRedLampAdapter lampAdapter;
     private final RemoteController remoteController;
-    private ColorPicker colorPicker;
     private ListBox<String> commandListBox;
 
     private List<Button> possibleButtons = new ArrayList<>();
@@ -58,47 +58,88 @@ public class LampeView extends BasicLayout {
 
         // Initialisiere die Buttons und ColorPicker
         Button turnOnButton = createButton("Turn On", VaadinIcon.POWER_OFF);
+        turnOnButton.getElement().getStyle().set("background-color", "rgba(0, 255, 0, 0.2)"); // Grün und transparent
         turnOnButton.addClickListener(e -> executeCommand(new TurnOnCommand(lampAdapter)));
 
         Button turnOffButton = createButton("Turn Off", VaadinIcon.CLOSE);
+        turnOffButton.getElement().getStyle().set("background-color", "rgba(255, 0, 0, 0.2)"); // Rot und transparent
         turnOffButton.addClickListener(e -> executeCommand(new TurnOffCommand(lampAdapter)));
 
         Button blinkButton = createButton("Blink", VaadinIcon.LIGHTBULB);
         blinkButton.addClickListener(e -> executeCommand(new BlinkCommand(lampAdapter, 2, 5000)));
 
-        Button delayedCommandButton = createButton("Delayed Mode", VaadinIcon.HOURGLASS);
-        delayedCommandButton.addClickListener(e -> executeDelayedCommands());
-
         Button partyModeButton = createButton("Party Mode", VaadinIcon.MUSIC);
         partyModeButton.addClickListener(e -> activatePartyMode());
 
         Button undoButton = createButton("Undo", VaadinIcon.ADJUST);
+        undoButton.getElement().getStyle().set("background-color", "rgba(255, 255, 0, 0.2)"); // Gelb und transparent
         undoButton.addClickListener(e -> openUndoDialog());
+
+        Button delayedCommandButton = createButton("Delayed Mode", VaadinIcon.HOURGLASS);
+        delayedCommandButton.addClickListener(e -> executeDelayedCommands());
+
+        Button setColor = createButton("Set Color", VaadinIcon.ACADEMY_CAP);
+        setColor.addClickListener(e -> {
+            Dialog colorDialog = new Dialog();
+            VerticalLayout layout = new VerticalLayout();
+
+            // Erstellen Sie einen ColorPicker zur Auswahl der Farbe
+            ColorPicker colorPicker = new ColorPicker();
+            try {
+                colorPicker.setValue(colorToCss(lampAdapter.getColor()));
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            layout.add(colorPicker);
+
+            // Erstellen Sie eine Schaltfläche zum Übernehmen der ausgewählten Farbe
+            Button applyButton = new Button("Apply", click -> {
+                executeCommand(new SetColorCommand(lampAdapter, hex2Rgb(colorPicker.getValue())));
+                colorDialog.close();
+            });
+            layout.add(applyButton);
+
+            colorDialog.add(layout);
+            colorDialog.open();
+        });
 
         // Füge die initialen Buttons zum Layout hinzu
         initialButtonLayout.add(turnOnButton, turnOffButton, blinkButton, delayedCommandButton, partyModeButton, undoButton);
 
         // Initialisiere die zusätzlichen Buttons
-        possibleButtons.add(createButton("Button 1", VaadinIcon.ABACUS));
-        possibleButtons.add(createButton("Button 2", VaadinIcon.ACADEMY_CAP));
+        Button setIntensity = createButton("Set Intensity", VaadinIcon.ABACUS);
+        setIntensity.addClickListener(e -> {
+            Dialog intensityDialog = new Dialog();
+            VerticalLayout layout = new VerticalLayout();
+
+            // Erstellen Sie einen Slider zur Auswahl der Intensität
+            IntegerField intensitySlider = new IntegerField();
+            intensitySlider.setLabel("Lamp Intensity");
+            intensitySlider.setHelperText("Max Intensity 254");
+            intensitySlider.setValue(100);
+            intensitySlider.setMin(0);
+            intensitySlider.setMax(254);
+            layout.add(intensitySlider);
+
+            // Erstellen Sie eine Schaltfläche zum Übernehmen der ausgewählten Intensität
+            Button applyButton = new Button("Apply", click -> {
+                executeCommand(new SetIntensityCommand(lampAdapter, intensitySlider.getValue()));
+                intensityDialog.close();
+            });
+            layout.add(applyButton);
+
+            intensityDialog.add(layout);
+            intensityDialog.open();
+        });
+        possibleButtons.add(setIntensity);
+        possibleButtons.add(setColor);
+
 
         // Erstelle den "Plus"-Button
         Button plusButton = new Button("Plus", e -> openButtonDialog());
         plusButton.setIcon(VaadinIcon.PLUS.create());
         newButtonLayout.add(plusButton);
 
-        colorPicker = new ColorPicker();
-        colorPicker.setValue(colorToCss(lampAdapter.getColor()));
-        colorPicker.setLabel("Farbe wählen");
-        colorPicker.addValueChangeListener(e -> {
-            Color selectedColor = hex2Rgb(e.getValue());
-            executeCommand(new SetColorCommand(lampAdapter, selectedColor));
-            try {
-                updateLampColor(selectedColor);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
 
         // Dropdown-Menü für die Befehlshistorie
         commandListBox = new ListBox<>();
@@ -125,7 +166,7 @@ public class LampeView extends BasicLayout {
         VerticalLayout virtualLamp = new VerticalLayout(createLamp());
 
         buttonLayout.add(initialButtonLayout, newButtonLayout);
-        rightLayoutFirstRow.add(virtualLamp, colorPicker);
+        rightLayoutFirstRow.add(virtualLamp);
         rightLayout.add(rightLayoutFirstRow, setupCustomCommandCreation());
 
         HorizontalLayout mainLayout = new HorizontalLayout(buttonLayout, rightLayout);
@@ -150,7 +191,7 @@ public class LampeView extends BasicLayout {
         dialogDiv.getStyle().set("width", "200px"); // Set the width
         dialogDiv.getStyle().set("padding", "20px"); // Set the width
         dialogDiv.getStyle().set("border-radius", "10px"); // Round the corners
-        dialogDiv.getStyle().set("background-color", "rgb(255, 247, 138, 0.2)"); // Set a light purple transparent background
+        dialogDiv.getStyle().set("background-color", "rgba(128, 128, 128, 0.1)"); // Set a light purple transparent background
 
         // Add a click listener to the close button to remove the Div when clicked
         closeButton.addClickListener(event -> dialogDiv.setVisible(false));
@@ -235,10 +276,13 @@ public class LampeView extends BasicLayout {
     Div lampBox;
 
     Span statusLabel;
+    Span intensityLvl;
+
     private Component createLamp() throws IOException {
         lampIcon = new Icon(VaadinIcon.LIGHTBULB);
         lampIcon.setSize("100px"); // Sie können die Größe an Ihre Bedürfnisse anpassen
         String selectedColorCss = colorToCss(lampAdapter.getColor());
+        intensityLvl = new Span("Intensity: " + lampAdapter.getIntensity());
         lampIcon.setColor(selectedColorCss);
         // Erstellen Sie die Box
         lampBox = new Div();
@@ -268,7 +312,7 @@ public class LampeView extends BasicLayout {
         updateStatusLabel();
 
         // Fügen Sie den Titel zur Box hinzu
-        lampBox.add(lampIcon, statusLabel);
+        lampBox.add(lampIcon, statusLabel, intensityLvl);
 
         return lampBox;
     }
@@ -281,6 +325,8 @@ public class LampeView extends BasicLayout {
             statusLabel.setText("OFF");
             statusLabel.getStyle().set("color", "red"); // Textfarbe
         }
+        intensityLvl.setText("Intensity: " + lampAdapter.getIntensity());
+
     }
 
     private void updateGUI() throws IOException {
@@ -344,7 +390,7 @@ public class LampeView extends BasicLayout {
         if (commandIndex != -1) {
             try {
                 remoteController.undoCommand(commandIndex);
-                updateCommandHistoryDropdown();
+                updateGUI();
                 Notification.show("Undo operation performed for: " + commandDescription);
             } catch (IOException e) {
                 e.printStackTrace();
