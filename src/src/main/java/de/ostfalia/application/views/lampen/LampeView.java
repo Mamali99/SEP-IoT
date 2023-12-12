@@ -62,28 +62,36 @@ public class LampeView extends BasicLayout implements LampObserver {
         Button turnOnButton = createButton("Turn On", VaadinIcon.POWER_OFF);
         turnOnButton.getElement().getStyle().set("background-color", "rgba(0, 255, 0, 0.2)"); // Grün und transparent
         turnOnButton.addClickListener(e -> executeCommand(new TurnOnCommand(lampAdapter)));
+        turnOnButton.addClassName("button");
+        turnOnButton.getIcon().addClassName("icon");
 
         Button turnOffButton = createButton("Turn Off", VaadinIcon.CLOSE);
         turnOffButton.getElement().getStyle().set("background-color", "rgba(255, 0, 0, 0.2)"); // Rot und transparent
         turnOffButton.addClickListener(e -> executeCommand(new TurnOffCommand(lampAdapter)));
+        turnOffButton.addClassName("button");
 
         Button blinkButton = createButton("Blink", VaadinIcon.LIGHTBULB);
         blinkButton.addClickListener(e -> executeCommand(new BlinkCommand(lampAdapter, 2, 5000)));
+        blinkButton.addClassName("button");
 
         Button partyModeButton = createButton("Party Mode", VaadinIcon.MUSIC);
         partyModeButton.addClickListener(e -> activatePartyMode());
+        partyModeButton.addClassName("button");
 
         Button undoButton = createButton("Undo", VaadinIcon.ADJUST);
         undoButton.getElement().getStyle().set("background-color", "rgba(255, 255, 0, 0.2)"); // Gelb und transparent
         undoButton.addClickListener(e -> openUndoDialog());
+        undoButton.addClassName("button");
 
         Button delayedCommandButton = createButton("Delayed Mode", VaadinIcon.HOURGLASS);
         delayedCommandButton.addClickListener(e -> executeDelayedCommands());
+        delayedCommandButton.addClassName("button");
 
         Button setColor = createButton("Set Color", VaadinIcon.ACADEMY_CAP);
         setColor.addClickListener(e -> {
             Dialog colorDialog = new Dialog();
             VerticalLayout layout = new VerticalLayout();
+            setColor.addClassName("button");
 
             // Erstellen Sie einen ColorPicker zur Auswahl der Farbe
             ColorPicker colorPicker = new ColorPicker();
@@ -99,26 +107,31 @@ public class LampeView extends BasicLayout implements LampObserver {
                 executeCommand(new SetColorCommand(lampAdapter, hex2Rgb(colorPicker.getValue())));
                 colorDialog.close();
             });
+            applyButton.addClassName("button");
             layout.add(applyButton);
 
             colorDialog.add(layout);
             colorDialog.open();
         });
 
+        this.addClassName("dark");
         // Füge die initialen Buttons zum Layout hinzu
         initialButtonLayout.add(turnOnButton, turnOffButton, blinkButton, delayedCommandButton, partyModeButton, undoButton);
 
         // Initialisiere die zusätzlichen Buttons
         Button setIntensity = createButton("Set Intensity", VaadinIcon.ABACUS);
+        setIntensity.addClassName("button");
         setIntensity.addClickListener(e -> {
             Dialog intensityDialog = new Dialog();
             VerticalLayout layout = new VerticalLayout();
-
-            // Erstellen Sie einen Slider zur Auswahl der Intensität
             IntegerField intensitySlider = new IntegerField();
             intensitySlider.setLabel("Lamp Intensity");
             intensitySlider.setHelperText("Max Intensity 254");
-            intensitySlider.setValue(100);
+            try {
+                intensitySlider.setValue((int)lampAdapter.getIntensity());
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
             intensitySlider.setMin(0);
             intensitySlider.setMax(254);
             layout.add(intensitySlider);
@@ -128,6 +141,7 @@ public class LampeView extends BasicLayout implements LampObserver {
                 executeCommand(new SetIntensityCommand(lampAdapter, intensitySlider.getValue()));
                 intensityDialog.close();
             });
+            applyButton.addClassName("button");
             layout.add(applyButton);
 
             intensityDialog.add(layout);
@@ -135,11 +149,13 @@ public class LampeView extends BasicLayout implements LampObserver {
         });
         possibleButtons.add(setIntensity);
         possibleButtons.add(setColor);
+        setColor.addClassName("button");
 
 
         // Erstelle den "Plus"-Button
         Button plusButton = new Button("Plus", e -> openButtonDialog());
         plusButton.setIcon(VaadinIcon.PLUS.create());
+        plusButton.addClassName("button");
         newButtonLayout.add(plusButton);
 
 
@@ -309,8 +325,8 @@ public class LampeView extends BasicLayout implements LampObserver {
                 .set("background-color", "rgba(" + lampAdapter.getColor().getRed() + ", " + lampAdapter.getColor().getGreen() + ", " + lampAdapter.getColor().getBlue() + ", 0.5)") // Hintergrundfarbe mit Transparenz
                 .set("border-radius", "25px") // Abgerundete Kanten
                 .set("padding", "10px") // Innenabstand
-                .set("width", "200px") // Breite
-                .set("height", "200px") // Höhe
+                .set("width", "250px") // Breite
+                .set("height", "250px") // Höhe
                 .set("display", "flex") // Flexbox-Layout verwenden
                 .set("justify-content", "center") // Zentrieren Sie den Inhalt horizontal
                 .set("align-items", "center") // Zentrieren Sie den Inhalt vertikal
@@ -349,12 +365,13 @@ public class LampeView extends BasicLayout implements LampObserver {
         button.getStyle().set("width", "100px");
         button.getStyle().set("height", "100px");
         button.getStyle().set("position", "relative");
-        button.getStyle().set("margin", "0px"); // Setzt den Außenabstand auf 0
+        button.getStyle().set("margin", "2px"); // Setzt den Außenabstand auf 0
         button.getStyle().set("padding", "0px"); // Setzt den Innenabstand auf 0
         button.getIcon().getStyle().set("position", "absolute");
         button.getIcon().getStyle().set("bottom", "10px");
         button.getIcon().getStyle().set("left", "50%");
         button.getIcon().getStyle().set("transform", "translateX(-50%)");
+        button.addClassName("button");
         return button;
     }
 
