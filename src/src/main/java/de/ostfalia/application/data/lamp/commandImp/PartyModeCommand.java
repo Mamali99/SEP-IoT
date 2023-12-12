@@ -63,6 +63,6 @@ public class PartyModeCommand implements Command {
     }
     @Override
     public String toString() {
-        return "Party Mode Command [Blinkanzahl: " + blinkCount + "]";
+        return "Party Mode";
     }
 }

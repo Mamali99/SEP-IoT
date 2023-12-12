@@ -66,6 +66,6 @@ public class BlinkCommand implements Command {
     }
     @Override
     public String toString() {
-        return "Blink Command [Anzahl: " + blinkCount + ", Dauer: " + blinkDuration + "ms]";
+        return "Blink";
     }
 }

@@ -38,6 +38,6 @@ public class TurnOnCommand implements Command {
     }
     @Override
     public String toString() {
-        return "Turn On Command";
+        return "Turn On";
     }
 }

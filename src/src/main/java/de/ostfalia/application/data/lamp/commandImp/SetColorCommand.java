@@ -38,8 +38,7 @@ public class SetColorCommand implements Command {
     //Es muss alte Zustand angezeigt werden
     @Override
     public String toString() {
-        String colorHex = String.format("#%02X%02X%02X", previousState.getColor().getRed(), previousState.getColor().getGreen(), previousState.getColor().getBlue());
-        return "Set Color Command [Farbe: " + colorHex + "]";
+        return "Set Color";
     }
 
 }

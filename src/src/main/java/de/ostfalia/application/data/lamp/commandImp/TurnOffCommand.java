@@ -37,7 +37,7 @@ public class TurnOffCommand implements Command {
     }
     @Override
     public String toString() {
-        return "Turn Off Command";
+        return "Turn Off";
     }
 
 }
