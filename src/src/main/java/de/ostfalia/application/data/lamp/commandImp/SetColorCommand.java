@@ -32,6 +32,7 @@ public class SetColorCommand implements Command {
     public void undo() throws IOException {
 
         lamp.setColor(previousState.getColor());
+        lamp.notifyObservers();
 
     }
 

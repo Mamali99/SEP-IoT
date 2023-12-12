@@ -60,6 +60,7 @@ public class PartyModeCommand implements Command {
        }else{
            lamp.switchOff();
        }
+        lamp.notifyObservers();
     }
     @Override
     public String toString() {

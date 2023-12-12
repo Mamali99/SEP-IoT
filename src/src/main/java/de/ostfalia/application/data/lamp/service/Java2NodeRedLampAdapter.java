@@ -43,7 +43,7 @@ public class Java2NodeRedLampAdapter implements ILamp {
     }
 
     // Benachrichtige alle Observers über eine Änderung
-    private void notifyObservers() {
+    public void notifyObservers() {
         for (LampObserver observer : observers) {
             try {
                 observer.updateLampState();

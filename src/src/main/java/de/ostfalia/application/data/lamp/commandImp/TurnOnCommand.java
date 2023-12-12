@@ -35,6 +35,7 @@ public class TurnOnCommand implements Command {
         } else {
             lamp.switchOff();
         }
+        lamp.notifyObservers();
     }
     @Override
     public String toString() {

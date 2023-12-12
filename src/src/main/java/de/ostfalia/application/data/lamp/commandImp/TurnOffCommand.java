@@ -33,6 +33,7 @@ public class TurnOffCommand implements Command {
         } else {
             lamp.switchOff();
         }
+        lamp.notifyObservers();
 
     }
     @Override

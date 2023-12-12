@@ -61,6 +61,7 @@ public class BlinkCommand implements Command {
         }else{
             lamp.switchOff();
         }
+        lamp.notifyObservers();
 
 
     }
