@@ -11,6 +11,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.listbox.ListBox;
 import com.vaadin.flow.component.listbox.MultiSelectListBox;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
@@ -40,7 +41,8 @@ public class LampeView extends BasicLayout implements LampObserver {
 
     private List<Button> possibleButtons = new ArrayList<>();
     private HorizontalLayout buttonLayout = new HorizontalLayout();
-    private HorizontalLayout rightLayout = new HorizontalLayout();
+    private HorizontalLayout virtualLampLayout = new HorizontalLayout();
+    private HorizontalLayout customCommandLayout = new HorizontalLayout();
 
     private VerticalLayout rightLayoutFirstRow = new VerticalLayout();
     private VerticalLayout initialButtonLayout = new VerticalLayout();
@@ -83,7 +85,7 @@ public class LampeView extends BasicLayout implements LampObserver {
         undoButton.addClickListener(e -> openUndoDialog());
         undoButton.addClassName("button");
 
-        Button delayedCommandButton = createButton("Delayed Mode", VaadinIcon.HOURGLASS);
+        Button delayedCommandButton = createButton("Delayed", VaadinIcon.HOURGLASS);
         delayedCommandButton.addClickListener(e -> executeDelayedCommands());
         delayedCommandButton.addClassName("button");
 
@@ -128,7 +130,7 @@ public class LampeView extends BasicLayout implements LampObserver {
             intensitySlider.setLabel("Lamp Intensity");
             intensitySlider.setHelperText("Max Intensity 254");
             try {
-                intensitySlider.setValue((int)lampAdapter.getIntensity());
+                intensitySlider.setValue((int) lampAdapter.getIntensity());
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
@@ -166,14 +168,9 @@ public class LampeView extends BasicLayout implements LampObserver {
 
         // Layout
 
-        buttonLayout.getStyle().set("background-color", "rgba(128, 128, 128, 0.2)"); // Transparent Grau
-        buttonLayout.getStyle().set("border-radius", "20px"); // Abgerundete Kanten
-        buttonLayout.getStyle().set("padding", "30px");
-
-        rightLayout.getStyle().set("background-color", "rgba(128, 128, 128, 0.2)"); // Transparent Grau
-        rightLayout.getStyle().set("border-radius", "20px"); // Abgerundete Kanten
-        rightLayout.getStyle().set("padding", "30px");
-
+        buttonLayout.addClassName("common-style");
+        customCommandLayout.addClassName("common-style");
+        virtualLampLayout.addClassName("common-style");
 
         initialButtonLayout.getStyle().set("margin", "2px");
         initialButtonLayout.getStyle().set("padding", "2px");
@@ -185,33 +182,32 @@ public class LampeView extends BasicLayout implements LampObserver {
 
         buttonLayout.add(initialButtonLayout, newButtonLayout);
         rightLayoutFirstRow.add(virtualLamp);
-        rightLayout.add(rightLayoutFirstRow, setupCustomCommandCreation());
+        virtualLampLayout.add(rightLayoutFirstRow);
+        customCommandLayout.add(setupCustomCommandCreation());
 
-        HorizontalLayout mainLayout = new HorizontalLayout(buttonLayout, rightLayout);
+        HorizontalLayout mainLayout = new HorizontalLayout(buttonLayout, virtualLampLayout, customCommandLayout);
+        mainLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER); // Horizontales Zentrieren
         this.setContent(mainLayout);
     }
 
     private Div undoDialog;
 
+
     private Div createUndoDialog() {
         // Create the title, list box, and close button
-        H4 UndoTitel = new H4("Letzten 5 Befehle");
+        H4 UndoTitel = new H4("Click to Undo");
         UndoTitel.getStyle().set("text-align", "center"); // Center the title
 
         Button closeButton = new Button("Close");
-        closeButton.getStyle().set("margin-top", "10px"); // Add space above the button
+        closeButton.getStyle().set("margin-top", "10px");
+        closeButton.addClassName("button");
 
-        // Create a Div and add the components to it
         Div dialogDiv = new Div();
         dialogDiv.add(UndoTitel, commandListBox, closeButton);
 
         // Style the Div
-        dialogDiv.getStyle().set("width", "200px"); // Set the width
-        dialogDiv.getStyle().set("padding", "20px"); // Set the width
-        dialogDiv.getStyle().set("border-radius", "10px"); // Round the corners
-        dialogDiv.getStyle().set("background-color", "rgba(128, 128, 128, 0.1)"); // Set a light purple transparent background
-
-        // Add a click listener to the close button to remove the Div when clicked
+        dialogDiv.getStyle().set("width", "250px"); // Set the width
+        dialogDiv.addClassName("common-style");
         closeButton.addClickListener(event -> dialogDiv.setVisible(false));
 
         return dialogDiv;
@@ -293,57 +289,52 @@ public class LampeView extends BasicLayout implements LampObserver {
     Div lampBox;
     Span statusLabel;
     Span intensityLvl;
+    Icon lampIcon;
+
     private Component createLamp() throws IOException {
-        Icon lampIcon = new Icon(VaadinIcon.LIGHTBULB);
-        lampIcon.setSize("100px"); // Größe des Icons
-        lampIcon.setColor("black"); // Farbe des Icons auf schwarz setzen
+        lampIcon = new Icon(VaadinIcon.LIGHTBULB);
+        lampIcon.setSize("100px");
+        lampIcon.setColor("black");
 
         intensityLvl = new Span("Intensity: " + lampAdapter.getIntensity());
-        intensityLvl.getStyle()
-                .set("position", "absolute") // Absolute Positionierung
-                .set("left", "10px") // Links im Container
-                .set("bottom", "10px") // Unten im Container
-                .set("background-color", "rgba(255, 255, 255, 0.1)") // Halbtransparenter Hintergrund
-                .set("border-radius", "5px") // Abgerundete Kanten
-                .set("padding", "5px") // Innenabstand
-                .set("font-size", "larger"); // Größere Schrift
+        intensityLvl.getStyle().set("font-size", "larger");
+
 
         statusLabel = new Span();
-        statusLabel.getStyle()
-                .set("position", "absolute") // Absolute Positionierung
-                .set("right", "10px") // Rechts im Container
-                .set("bottom", "10px") // Unten im Container
-                .set("background-color", "rgba(255, 255, 255, 0.1)") // Halbtransparenter Hintergrund
-                .set("border-radius", "5px") // Abgerundete Kanten
-                .set("padding", "5px") // Innenabstand
-                .set("font-size", "larger"); // Größere Schrift
+        statusLabel.getStyle().set("font-size", "larger");
+
 
         updateStatusLabel();
 
         lampBox = new Div();
         lampBox.getStyle()
-                .set("background-color", "rgba(" + lampAdapter.getColor().getRed() + ", " + lampAdapter.getColor().getGreen() + ", " + lampAdapter.getColor().getBlue() + ", 0.5)") // Hintergrundfarbe mit Transparenz
-                .set("border-radius", "25px") // Abgerundete Kanten
-                .set("padding", "10px") // Innenabstand
-                .set("width", "250px") // Breite
-                .set("height", "250px") // Höhe
-                .set("display", "flex") // Flexbox-Layout verwenden
-                .set("justify-content", "center") // Zentrieren Sie den Inhalt horizontal
-                .set("align-items", "center") // Zentrieren Sie den Inhalt vertikal
-                .set("position", "relative"); // Wichtig für die Positionierung der Labels
+                .set("background-color", "rgba(" + lampAdapter.getColor().getRed() + ", " + lampAdapter.getColor().getGreen() + ", " + lampAdapter.getColor().getBlue() + ", 0.5)")
+                .set("border-radius", "25px")
+                .set("padding", "10px")
+                .set("width", "250px")
+                .set("height", "250px")
+                .set("display", "flex")
+                .set("justify-content", "center")
+                .set("align-items", "center")
+                .set("box-shadow", "0px 0px 10px rgba(255, 255, 255, 0.1)")
+                .set("position", "relative");
+        lampBox.add(lampIcon);
 
-        lampBox.add(lampIcon, statusLabel, intensityLvl);
+        VerticalLayout lampLayout = new VerticalLayout();
+        lampLayout.add(lampBox, statusLabel, intensityLvl);
+        lampLayout.setAlignItems(FlexComponent.Alignment.CENTER);
 
-        return lampBox;
+        return lampLayout;
     }
 
     private void updateStatusLabel() throws IOException {
         if (lampAdapter.getState()) {
-            statusLabel.setText("ON");
-            statusLabel.getStyle().set("color", "green"); // Textfarbe grün
+            statusLabel.setText("The lamp is: ON");
+            lampIcon.setColor("white");
+
         } else {
-            statusLabel.setText("OFF");
-            statusLabel.getStyle().set("color", "red"); // Textfarbe rot
+            statusLabel.setText("The lamp is: OFF");
+            lampIcon.setColor("black");
         }
         intensityLvl.setText("Intensity: " + lampAdapter.getIntensity());
     }
@@ -365,8 +356,8 @@ public class LampeView extends BasicLayout implements LampObserver {
         button.getStyle().set("width", "100px");
         button.getStyle().set("height", "100px");
         button.getStyle().set("position", "relative");
-        button.getStyle().set("margin", "2px"); // Setzt den Außenabstand auf 0
-        button.getStyle().set("padding", "0px"); // Setzt den Innenabstand auf 0
+        button.getStyle().set("margin", "2px");
+        button.getStyle().set("padding", "0px");
         button.getIcon().getStyle().set("position", "absolute");
         button.getIcon().getStyle().set("bottom", "10px");
         button.getIcon().getStyle().set("left", "50%");
@@ -441,14 +432,10 @@ public class LampeView extends BasicLayout implements LampObserver {
 
     public String colorToCss(Color color) {
         // Convert the Color to a CSS color string
-        String colorString = String.format("#%02x%02x%02x",
+        return String.format("#%02x%02x%02x",
                 color.getRed(), color.getGreen(), color.getBlue());
-        return colorString;
     }
 
-    /**
-     * @throws IOException
-     */
     @Override
     public void updateLampState() throws IOException {
         updateGUI();
