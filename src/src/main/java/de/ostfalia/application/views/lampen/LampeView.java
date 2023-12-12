@@ -18,6 +18,7 @@ import com.vaadin.flow.router.Route;
 import de.ostfalia.application.data.lamp.commandImp.*;
 import de.ostfalia.application.data.lamp.controller.RemoteController;
 import de.ostfalia.application.data.lamp.model.Command;
+import de.ostfalia.application.data.lamp.model.LampObserver;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
 import de.ostfalia.application.views.BasicLayout;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Route("/SE/LightAdapter")
-public class LampeView extends BasicLayout {
+public class LampeView extends BasicLayout implements LampObserver {
     @Autowired
     private Java2NodeRedLampAdapter lampAdapter;
     private final RemoteController remoteController;
@@ -51,6 +52,7 @@ public class LampeView extends BasicLayout {
     public LampeView(RemoteController remoteController, Java2NodeRedLampAdapter lampAdapter) throws IOException {
         this.remoteController = remoteController;
         this.lampAdapter = lampAdapter;
+        this.lampAdapter.addObserver(this); // Registrieren als Observer
         setupLayout();
     }
 
@@ -272,23 +274,39 @@ public class LampeView extends BasicLayout {
         return layout;
     }
 
-    Icon lampIcon;
     Div lampBox;
-
     Span statusLabel;
     Span intensityLvl;
-
     private Component createLamp() throws IOException {
-        lampIcon = new Icon(VaadinIcon.LIGHTBULB);
-        lampIcon.setSize("100px"); // Sie können die Größe an Ihre Bedürfnisse anpassen
-        String selectedColorCss = colorToCss(lampAdapter.getColor());
+        Icon lampIcon = new Icon(VaadinIcon.LIGHTBULB);
+        lampIcon.setSize("100px"); // Größe des Icons
+        lampIcon.setColor("black"); // Farbe des Icons auf schwarz setzen
+
         intensityLvl = new Span("Intensity: " + lampAdapter.getIntensity());
-        lampIcon.setColor(selectedColorCss);
-        // Erstellen Sie die Box
+        intensityLvl.getStyle()
+                .set("position", "absolute") // Absolute Positionierung
+                .set("left", "10px") // Links im Container
+                .set("bottom", "10px") // Unten im Container
+                .set("background-color", "rgba(255, 255, 255, 0.1)") // Halbtransparenter Hintergrund
+                .set("border-radius", "5px") // Abgerundete Kanten
+                .set("padding", "5px") // Innenabstand
+                .set("font-size", "larger"); // Größere Schrift
+
+        statusLabel = new Span();
+        statusLabel.getStyle()
+                .set("position", "absolute") // Absolute Positionierung
+                .set("right", "10px") // Rechts im Container
+                .set("bottom", "10px") // Unten im Container
+                .set("background-color", "rgba(255, 255, 255, 0.1)") // Halbtransparenter Hintergrund
+                .set("border-radius", "5px") // Abgerundete Kanten
+                .set("padding", "5px") // Innenabstand
+                .set("font-size", "larger"); // Größere Schrift
+
+        updateStatusLabel();
+
         lampBox = new Div();
         lampBox.getStyle()
-                .set("background-color", "lightgray") // Hintergrundfarbe
-                .set("border", "2px solid " + selectedColorCss)
+                .set("background-color", "rgba(" + lampAdapter.getColor().getRed() + ", " + lampAdapter.getColor().getGreen() + ", " + lampAdapter.getColor().getBlue() + ", 0.5)") // Hintergrundfarbe mit Transparenz
                 .set("border-radius", "25px") // Abgerundete Kanten
                 .set("padding", "10px") // Innenabstand
                 .set("width", "200px") // Breite
@@ -296,22 +314,8 @@ public class LampeView extends BasicLayout {
                 .set("display", "flex") // Flexbox-Layout verwenden
                 .set("justify-content", "center") // Zentrieren Sie den Inhalt horizontal
                 .set("align-items", "center") // Zentrieren Sie den Inhalt vertikal
-                .set("position", "relative"); // Wichtig für die Positionierung des Status-Labels
+                .set("position", "relative"); // Wichtig für die Positionierung der Labels
 
-        // Fügen Sie den Titel hinzu
-        statusLabel = new Span();
-        statusLabel.getStyle()
-                .set("position", "absolute") // Absolute Positionierung
-                .set("bottom", "10px") // Unten im Container
-                .set("right", "10px") // Rechts im Container
-                .set("padding", "5px") // Innenabstand
-                .set("background-color", "rgba(255, 255, 255, 0.5)") // Halbtransparente Hintergrundfarbe
-                .set("border-radius", "5px"); // Abgerundete Kanten für den Titel
-
-        // Aktualisieren Sie den Titel basierend auf dem Zustand der Lampe
-        updateStatusLabel();
-
-        // Fügen Sie den Titel zur Box hinzu
         lampBox.add(lampIcon, statusLabel, intensityLvl);
 
         return lampBox;
@@ -320,26 +324,23 @@ public class LampeView extends BasicLayout {
     private void updateStatusLabel() throws IOException {
         if (lampAdapter.getState()) {
             statusLabel.setText("ON");
-            statusLabel.getStyle().set("color", "green"); // Textfarbe
+            statusLabel.getStyle().set("color", "green"); // Textfarbe grün
         } else {
             statusLabel.setText("OFF");
-            statusLabel.getStyle().set("color", "red"); // Textfarbe
+            statusLabel.getStyle().set("color", "red"); // Textfarbe rot
         }
         intensityLvl.setText("Intensity: " + lampAdapter.getIntensity());
+    }
 
+    private void updateLampColor(Color color) {
+        // Update the Div background color
+        lampBox.getStyle().set("background-color", "rgba(" + color.getRed() + ", " + color.getGreen() + ", " + color.getBlue() + ", 0.5)");
     }
 
     private void updateGUI() throws IOException {
         updateCommandHistoryDropdown();
         updateLampColor(lampAdapter.getColor());
         updateStatusLabel();
-    }
-
-    private void updateLampColor(Color color) throws IOException {
-        // Update the Icon and Div colors
-        String selectedColorCss = colorToCss(color);
-        lampIcon.setColor(selectedColorCss);
-        lampBox.getStyle().set("border", "2px solid " + selectedColorCss);
     }
 
     private Button createButton(String text, VaadinIcon icon) {
@@ -367,7 +368,6 @@ public class LampeView extends BasicLayout {
     private void executeCommand(Command command) {
         try {
             remoteController.executeCommand(command);
-            updateGUI();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -390,7 +390,6 @@ public class LampeView extends BasicLayout {
         if (commandIndex != -1) {
             try {
                 remoteController.undoCommand(commandIndex);
-                updateGUI();
                 Notification.show("Undo operation performed for: " + commandDescription);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -428,5 +427,13 @@ public class LampeView extends BasicLayout {
         String colorString = String.format("#%02x%02x%02x",
                 color.getRed(), color.getGreen(), color.getBlue());
         return colorString;
+    }
+
+    /**
+     * @throws IOException
+     */
+    @Override
+    public void updateLampState() throws IOException {
+        updateGUI();
     }
 }
