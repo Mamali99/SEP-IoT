@@ -7,6 +7,8 @@ public class DelayedSettings {
     private Command[] commands;
     private long delay;
 
+
+
     public Command[] getCommands() {
         return commands;
     }

@@ -12,7 +12,8 @@ public class DelayedCommands implements Command {
     private Java2NodeRedLampAdapter lamp;
     private Command[] commands;
     private long delay;
-    private DelayedSettings previousState;
+
+    private LampState previousState;
 
 
     public DelayedCommands(Java2NodeRedLampAdapter lamp, Command[] commands, long delay) {
@@ -40,16 +41,19 @@ public class DelayedCommands implements Command {
 
     @Override
     public void saveCurrentState() throws IOException {
-        previousState = new DelayedSettings();
-        previousState.setCommands(this.commands);
-        previousState.setDelay(this.delay);
+       previousState = new LampState(lamp.getColor(), lamp.getIntensity(), lamp.getState());
 
     }
 
     @Override
     public void undo() throws IOException {
-        this.commands = previousState.getCommands();
-        this.delay = previousState.getDelay();
+        lamp.setColor(this.previousState.getColor());
+        lamp.setIntensity(this.previousState.getIntensity());
+        if(this.previousState.isOn()){
+            lamp.switchOn();
+        }else{
+            lamp.switchOff();
+        }
 
 
     }

@@ -14,7 +14,8 @@ public class PartyModeCommand implements Command {
     private Color[] colors;
     private int[] intensities;
 
-    private PartyModeSettings previousState;
+    private LampState previousState;
+
 
 
 
@@ -40,28 +41,25 @@ public class PartyModeCommand implements Command {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-            //lamp.switchOff();
-            System.out.println("Lampe ist on...");
-            //try {
-            //    Thread.sleep(500);
-            //} catch (InterruptedException e) {
-            //    Thread.currentThread().interrupt();
-            //}
         }
     }
 
     @Override
     public void saveCurrentState() throws IOException {
+        previousState = new LampState(lamp.getColor(), lamp.getIntensity(), lamp.getState());
 
     }
 
     @Override
     public void undo() throws IOException {
         // Setze den Zustand der Lampe auf den vorher gespeicherten Zustand zurück
-       this.blinkCount = previousState.getBlinkCount();
-       this.colors = previousState.getColors();
-       this.intensities = previousState.getIntensities();
-       lamp.switchOn();
+       lamp.setColor(this.previousState.getColor());
+       lamp.setIntensity(this.previousState.getIntensity());
+       if(this.previousState.isOn()){
+           lamp.switchOn();
+       }else{
+           lamp.switchOff();
+       }
     }
     @Override
     public String toString() {

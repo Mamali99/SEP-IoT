@@ -46,9 +46,7 @@ public class BlinkCommand implements Command {
 
     @Override
     public void saveCurrentState() throws IOException {
-        previousState = new LampState();
-       previousState.setColor(lamp.getColor());
-       previousState.setIntensity(lamp.getIntensity());
+        previousState = new LampState(lamp.getColor(), lamp.getIntensity(), lamp.getState());
 
 
     }
@@ -58,6 +56,12 @@ public class BlinkCommand implements Command {
 
         lamp.setColor(this.previousState.getColor());
         lamp.setIntensity(this.previousState.getIntensity());
+        if(this.previousState.isOn()){
+            lamp.switchOn();
+        }else{
+            lamp.switchOff();
+        }
+
 
     }
     @Override
