@@ -1,5 +1,6 @@
 package de.ostfalia.application.data.lamp.commandImp;
 
+import de.ostfalia.application.data.entity.DelayedSettings;
 import de.ostfalia.application.data.entity.LampState;
 import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
@@ -11,6 +12,7 @@ public class DelayedCommands implements Command {
     private Java2NodeRedLampAdapter lamp;
     private Command[] commands;
     private long delay;
+
     private LampState previousState;
 
 
@@ -39,18 +41,20 @@ public class DelayedCommands implements Command {
 
     @Override
     public void saveCurrentState() throws IOException {
-        previousState = new LampState(lamp.getColor(), lamp.getIntensity(), lamp.getState());
+       previousState = new LampState(lamp.getColor(), lamp.getIntensity(), lamp.getState());
+
     }
 
     @Override
     public void undo() throws IOException {
-// Setze den Zustand der Lampe auf den vorher gespeicherten Zustand zurück
-        lamp.setColor(previousState.getColor());
-        lamp.setIntensity(previousState.getIntensity());
-        if (previousState.isOn()) {
+        lamp.setColor(this.previousState.getColor());
+        lamp.setIntensity(this.previousState.getIntensity());
+        if(this.previousState.isOn()){
             lamp.switchOn();
-        } else {
+        }else{
             lamp.switchOff();
         }
+
+
     }
 }
