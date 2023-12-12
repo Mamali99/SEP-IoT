@@ -1,5 +1,6 @@
 package de.ostfalia.application.data.lamp.commandImp;
 
+import com.vaadin.flow.component.UI;
 import de.ostfalia.application.data.entity.BlinkSettings;
 import de.ostfalia.application.data.entity.LampState;
 import de.ostfalia.application.data.lamp.model.Command;
@@ -15,56 +16,94 @@ public class BlinkCommand implements Command {
 
     private LampState previousState;
 
-    //hier muss ich vieleicht der alte Zusatand von der Lampe speichern
+    private volatile boolean running;
+    private Thread blinkThread;
+    private final UI ui;
+
     public BlinkCommand(Java2NodeRedLampAdapter lamp, int blinkCount, long blinkDuration) {
         this.lamp = lamp;
-        this.blinkCount = blinkCount;
-        this.blinkDuration = blinkDuration;
+        this.blinkCount = Integer.MAX_VALUE;
+        this.blinkDuration = 2000;
+        this.ui = UI.getCurrent();
+        this.running = true;
     }
 
     @Override
     public void execute() throws IOException {
         saveCurrentState();
-        for (int i = 0; i < blinkCount; i++) {
-            lamp.switchOn(); // Lampe einschalten
-            try {
-                System.out.println("Lampe ist On.");
-                Thread.sleep(blinkDuration); // Warte für die Dauer des Blinkens
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            lamp.switchOff(); // Lampe ausschalten
-            try {
-                System.out.println("Lampe ist Off");
-                Thread.sleep(blinkDuration); // Warte für die Dauer des Blinkens
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+        if (blinkThread == null || !blinkThread.isAlive()) {
+            blinkThread = new Thread(this::performBlinking);
+            blinkThread.start();
+        } else {
+            restartBlinking();
         }
+    }
 
+    private void performBlinking() {
+        for (int i = 0; i < blinkCount && running; i++) {
+            blinkLamp(true); // Blinken ein
+            sleepBlinkDuration();
+            blinkLamp(false); // Blinken aus
+            sleepBlinkDuration();
+        }
+    }
+
+    private void blinkLamp(boolean on) {
+        ui.access(() -> {
+            try {
+                if (on) {
+                    lamp.switchOn();
+
+                    System.out.println("Lampe is On...");
+                } else {
+                    System.out.println("Lampe is Off...");
+                    lamp.switchOff();
+
+                }
+                lamp.notifyObservers();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    private void sleepBlinkDuration() {
+        try {
+            Thread.sleep(blinkDuration);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            running = false;
+        }
+    }
+
+    public void stopBlinking() {
+        running = false;
+    }
+
+    private void restartBlinking() {
+        stopBlinking();
+        running = true;
+        blinkThread = new Thread(this::performBlinking);
+        blinkThread.start();
     }
 
     @Override
     public void saveCurrentState() throws IOException {
         previousState = new LampState(lamp.getColor(), lamp.getIntensity(), lamp.getState());
-
-
     }
 
     @Override
     public void undo() throws IOException {
-
-        lamp.setColor(this.previousState.getColor());
-        lamp.setIntensity(this.previousState.getIntensity());
-        if(this.previousState.isOn()){
+        stopBlinking(); // Stellt sicher, dass das Blinken gestoppt wird
+        lamp.setColor(previousState.getColor());
+        lamp.setIntensity(previousState.getIntensity());
+        if (previousState.isOn()) {
             lamp.switchOn();
-        }else{
+        } else {
             lamp.switchOff();
         }
-        lamp.notifyObservers();
-
-
     }
+
     @Override
     public String toString() {
         return "Blink";

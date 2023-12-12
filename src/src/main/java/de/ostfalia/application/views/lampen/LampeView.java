@@ -51,6 +51,11 @@ public class LampeView extends BasicLayout implements LampObserver {
 
     private List<Button> customCommandButtons = new ArrayList<>();
 
+    // Aktuelles BlinkCommand speichern
+    private BlinkCommand currentBlinkCommand;
+
+    private PartyModeCommand currentPartyModeCommand;
+
     public LampeView(RemoteController remoteController, Java2NodeRedLampAdapter lampAdapter) throws IOException {
         this.remoteController = remoteController;
         this.lampAdapter = lampAdapter;
@@ -73,7 +78,7 @@ public class LampeView extends BasicLayout implements LampObserver {
         turnOffButton.addClassName("button");
 
         Button blinkButton = createButton("Blink", VaadinIcon.LIGHTBULB);
-        blinkButton.addClickListener(e -> executeCommand(new BlinkCommand(lampAdapter, 2, 5000)));
+        blinkButton.addClickListener(e -> executeCommand(new BlinkCommand(lampAdapter, 3, 2000)));
         blinkButton.addClassName("button");
 
         Button partyModeButton = createButton("Party Mode", VaadinIcon.MUSIC);
@@ -263,7 +268,7 @@ public class LampeView extends BasicLayout implements LampObserver {
                         customCommand.addCommand(new TurnOffCommand(lampAdapter));
                         break;
                     case "Blink":
-                        customCommand.addCommand(new BlinkCommand(lampAdapter, 2, 5000)); // replace with actual params
+                        customCommand.addCommand(new BlinkCommand(lampAdapter, 3, 2000)); // replace with actual params
                         break;
                     // Add remaining cases for the rest of your commands
                 }
@@ -371,15 +376,35 @@ public class LampeView extends BasicLayout implements LampObserver {
     }
 
 
-    // vom Event Ausgelöst
+
 
     private void executeCommand(Command command) {
+        // Stoppe das aktuelle BlinkCommand oder PartyModeCommand, falls es läuft
+        if (currentBlinkCommand != null) {
+            currentBlinkCommand.stopBlinking();
+            currentBlinkCommand = null;
+        }
+        if (currentPartyModeCommand != null) {
+            currentPartyModeCommand.stopPartyMode();
+            currentPartyModeCommand = null;
+        }
+
+        // Überprüfe das neue Command und setze es als aktuelles Command
+        if (command instanceof BlinkCommand) {
+            currentBlinkCommand = (BlinkCommand) command;
+        } else if (command instanceof PartyModeCommand) {
+            currentPartyModeCommand = (PartyModeCommand) command;
+        }
+
+        // Führe das neue Command aus
         try {
             remoteController.executeCommand(command);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+
 
     private void updateCommandHistoryDropdown() {
         List<String> historyItems = remoteController.getLastFiveCommands()
