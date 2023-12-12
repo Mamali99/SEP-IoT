@@ -1,0 +1,22 @@
+/* styles.css */
+:root {
+    --dark-background: #282c34;
+    --transparent-background: rgba(255, 255, 255, 0.1);
+    --button-background: rgba(50, 50, 50, 0.7);
+    --text-color: #ffffff;
+    --icon-color: #61dafb;
+}
+
+.dark {
+    background-color: var(--dark-background);
+    color: var(--text-color);
+}
+
+.button {
+    background-color: var(--button-background);
+    color: var(--text-color);
+}
+
+.icon {
+    color: var(--icon-color);
+}
