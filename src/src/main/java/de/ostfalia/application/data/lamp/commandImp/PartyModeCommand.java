@@ -18,6 +18,8 @@ public class PartyModeCommand implements Command {
 
 
 
+
+
     public PartyModeCommand(Java2NodeRedLampAdapter lamp, int blinkCount, Color[] colors, int[] intensities) {
         this.lamp = lamp;
         this.blinkCount = blinkCount;
@@ -27,30 +29,30 @@ public class PartyModeCommand implements Command {
     @Override
     public void execute() throws IOException {
         saveCurrentState();
+        lamp.switchOn();
         for (int i = 0; i < blinkCount; i++) {
             // Wechsel zwischen Farben und Intensitäten
             lamp.setColor(colors[i % colors.length]);
             lamp.setIntensity(intensities[i % intensities.length]);
+
             try {
-                Thread.sleep(500); // Wartezeit zwischen den Blinken
+                Thread.sleep(1000); // Wartezeit zwischen den Blinken
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-            lamp.switchOff();
-            System.out.println("Lampe ist aus...");
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            //lamp.switchOff();
+            System.out.println("Lampe ist on...");
+            //try {
+            //    Thread.sleep(500);
+            //} catch (InterruptedException e) {
+            //    Thread.currentThread().interrupt();
+            //}
         }
     }
 
     @Override
     public void saveCurrentState() throws IOException {
-        previousState.setBlinkCount(this.blinkCount);
-        previousState.setColors(this.colors);
-        previousState.setIntensities(this.intensities);
+
     }
 
     @Override
@@ -59,6 +61,7 @@ public class PartyModeCommand implements Command {
        this.blinkCount = previousState.getBlinkCount();
        this.colors = previousState.getColors();
        this.intensities = previousState.getIntensities();
+       lamp.switchOn();
     }
     @Override
     public String toString() {

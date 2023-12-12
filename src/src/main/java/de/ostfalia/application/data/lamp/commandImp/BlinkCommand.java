@@ -12,11 +12,8 @@ public class BlinkCommand implements Command {
     private Java2NodeRedLampAdapter lamp;
     private int blinkCount;
     private long blinkDuration;
-    private float intensity;
-    private Color color;
-    private BlinkSettings previousState;
 
-    private LampState previousStateLampe;
+    private LampState previousState;
 
     //hier muss ich vieleicht der alte Zusatand von der Lampe speichern
     public BlinkCommand(Java2NodeRedLampAdapter lamp, int blinkCount, long blinkDuration) {
@@ -49,23 +46,18 @@ public class BlinkCommand implements Command {
 
     @Override
     public void saveCurrentState() throws IOException {
-       previousState.setBlinkCount(this.blinkCount);
-       previousState.setBlinkDuration(this.blinkDuration);
-       previousStateLampe.setColor(this.color);
-       previousStateLampe.setIntensity(this.intensity);
+        previousState = new LampState();
+       previousState.setColor(lamp.getColor());
+       previousState.setIntensity(lamp.getIntensity());
+
 
     }
 
     @Override
     public void undo() throws IOException {
 
-        this.blinkCount = previousState.getBlinkCount();
-        this.blinkDuration = previousState.getBlinkDuration();
-        this.color = previousStateLampe.getColor();
-        this.intensity = previousStateLampe.getIntensity();
-
-        lamp.setColor(this.color);
-        lamp.setIntensity(this.intensity);
+        lamp.setColor(this.previousState.getColor());
+        lamp.setIntensity(this.previousState.getIntensity());
 
     }
     @Override

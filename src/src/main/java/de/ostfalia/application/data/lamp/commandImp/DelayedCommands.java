@@ -40,14 +40,17 @@ public class DelayedCommands implements Command {
 
     @Override
     public void saveCurrentState() throws IOException {
+        previousState = new DelayedSettings();
         previousState.setCommands(this.commands);
         previousState.setDelay(this.delay);
+
     }
 
     @Override
     public void undo() throws IOException {
         this.commands = previousState.getCommands();
         this.delay = previousState.getDelay();
+
 
     }
 }
