@@ -29,16 +29,11 @@ public class SetIntensityCommand implements Command {
 
     @Override
     public void undo() throws IOException {
-        // Setze den Zustand der Lampe auf den vorher gespeicherten Zustand zurück
-        //lamp.setColor(previousState.getColor());
         lamp.setIntensity(previousState.getIntensity());
-        /*
-        if (previousState.isOn()) {
-            lamp.switchOn();
-        } else {
-            lamp.switchOff();
-        }
-
-         */
+        lamp.notifyObservers();
+    }
+    @Override
+    public String toString() {
+        return "Intensity";
     }
 }

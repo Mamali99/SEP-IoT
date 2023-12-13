@@ -17,11 +17,12 @@ import de.ostfalia.application.views.testecke.WebInhaltDynamisch;
 
 public class BasicLayout extends AppLayout {
 
-    H1 title = new H1("Bike Dashboard");
+    H1 title = new H1("Dashboard");
 
 
     public BasicLayout() {
         this.addToDrawer(createNav());
+        setDrawerOpened(false);
 
         DrawerToggle toggle = new DrawerToggle();
 

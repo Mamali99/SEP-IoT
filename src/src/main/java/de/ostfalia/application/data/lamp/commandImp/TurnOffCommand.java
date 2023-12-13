@@ -33,11 +33,12 @@ public class TurnOffCommand implements Command {
         } else {
             lamp.switchOff();
         }
+        lamp.notifyObservers();
 
     }
     @Override
     public String toString() {
-        return "Turn Off Command";
+        return "Turn Off";
     }
 
 }

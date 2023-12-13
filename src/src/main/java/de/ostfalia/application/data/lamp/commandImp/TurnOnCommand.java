@@ -18,7 +18,7 @@ public class TurnOnCommand implements Command {
     public void execute() throws IOException {
         saveCurrentState();
         this.lamp.switchOn();
-        System.out.println("Lampe ist On....");
+
     }
 
     @Override
@@ -35,9 +35,10 @@ public class TurnOnCommand implements Command {
         } else {
             lamp.switchOff();
         }
+        lamp.notifyObservers();
     }
     @Override
     public String toString() {
-        return "Turn On Command";
+        return "Turn On";
     }
 }

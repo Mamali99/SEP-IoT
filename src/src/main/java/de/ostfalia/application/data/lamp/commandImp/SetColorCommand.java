@@ -31,23 +31,15 @@ public class SetColorCommand implements Command {
     @Override
     public void undo() throws IOException {
 
-        // Setze den Zustand der Lampe auf den vorher gespeicherten Zustand zurück
         lamp.setColor(previousState.getColor());
-        /*lamp.setIntensity(previousState.getIntensity());
-        if (previousState.isOn()) {
-            lamp.switchOn();
-        } else {
-            lamp.switchOff();
-        }
+        lamp.notifyObservers();
 
-         */
     }
 
     //Es muss alte Zustand angezeigt werden
     @Override
     public String toString() {
-        String colorHex = String.format("#%02X%02X%02X", previousState.getColor().getRed(), previousState.getColor().getGreen(), previousState.getColor().getBlue());
-        return "Set Color Command [Farbe: " + colorHex + "]";
+        return "Set Color";
     }
 
 }

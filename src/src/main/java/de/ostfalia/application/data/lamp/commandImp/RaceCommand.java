@@ -8,6 +8,8 @@ import de.ostfalia.application.data.service.BikeService;
 import java.awt.*;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class RaceCommand implements Command {
@@ -31,6 +33,10 @@ public class RaceCommand implements Command {
 
     @Override
     public void execute() throws IOException {
+
+        LocalDateTime endTime = LocalDateTime.now();
+        //Duration d = new Duration();
+       // LocalDateTime startTime = endTime.minus(new Duration(30));
 
     }
 

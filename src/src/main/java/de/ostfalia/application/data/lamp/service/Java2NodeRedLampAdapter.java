@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.ostfalia.application.data.lamp.model.ILamp;
+import de.ostfalia.application.data.lamp.model.LampObserver;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -15,6 +16,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @Primary
@@ -28,6 +31,28 @@ public class Java2NodeRedLampAdapter implements ILamp {
     // lock object for synchronization
     private final Object lock = new Object();
 
+    // Observer Pattern
+    private List<LampObserver> observers = new ArrayList<LampObserver>();
+
+    public void addObserver(LampObserver observer) {
+        observers.add(observer);
+    }
+
+    public void removeObserver(LampObserver observer) {
+        observers.remove(observer);
+    }
+
+    // Benachrichtige alle Observers über eine Änderung
+    public void notifyObservers() {
+        for (LampObserver observer : observers) {
+            try {
+                observer.updateLampState();
+            } catch (IOException e) {
+                System.out.println("Observer Issue im Lamp Adapter");
+            }
+        }
+    }
+
 
     @Override
     public void switchOn() throws IOException {
@@ -35,6 +60,7 @@ public class Java2NodeRedLampAdapter implements ILamp {
         ObjectNode jsonObject = objectMapper.createObjectNode();
         jsonObject.put("on", true);
         restTemplate.put(url, jsonObject.toString());
+        notifyObservers();
 
     }
 
@@ -48,6 +74,7 @@ public class Java2NodeRedLampAdapter implements ILamp {
         jsonObject.put("on", true);
         jsonObject.put("bri", (int) (intensity));
         restTemplate.put(url, jsonObject.toString());
+        notifyObservers();
 
     }
 
@@ -61,6 +88,7 @@ public class Java2NodeRedLampAdapter implements ILamp {
         jsonObject.put("sat", (int) (hsb[1] * 254));
         jsonObject.put("bri", (int) (hsb[2] * 254));
         restTemplate.put(url, jsonObject.toString());
+        notifyObservers();
     }
 
     @Override
@@ -68,7 +96,7 @@ public class Java2NodeRedLampAdapter implements ILamp {
         ObjectNode jsonObject = objectMapper.createObjectNode();
         jsonObject.put("on", false);
         restTemplate.put(url, jsonObject.toString());
-
+        notifyObservers();
     }
 
     @Override
@@ -80,6 +108,7 @@ public class Java2NodeRedLampAdapter implements ILamp {
         jsonObject.put("sat", (int) (hsb[1] * 254));
         jsonObject.put("bri", (int) (hsb[2] * 254));
         restTemplate.put(url, jsonObject.toString());
+        notifyObservers();
     }
 
     @Override
@@ -93,6 +122,7 @@ public class Java2NodeRedLampAdapter implements ILamp {
         jsonObject.put("bri", (int) intensity);
 
         restTemplate.put(url, jsonObject.toString());
+        notifyObservers();
     }
 
     @Override
@@ -157,6 +187,7 @@ public class Java2NodeRedLampAdapter implements ILamp {
         jsonObject.put("name", name);
         HttpEntity<String> requestEntity = new HttpEntity<>(jsonObject.toString(), headers);
         restTemplate.put(baseUrl, requestEntity);
+        notifyObservers();
 
     }
 }
