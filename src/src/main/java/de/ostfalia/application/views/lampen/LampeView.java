@@ -20,6 +20,7 @@ import de.ostfalia.application.data.lamp.commandImp.*;
 import de.ostfalia.application.data.lamp.controller.RemoteController;
 import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.lamp.model.LampObserver;
+import de.ostfalia.application.data.lamp.service.BikeLampScheduler;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
 import de.ostfalia.application.views.BasicLayout;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,11 @@ import java.util.stream.Collectors;
 public class LampeView extends BasicLayout implements LampObserver {
     @Autowired
     private Java2NodeRedLampAdapter lampAdapter;
+    @Autowired
+    private BikeLampScheduler bikeLampScheduler;
     private final RemoteController remoteController;
+
+
     private ListBox<String> commandListBox;
 
     private List<Button> possibleButtons = new ArrayList<>();
@@ -64,6 +69,8 @@ public class LampeView extends BasicLayout implements LampObserver {
         setupLayout();
     }
 
+
+
     private void setupLayout() throws IOException {
 
         // Initialisiere die Buttons und ColorPicker
@@ -86,6 +93,12 @@ public class LampeView extends BasicLayout implements LampObserver {
         partyModeButton.addClickListener(e -> activatePartyMode());
         partyModeButton.addClassName("button");
 
+        Button raceButton = createButton("Race", VaadinIcon.MUSIC);
+        raceButton.addClickListener(e -> bikeLampScheduler.enableRaceCommand());
+        raceButton.addClassName("button");
+
+
+
         Button undoButton = createButton("Undo", VaadinIcon.ADJUST);
         undoButton.getElement().getStyle().set("background-color", "rgba(255, 255, 0, 0.2)"); // Gelb und transparent
         undoButton.addClickListener(e -> openUndoDialog());
@@ -105,7 +118,7 @@ public class LampeView extends BasicLayout implements LampObserver {
         });
         this.addClassName("dark");
         // Füge die initialen Buttons zum Layout hinzu
-        initialButtonLayout.add(turnOnButton, turnOffButton, blinkButton, delayedCommandButton, partyModeButton, undoButton);
+        initialButtonLayout.add(turnOnButton,raceButton, turnOffButton, blinkButton, delayedCommandButton, partyModeButton, undoButton);
 
         // Initialisiere die zusätzlichen Buttons
         Button setIntensity = createButton("Set Intensity", VaadinIcon.ABACUS);
@@ -171,6 +184,8 @@ public class LampeView extends BasicLayout implements LampObserver {
         rightLayoutFirstRow.add(virtualLamp);
         virtualLampLayout.add(rightLayoutFirstRow);
         customCommandLayout.add(setupCustomCommandCreation());
+
+
 
         HorizontalLayout mainLayout = new HorizontalLayout(buttonLayout, virtualLampLayout, customCommandLayout);
         mainLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER); // Horizontales Zentrieren
