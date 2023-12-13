@@ -20,6 +20,7 @@ import de.ostfalia.application.data.lamp.commandImp.*;
 import de.ostfalia.application.data.lamp.controller.RemoteController;
 import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.lamp.model.LampObserver;
+import de.ostfalia.application.data.lamp.service.BikeLampScheduler;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
 import de.ostfalia.application.views.BasicLayout;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,11 @@ import java.util.stream.Collectors;
 public class LampeView extends BasicLayout implements LampObserver {
     @Autowired
     private Java2NodeRedLampAdapter lampAdapter;
+    @Autowired
+    private BikeLampScheduler bikeLampScheduler;
     private final RemoteController remoteController;
+
+
     private ListBox<String> commandListBox;
 
     private List<Button> possibleButtons = new ArrayList<>();
@@ -52,12 +57,19 @@ public class LampeView extends BasicLayout implements LampObserver {
 
     private List<Button> customCommandButtons = new ArrayList<>();
 
+    // Aktuelles BlinkCommand speichern
+    private BlinkCommand currentBlinkCommand;
+
+    private PartyModeCommand currentPartyModeCommand;
+
     public LampeView(RemoteController remoteController, Java2NodeRedLampAdapter lampAdapter) throws IOException {
         this.remoteController = remoteController;
         this.lampAdapter = lampAdapter;
         this.lampAdapter.addObserver(this); // Registrieren als Observer
         setupLayout();
     }
+
+
 
     private void setupLayout() throws IOException {
 
@@ -74,12 +86,18 @@ public class LampeView extends BasicLayout implements LampObserver {
         turnOffButton.addClassName("button");
 
         Button blinkButton = createButton("Blink", VaadinIcon.LIGHTBULB);
-        blinkButton.addClickListener(e -> executeCommand(new BlinkCommand(lampAdapter, 2, 5000)));
+        blinkButton.addClickListener(e -> executeCommand(new BlinkCommand(lampAdapter, 3, 2000)));
         blinkButton.addClassName("button");
 
         Button partyModeButton = createButton("Party Mode", VaadinIcon.MUSIC);
         partyModeButton.addClickListener(e -> activatePartyMode());
         partyModeButton.addClassName("button");
+
+        Button raceButton = createButton("Race", VaadinIcon.MUSIC);
+        raceButton.addClickListener(e -> bikeLampScheduler.enableRaceCommand());
+        raceButton.addClassName("button");
+
+
 
         Button undoButton = createButton("Undo", VaadinIcon.ADJUST);
         undoButton.getElement().getStyle().set("background-color", "rgba(255, 255, 0, 0.2)"); // Gelb und transparent
@@ -100,7 +118,7 @@ public class LampeView extends BasicLayout implements LampObserver {
         });
         this.addClassName("dark");
         // Füge die initialen Buttons zum Layout hinzu
-        initialButtonLayout.add(turnOnButton, turnOffButton, blinkButton, delayedCommandButton, partyModeButton, undoButton);
+        initialButtonLayout.add(turnOnButton,raceButton, turnOffButton, blinkButton, delayedCommandButton, partyModeButton, undoButton);
 
         // Initialisiere die zusätzlichen Buttons
         Button setIntensity = createButton("Set Intensity", VaadinIcon.ABACUS);
@@ -166,6 +184,8 @@ public class LampeView extends BasicLayout implements LampObserver {
         rightLayoutFirstRow.add(virtualLamp);
         virtualLampLayout.add(rightLayoutFirstRow);
         customCommandLayout.add(setupCustomCommandCreation());
+
+
 
         HorizontalLayout mainLayout = new HorizontalLayout(buttonLayout, virtualLampLayout, customCommandLayout);
         mainLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER); // Horizontales Zentrieren
@@ -263,6 +283,7 @@ public class LampeView extends BasicLayout implements LampObserver {
                         newCommand.addCommand(new TurnOffCommand(lampAdapter));
                         buttonName.append(selectedCommand);
                         break;
+
                     case "Set Intensity":
                         newCommand.addCommand(new SetIntensityCommand(lampAdapter, intensityField.getValue()));
                         buttonName.append("Intensity:").append(intensityField.getValue()).append(" ");
@@ -433,15 +454,37 @@ public class LampeView extends BasicLayout implements LampObserver {
     }
 
 
-    // vom Event Ausgelöst
+
 
     private void executeCommand(Command command) {
+        // Stoppe das aktuelle BlinkCommand oder PartyModeCommand, falls es läuft
+        if (currentBlinkCommand != null) {
+            currentBlinkCommand.stopBlinking();
+            currentBlinkCommand = null;
+        }
+        if (currentPartyModeCommand != null) {
+            currentPartyModeCommand.stopPartyMode();
+            currentPartyModeCommand = null;
+        }
+
+        // Überprüfe das neue Command und setze es als aktuelles Command
+        if (command instanceof BlinkCommand) {
+            currentBlinkCommand = (BlinkCommand) command;
+        } else if (command instanceof PartyModeCommand) {
+            currentPartyModeCommand = (PartyModeCommand) command;
+        }
+
+        // Führe das neue Command aus
         try {
             remoteController.executeCommand(command);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        updateCommandHistoryDropdown();
     }
+
+
 
     private void updateCommandHistoryDropdown() {
         List<String> historyItems = remoteController.getLastFiveCommands()
@@ -461,6 +504,7 @@ public class LampeView extends BasicLayout implements LampObserver {
             try {
                 remoteController.undoCommand(commandIndex);
                 Notification.show("Undo operation performed for: " + commandDescription);
+                updateGUI();
             } catch (IOException e) {
                 e.printStackTrace();
             }

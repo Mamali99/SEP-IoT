@@ -30,7 +30,7 @@ public class SetIntensityCommand implements Command {
     @Override
     public void undo() throws IOException {
         lamp.setIntensity(previousState.getIntensity());
-        lamp.notifyObservers();
+
     }
     @Override
     public String toString() {

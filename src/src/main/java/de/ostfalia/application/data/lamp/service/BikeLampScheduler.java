@@ -1,5 +1,6 @@
 package de.ostfalia.application.data.lamp.service;
 
+import com.vaadin.flow.component.UI;
 import de.ostfalia.application.data.lamp.commandImp.BikeDriveCommand;
 import de.ostfalia.application.data.lamp.commandImp.RaceCommand;
 import de.ostfalia.application.data.service.BikeService;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.io.IOException;
+import java.time.Duration;
 
 @Component
 public class BikeLampScheduler {
@@ -17,7 +19,11 @@ public class BikeLampScheduler {
     private BikeService bikeService;
 
     @Autowired
-    private Java2NodeRedLampAdapter lampAdapter;
+    private Java2NodeRedLampAdapter lampAdapter; //es muss genau gleiches lampAdapter hier geben, wie LampView hat und andere Command krigen
+
+    private volatile boolean raceCommandEnabled = false;
+
+    private volatile boolean driveCommandEnabled = false;
 
     // Konfiguriere die Fahrradkanäle und Farben
     private final int bikeChannel1 = 1; // Beispielkanal
@@ -25,15 +31,37 @@ public class BikeLampScheduler {
     private final Color colorBike1 = Color.RED;
     private final Color colorBike2 = Color.BLUE;
 
-    @Scheduled(fixedRate = 60_000)
+
+
+    @Scheduled(fixedRate = 60_000) // alle 60 Sekunden
     public void scheduleTaskUsingFixedRate() throws IOException {
 
-        BikeDriveCommand bikeDriveCommand = new BikeDriveCommand(lampAdapter, bikeService, bikeChannel1);
-        bikeDriveCommand.execute();
+        if (this.driveCommandEnabled) {
+            BikeDriveCommand bikeDriveCommand = new BikeDriveCommand(lampAdapter, bikeService, bikeChannel1);
+            bikeDriveCommand.execute();
+        }
 
+        if (this.raceCommandEnabled) {
+            RaceCommand raceCommand = new RaceCommand(lampAdapter, bikeService, bikeChannel1, bikeChannel2, colorBike1, colorBike2);
+            raceCommand.execute();
+        }
 
-        RaceCommand raceCommand = new RaceCommand(lampAdapter, bikeService, bikeChannel1, bikeChannel2, colorBike1, colorBike2);
-        raceCommand.execute();
+    }
+
+    public void enableRaceCommand() {
+        this.raceCommandEnabled = true;
+    }
+
+    public void disableRaceCommand() {
+        this.raceCommandEnabled = false;
+    }
+
+    public void enableDriveCommand() {
+        this.driveCommandEnabled = true;
+    }
+
+    public void disableDriveCommand() {
+        this.driveCommandEnabled = false;
     }
 
 
