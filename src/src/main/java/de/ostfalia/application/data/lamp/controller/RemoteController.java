@@ -21,13 +21,16 @@ public class RemoteController {
         System.arraycopy(commandHistory, 0, commandHistory, 1, commandHistory.length - 1);
         // Add new command at the beginning of the array
         commandHistory[0] = command;
+
     }
 
     public void undoCommand(int commandIndex) throws IOException {
+
         if (isValidCommandIndex(commandIndex) && commandHistory[commandIndex] != null) {
             Command commandToUndo = commandHistory[commandIndex];
             commandToUndo.undo();
             shiftCommandsAfterUndo(commandIndex);
+
         }
     }
 
@@ -50,6 +53,7 @@ public class RemoteController {
                 lastCommands.add(command);
             }
         }
+
         return lastCommands;
     }
 }
