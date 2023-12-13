@@ -1,5 +1,6 @@
 package de.ostfalia.application.data.lamp.commandImp;
 
+import com.vaadin.flow.component.UI;
 import de.ostfalia.application.data.entity.LampState;
 import de.ostfalia.application.data.entity.PartyModeSettings;
 import de.ostfalia.application.data.lamp.model.Command;
@@ -13,35 +14,69 @@ public class PartyModeCommand implements Command {
     private int blinkCount;
     private Color[] colors;
     private int[] intensities;
-
     private LampState previousState;
-
-
-
-
-
+    private volatile boolean running;
+    private Thread partyModeThread;
+    private final UI ui;
+    private int i = 0;
 
     public PartyModeCommand(Java2NodeRedLampAdapter lamp, int blinkCount, Color[] colors, int[] intensities) {
         this.lamp = lamp;
-        this.blinkCount = blinkCount;
+        this.blinkCount = Integer.MAX_VALUE;
         this.colors = colors;
         this.intensities = intensities;
+        this.ui = UI.getCurrent();
+        this.running = true;
     }
+
     @Override
     public void execute() throws IOException {
         saveCurrentState();
-        lamp.switchOn();
-        for (int i = 0; i < blinkCount; i++) {
-            // Wechsel zwischen Farben und Intensitäten
-            lamp.setColor(colors[i % colors.length]);
-            lamp.setIntensity(intensities[i % intensities.length]);
+        if (partyModeThread == null || !partyModeThread.isAlive()) {
+            partyModeThread = new Thread(this::performPartyMode);
+            partyModeThread.start();
+        } else {
+            restartPartyMode();
+        }
+    }
 
+    private void performPartyMode() {
+        for (int i = 0; i < blinkCount && running; i++) {
+
+            changeLampSettings(colors[i % colors.length], intensities[i % intensities.length]);
             try {
-                Thread.sleep(1000); // Wartezeit zwischen den Blinken
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+
+                break;
+
             }
         }
+    }
+
+    private void changeLampSettings(Color color, int intensity) {
+        ui.access(() -> {
+            try{
+                lamp.switchOn(color);
+                lamp.setIntensity(intensity);
+                System.out.println("Party mode " + ++i);
+            } catch (IOException e){
+                throw new RuntimeException(e);
+            }
+        });
+
+    }
+
+    public void stopPartyMode() {
+        running = false;
+    }
+
+    private void restartPartyMode() {
+        stopPartyMode();
+        running = true;
+        partyModeThread = new Thread(this::performPartyMode);
+        partyModeThread.start();
     }
 
     @Override
@@ -60,7 +95,7 @@ public class PartyModeCommand implements Command {
        }else{
            lamp.switchOff();
        }
-        lamp.notifyObservers();
+
     }
     @Override
     public String toString() {

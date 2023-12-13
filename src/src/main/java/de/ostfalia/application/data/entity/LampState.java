@@ -41,4 +41,9 @@ public class LampState {
     public void setOn(boolean on) {
         isOn = on;
     }
+
+    @Override
+    public String toString(){
+        return "Lampe hat die Farbe + " + color.toString() + " und eine Intänsität von " + intensity;
+    }
 }
