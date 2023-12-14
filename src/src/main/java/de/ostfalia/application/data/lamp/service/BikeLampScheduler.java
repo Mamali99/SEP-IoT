@@ -4,9 +4,13 @@ import com.vaadin.flow.component.UI;
 import de.ostfalia.application.data.lamp.commandImp.BikeDriveCommand;
 import de.ostfalia.application.data.lamp.commandImp.RaceCommand;
 import de.ostfalia.application.data.service.BikeService;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import java.util.List;
+
 
 import java.awt.*;
 import java.io.IOException;
@@ -23,7 +27,7 @@ public class BikeLampScheduler {
 
     private volatile boolean raceCommandEnabled = false;
 
-    private volatile boolean driveCommandEnabled = false;
+    private  boolean driveCommandEnabled = false;
 
     // Konfiguriere die Fahrradkanäle und Farben
     private final int bikeChannel1 = 1; // Beispielkanal
@@ -31,16 +35,23 @@ public class BikeLampScheduler {
     private final Color colorBike1 = Color.RED;
     private final Color colorBike2 = Color.BLUE;
 
+    // In der BikeLampScheduler Klasse
+    private Integer selectedChannel;
 
+
+    public void setSelectedChannel(Integer selectedChannel) {
+        this.selectedChannel = selectedChannel;
+    }
 
     @Scheduled(fixedRate = 60_000) // alle 60 Sekunden
     public void scheduleTaskUsingFixedRate() throws IOException {
 
-        if (this.driveCommandEnabled) {
-            BikeDriveCommand bikeDriveCommand = new BikeDriveCommand(lampAdapter, bikeService, bikeChannel1);
-            bikeDriveCommand.execute();
+        if (this.selectedChannel != null) {
+            if (this.driveCommandEnabled) {
+                BikeDriveCommand bikeDriveCommand = new BikeDriveCommand(lampAdapter, bikeService, selectedChannel);
+                bikeDriveCommand.execute();
+            }
         }
-
         if (this.raceCommandEnabled) {
             RaceCommand raceCommand = new RaceCommand(lampAdapter, bikeService, bikeChannel1, bikeChannel2, colorBike1, colorBike2);
             raceCommand.execute();
@@ -61,6 +72,7 @@ public class BikeLampScheduler {
     }
 
     public void disableDriveCommand() {
+        System.out.println("Set this Drive to false");
         this.driveCommandEnabled = false;
     }
 

@@ -14,9 +14,11 @@ import de.ostfalia.application.data.entity.BicycleID;
 import de.ostfalia.application.data.lamp.commandImp.*;
 import de.ostfalia.application.data.lamp.controller.RemoteController;
 import de.ostfalia.application.data.lamp.model.Command;
+import de.ostfalia.application.data.lamp.service.BikeLampScheduler;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
 import de.ostfalia.application.data.service.BikeService;
 import de.ostfalia.application.views.BasicLayout;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.addons.tatu.ColorPicker;
 
 import java.awt.*;
@@ -32,9 +34,13 @@ import static com.vaadin.flow.dom.ElementFactory.createButton;
 public class LampRemoteControlView extends BasicLayout {
 
     private RemoteController remoteController;
+    @Autowired
+    private BikeLampScheduler bikeLampScheduler;
     private ColorPicker colorPicker;
     private ComboBox<String> commandHistoryDropdown;
+    private BikeDriveCommand bikeDriveCommand;
 
+    @Autowired
     private BikeService bikeService;
 
     List<Button> customCommandButtons = new ArrayList<>();
@@ -63,6 +69,8 @@ public class LampRemoteControlView extends BasicLayout {
         Button delayedCommandButton = new Button("Execute Delayed Commands", e -> executeDelayedCommands());
         Button partyModeButton = new Button("Party Mode", e -> activatePartyMode());
         Button customButton = new Button("Turn On and Blink", e -> createAndExecuteCustomCommand());
+        Button stopDriveButton = createStopDriveButton();
+
 
 
         colorPicker = new ColorPicker();
@@ -82,8 +90,27 @@ public class LampRemoteControlView extends BasicLayout {
         for (Button customCommandButton : customCommandButtons) {
             layout.add(customCommandButton);
         }
+
+        ComboBox<Integer> channelSelect = getChannelSelect();
+        layout.add(channelSelect);
+        layout.add(stopDriveButton);
+
         customCommandComponents.stream().forEach(layout::add);
         this.setContent(layout);
+    }
+
+    private ComboBox<Integer> getChannelSelect() {
+        ComboBox<Integer> channelSelect = new ComboBox<>("Select bike channel");
+
+        List<Integer> availableChannels = bikeService.getAvailableChannels();
+        channelSelect.setItems(availableChannels);
+
+        channelSelect.addValueChangeListener(e -> {
+            int selectedChannel = e.getValue();
+            bikeLampScheduler.setSelectedChannel(selectedChannel);
+            bikeLampScheduler.enableDriveCommand();
+        });
+        return channelSelect;
     }
 
     private void executeCommand(Command command) {
@@ -93,6 +120,14 @@ public class LampRemoteControlView extends BasicLayout {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private Button createStopDriveButton() {
+        Button stopDriveButton = new Button("Stopp Fahrt");
+        stopDriveButton.addClickListener(e -> {
+            bikeLampScheduler.disableDriveCommand(); // This method needs to be defined in your BikeLampScheduler
+        });
+        return stopDriveButton;
     }
 
 

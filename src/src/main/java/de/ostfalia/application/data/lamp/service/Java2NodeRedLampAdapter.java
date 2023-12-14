@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.ostfalia.application.data.lamp.model.ILamp;
 import de.ostfalia.application.data.lamp.model.LampObserver;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -21,6 +22,7 @@ import java.util.List;
 
 @Component
 @Primary
+@Scope("singleton")
 public class Java2NodeRedLampAdapter implements ILamp {
 
     private static final String url = "http://172.28.24.10/hue/lights/1/state";
@@ -120,7 +122,7 @@ public class Java2NodeRedLampAdapter implements ILamp {
         ObjectNode jsonObject = objectMapper.createObjectNode();
         jsonObject.put("on", true);
         jsonObject.put("bri", (int) intensity);
-
+        System.out.println("Set intensity to " + intensity);
         restTemplate.put(url, jsonObject.toString());
         notifyObservers();
     }
