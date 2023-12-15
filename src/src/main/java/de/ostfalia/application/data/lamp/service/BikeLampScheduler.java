@@ -3,6 +3,8 @@ package de.ostfalia.application.data.lamp.service;
 
 import de.ostfalia.application.data.lamp.commandImp.BikeDriveCommand;
 import de.ostfalia.application.data.lamp.commandImp.RaceCommand;
+import de.ostfalia.application.data.lamp.controller.RemoteController;
+import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.service.BikeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,7 +24,8 @@ public class BikeLampScheduler {
 
     @Autowired
     private Java2NodeRedLampAdapter lampAdapter; //es muss genau gleiches lampAdapter hier geben, wie LampView hat und andere Command krigen
-
+    @Autowired
+    private RemoteController remoteController;
     private volatile boolean raceCommandEnabled = false;
 
     private volatile boolean driveCommandEnabled = false;
@@ -31,6 +34,7 @@ public class BikeLampScheduler {
     private final int bikeChannel1 = 1; // Beispielkanal
     private final int bikeChannel2 = 2; // Beispielkanal
     private final Color colorBike1 = Color.RED;
+    private Command currentCommand;
     private final Color colorBike2 = Color.BLUE;
 
     // In der BikeLampScheduler Klasse
@@ -44,11 +48,9 @@ public class BikeLampScheduler {
     @Scheduled(fixedRate = 60_000) // alle 60 Sekunden
     public void scheduleTaskUsingFixedRate() throws IOException {
 
-        if (this.selectedChannel != null) {
-            if (this.driveCommandEnabled) {
-                BikeDriveCommand bikeDriveCommand = new BikeDriveCommand(lampAdapter, bikeService, selectedChannel);
-                bikeDriveCommand.execute();
-            }
+        if (this.selectedChannel != null && this.driveCommandEnabled) {
+            currentCommand = new BikeDriveCommand(lampAdapter, bikeService, selectedChannel);
+            remoteController.executeCommand(currentCommand);
         }
         if (this.raceCommandEnabled) {
             RaceCommand raceCommand = new RaceCommand(lampAdapter, bikeService, bikeChannel1, bikeChannel2, colorBike1, colorBike2);

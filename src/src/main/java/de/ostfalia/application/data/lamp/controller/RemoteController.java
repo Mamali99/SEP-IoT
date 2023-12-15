@@ -12,8 +12,9 @@ public class RemoteController {
     private Command[] commandHistory = new Command[MAX_COMMAND_HISTORY];
 
     public void executeCommand(Command command) throws IOException {
-        command.execute();
         addCommandToHistory(command);
+        command.execute();
+
     }
 
     private void addCommandToHistory(Command command) {

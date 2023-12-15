@@ -24,12 +24,13 @@ public class BikeDriveCommand implements Command {
 
     private int previousIntensity;
 
-    private volatile boolean bikeDriveCommand = true;
+    private  boolean bikeDriveCommand = true;
 
     private static final BigDecimal CIRCUMFERENCE = new BigDecimal("2.111");
     private static final BigDecimal ROTATION_DIVISOR = new BigDecimal(4);
     private static final int MAX_INTENSITY = 254;
     private int bikeChannel;
+    private Integer selectedChannel;
     private static final BigDecimal MAX_SPEED = BigDecimal.valueOf(50); // Maximalgeschwindigkeit laut pdf
 
     public BikeDriveCommand(Java2NodeRedLampAdapter lamp, BikeService bikeService, int bikeChannel) {
@@ -39,7 +40,11 @@ public class BikeDriveCommand implements Command {
         this.duration = Duration.ofMinutes(1);
     }
 
+    public void setSelectedChannel(Integer selectedChannel) {
+        this.selectedChannel = selectedChannel;
+    }
 
+    @Scheduled(fixedRate = 60_000) // alle 60 Sekunden
     @Override
     public void execute() throws IOException {
         bikeDriveCommand = true;
@@ -106,5 +111,9 @@ public class BikeDriveCommand implements Command {
         // Umwandlung von m/s in km/h
         BigDecimal speedInKmph = speedInMps.multiply(BigDecimal.valueOf(3.6));
         return speedInKmph;
+    }
+
+    public String toString() {
+        return "Bike Drive";
     }
 }

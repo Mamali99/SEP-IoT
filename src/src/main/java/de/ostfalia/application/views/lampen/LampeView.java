@@ -133,9 +133,37 @@ public class LampeView extends BasicLayout implements LampObserver {
                 throw new RuntimeException(ex);
             }
         });
+
+        Button setDrive = createButton("Drive", VaadinIcon.ABACUS);
+        setDrive.addClassName("button");
+        setDrive.addClickListener(e -> {
+            Dialog driveDialog = new Dialog();
+            VerticalLayout layout = new VerticalLayout();
+            ComboBox<Integer> channelSelect = new ComboBox<>("Select bike channel");
+            channelSelect.setLabel("Choose a Bike");
+
+            List<Integer> availableChannels = bikeService.getAvailableChannels();
+            channelSelect.setItems(availableChannels);
+            layout.add(channelSelect);
+
+            // Erstellen Sie eine Schaltfläche zum Übernehmen der ausgewählten Intensität
+            Button applyButton = new Button("Run", click -> {
+                executeCommand(new BikeDriveCommand(lampAdapter, bikeService, channelSelect.getValue()));
+                driveDialog.close();
+            });
+            applyButton.addClassName("button");
+            layout.add(applyButton);
+
+            driveDialog.add(layout);
+            driveDialog.open();
+        });
+        possibleButtons.add(setDrive);
+        possibleButtons.add(setColor);
+        setColor.addClassName("button");
+
         this.addClassName("dark");
         // Füge die initialen Buttons zum Layout hinzu
-        initialButtonLayout.add(turnOnButton, turnOffButton, raceButton, blinkButton, partyModeButton, undoButton);
+        initialButtonLayout.add(turnOnButton, turnOffButton, raceButton, setDrive, blinkButton, partyModeButton, undoButton);
 
         // Initialisiere die zusätzlichen Buttons
         Button setIntensity = createButton("Set Intensity", VaadinIcon.ABACUS);
@@ -173,6 +201,8 @@ public class LampeView extends BasicLayout implements LampObserver {
 
 
 
+
+
         // Erstelle den "Plus"-Button
         Button plusButton = new Button("Plus", e -> openButtonDialog());
         plusButton.setIcon(VaadinIcon.PLUS.create());
@@ -203,7 +233,6 @@ public class LampeView extends BasicLayout implements LampObserver {
         buttonLayout.add(initialButtonLayout, newButtonLayout);
         virtualLampLayout.add(rightLayoutFirstRow);
         customCommandLayout.add(setupCustomCommandCreation());
-        customCommandLayout.add(getChannelForBikeDrive());
 
 
 
@@ -478,22 +507,6 @@ public class LampeView extends BasicLayout implements LampObserver {
         return stopDriveButton;
     }
 
-    private ComboBox<Integer> getChannelForBikeDrive() {
-        ComboBox<Integer> channelSelect = new ComboBox<>("Select bike channel");
-
-        List<Integer> availableChannels = bikeService.getAvailableChannels();
-        channelSelect.setItems(availableChannels);
-
-        channelSelect.addValueChangeListener(e -> {
-            int selectedChannel = e.getValue();
-            bikeLampScheduler.setSelectedChannel(selectedChannel);
-            Thread thread = new Thread(() -> {
-                bikeLampScheduler.enableDriveCommand();
-            });
-            thread.start();
-        });
-        return channelSelect;
-    }
 
     private void activatePartyMode() {
         Color[] colors = {Color.RED, Color.GREEN, Color.BLUE};
