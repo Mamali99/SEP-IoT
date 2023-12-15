@@ -1,20 +1,18 @@
 package de.ostfalia.application.data.lamp.service;
 
-import com.vaadin.flow.component.UI;
+
 import de.ostfalia.application.data.lamp.commandImp.BikeDriveCommand;
 import de.ostfalia.application.data.lamp.commandImp.RaceCommand;
 import de.ostfalia.application.data.service.BikeService;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import java.util.List;
+
 
 
 import java.awt.*;
 import java.io.IOException;
-import java.time.Duration;
+
 
 @Component
 public class BikeLampScheduler {
@@ -27,7 +25,7 @@ public class BikeLampScheduler {
 
     private volatile boolean raceCommandEnabled = false;
 
-    private  boolean driveCommandEnabled = false;
+    private volatile boolean driveCommandEnabled = false;
 
     // Konfiguriere die Fahrradkanäle und Farben
     private final int bikeChannel1 = 1; // Beispielkanal

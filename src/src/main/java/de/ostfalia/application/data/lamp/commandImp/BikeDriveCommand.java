@@ -53,6 +53,7 @@ public class BikeDriveCommand implements Command {
         } else {
             System.out.println("Ja die daten sind da");
         }
+        System.out.println("BikeDriveCommand's lampAdapter Identity Hash Code: " + System.identityHashCode(lamp));
         BigDecimal speedInKmph = calculateSpeed(bikeData); // speed in kmh
         System.out.println("Speed in Kmph " + speedInKmph);
         BigDecimal ratio = speedInKmph.divide(MAX_SPEED, 2, RoundingMode.HALF_UP);
@@ -63,7 +64,8 @@ public class BikeDriveCommand implements Command {
         if (calculatedIntensity.compareTo(BigDecimal.valueOf(MAX_INTENSITY)) > 0) {
             calculatedIntensity = BigDecimal.valueOf(MAX_INTENSITY);
         }
-
+        lamp.setIntensity(calculatedIntensity.intValue());
+        System.out.println("Before setting intensity on lamp " + calculatedIntensity.intValue());
         lamp.setIntensity(calculatedIntensity.intValue());
 
     }

@@ -52,6 +52,7 @@ public class PartyModeCommand implements Command {
                 break;
 
             }
+
         }
     }
 
@@ -61,6 +62,7 @@ public class PartyModeCommand implements Command {
                 lamp.switchOn(color);
                 lamp.setIntensity(intensity);
                 System.out.println("Party mode " + ++i);
+                lamp.notifyObservers();
             } catch (IOException e){
                 throw new RuntimeException(e);
             }

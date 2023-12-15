@@ -12,6 +12,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -44,7 +45,6 @@ public class Java2NodeRedLampAdapter implements ILamp {
         observers.remove(observer);
     }
 
-    // Benachrichtige alle Observers über eine Änderung
     public void notifyObservers() {
         for (LampObserver observer : observers) {
             try {
@@ -54,7 +54,6 @@ public class Java2NodeRedLampAdapter implements ILamp {
             }
         }
     }
-
 
     @Override
     public void switchOn() throws IOException {
@@ -112,7 +111,6 @@ public class Java2NodeRedLampAdapter implements ILamp {
         restTemplate.put(url, jsonObject.toString());
         notifyObservers();
     }
-
     @Override
     public void setIntensity(float intensity) throws IOException {
         if (intensity < 0 || intensity > 254) {
@@ -142,7 +140,6 @@ public class Java2NodeRedLampAdapter implements ILamp {
         }
         return null;
     }
-
 
     @Override
     public float getIntensity() throws IOException {

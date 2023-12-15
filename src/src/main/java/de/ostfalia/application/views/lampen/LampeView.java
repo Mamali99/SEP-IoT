@@ -2,6 +2,7 @@ package de.ostfalia.application.views.lampen;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -17,9 +18,9 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.spring.annotation.UIScope;
 import de.ostfalia.application.data.lamp.commandImp.*;
 import de.ostfalia.application.data.lamp.controller.RemoteController;
 import de.ostfalia.application.data.lamp.model.Command;
@@ -29,7 +30,6 @@ import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
 import de.ostfalia.application.data.service.BikeService;
 import de.ostfalia.application.views.BasicLayout;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.vaadin.addons.tatu.ColorPicker;
 
 import java.awt.*;
@@ -374,7 +374,7 @@ public class LampeView extends BasicLayout implements LampObserver {
 
     Div lampBox;
     Span statusLabel;
-    Span intensityLvl;
+    Text intensityLvl;
     Icon lampIcon;
 
     private Component createLamp() throws IOException {
@@ -382,8 +382,8 @@ public class LampeView extends BasicLayout implements LampObserver {
         lampIcon.setSize("100px");
         lampIcon.setColor("black");
 
-        intensityLvl = new Span("Intensity: " + lampAdapter.getIntensity());
-        intensityLvl.getStyle().set("font-size", "larger");
+        intensityLvl = new Text("Intensity: " + lampAdapter.getIntensity());
+        //intensityLvl.getStyle().set("font-size", "larger");
 
 
         statusLabel = new Span();
@@ -422,7 +422,12 @@ public class LampeView extends BasicLayout implements LampObserver {
             statusLabel.setText("The lamp is: OFF");
             lampIcon.setColor("black");
         }
-        intensityLvl.setText("Intensity: " + lampAdapter.getIntensity());
+        String newText = "Current intensity: " + lampAdapter.getIntensity();
+        System.out.println("UI instance: " + ui);
+        if(ui != null) {
+            System.out.println("newText: " + newText);
+             intensityLvl.setText(newText);
+        }
     }
 
     private void updateLampColor(Color color) {
@@ -435,6 +440,7 @@ public class LampeView extends BasicLayout implements LampObserver {
             updateCommandHistoryDropdown();
             updateLampColor(lampAdapter.getColor());
             updateStatusLabel();
+            System.out.println("In the updateGUI method");
         } catch (IOException e) {
             e.printStackTrace();
         }
