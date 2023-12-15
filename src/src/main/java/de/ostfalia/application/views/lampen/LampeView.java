@@ -4,13 +4,12 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.listbox.ListBox;
 import com.vaadin.flow.component.listbox.MultiSelectListBox;
@@ -71,6 +70,7 @@ public class LampeView extends BasicLayout implements LampObserver {
 
     private UI ui;
     private PartyModeCommand currentPartyModeCommand;
+    private VirtualLampComponent virtualLampComponent;
 
     public LampeView(BikeService bikeService, RemoteController remoteController, Java2NodeRedLampAdapter lampAdapter, BikeLampScheduler bikeLampScheduler) throws IOException {
         this.remoteController = remoteController;
@@ -115,7 +115,6 @@ public class LampeView extends BasicLayout implements LampObserver {
         raceButton.addClassName("button");
 
 
-
         Button undoButton = createButton("Undo", VaadinIcon.ADJUST);
         undoButton.getElement().getStyle().set("background-color", "rgba(255, 255, 0, 0.2)"); // Gelb und transparent
         undoButton.addClickListener(e -> openUndoDialog());
@@ -136,7 +135,7 @@ public class LampeView extends BasicLayout implements LampObserver {
         });
         this.addClassName("dark");
         // Füge die initialen Buttons zum Layout hinzu
-        initialButtonLayout.add(turnOnButton,raceButton, turnOffButton, blinkButton, delayedCommandButton, partyModeButton, undoButton);
+        initialButtonLayout.add(turnOnButton, turnOffButton, raceButton, blinkButton, partyModeButton, undoButton);
 
         // Initialisiere die zusätzlichen Buttons
         Button setIntensity = createButton("Set Intensity", VaadinIcon.ABACUS);
@@ -198,13 +197,15 @@ public class LampeView extends BasicLayout implements LampObserver {
         newButtonLayout.getStyle().set("margin", "2px");
 
         //virtuelle lampe
-        VerticalLayout virtualLamp = new VerticalLayout(createLamp());
+        virtualLampComponent = new VirtualLampComponent();
+        rightLayoutFirstRow.add(virtualLampComponent);
 
         buttonLayout.add(initialButtonLayout, newButtonLayout);
-        rightLayoutFirstRow.add(virtualLamp);
         virtualLampLayout.add(rightLayoutFirstRow);
         customCommandLayout.add(setupCustomCommandCreation());
         customCommandLayout.add(getChannelForBikeDrive());
+
+
 
         HorizontalLayout mainLayout = new HorizontalLayout(buttonLayout, virtualLampLayout, customCommandLayout);
         mainLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER); // Horizontales Zentrieren
@@ -372,78 +373,10 @@ public class LampeView extends BasicLayout implements LampObserver {
     }
 
 
-    Div lampBox;
-    Span statusLabel;
-    Text intensityLvl;
-    Icon lampIcon;
-
-    private Component createLamp() throws IOException {
-        lampIcon = new Icon(VaadinIcon.LIGHTBULB);
-        lampIcon.setSize("100px");
-        lampIcon.setColor("black");
-
-        intensityLvl = new Text("Intensity: " + lampAdapter.getIntensity());
-        //intensityLvl.getStyle().set("font-size", "larger");
-
-
-        statusLabel = new Span();
-        statusLabel.getStyle().set("font-size", "larger");
-
-
-        updateStatusLabel();
-
-        lampBox = new Div();
-        lampBox.getStyle()
-                .set("background-color", "rgba(" + lampAdapter.getColor().getRed() + ", " + lampAdapter.getColor().getGreen() + ", " + lampAdapter.getColor().getBlue() + ", 0.5)")
-                .set("border-radius", "25px")
-                .set("padding", "10px")
-                .set("width", "250px")
-                .set("height", "250px")
-                .set("display", "flex")
-                .set("justify-content", "center")
-                .set("align-items", "center")
-                .set("box-shadow", "0px 0px 10px rgba(255, 255, 255, 0.1)")
-                .set("position", "relative");
-        lampBox.add(lampIcon);
-
-        VerticalLayout lampLayout = new VerticalLayout();
-        lampLayout.add(lampBox, statusLabel, intensityLvl);
-        lampLayout.setAlignItems(FlexComponent.Alignment.CENTER);
-
-        return lampLayout;
-    }
-
-    private void updateStatusLabel() throws IOException {
-        if (lampAdapter.getState()) {
-            statusLabel.setText("The lamp is: ON");
-            lampIcon.setColor("white");
-
-        } else {
-            statusLabel.setText("The lamp is: OFF");
-            lampIcon.setColor("black");
-        }
-        String newText = "Current intensity: " + lampAdapter.getIntensity();
-        System.out.println("UI instance: " + ui);
-        if(ui != null) {
-            System.out.println("newText: " + newText);
-             intensityLvl.setText(newText);
-        }
-    }
-
-    private void updateLampColor(Color color) {
-        // Update the Div background color
-        lampBox.getStyle().set("background-color", "rgba(" + color.getRed() + ", " + color.getGreen() + ", " + color.getBlue() + ", 0.5)");
-    }
-
     private void updateGUI() throws IOException {
-        try {
-            updateCommandHistoryDropdown();
-            updateLampColor(lampAdapter.getColor());
-            updateStatusLabel();
-            System.out.println("In the updateGUI method");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        updateCommandHistoryDropdown();
+
+
     }
 
     private Button createButton(String text, VaadinIcon icon) {
@@ -483,8 +416,6 @@ public class LampeView extends BasicLayout implements LampObserver {
     }
 
 
-
-
     private void executeCommand(Command command) {
         // Stoppe das aktuelle BlinkCommand oder PartyModeCommand, falls es läuft
         if (currentBlinkCommand != null) {
@@ -512,7 +443,6 @@ public class LampeView extends BasicLayout implements LampObserver {
 
         updateCommandHistoryDropdown();
     }
-
 
 
     private void updateCommandHistoryDropdown() {
@@ -601,10 +531,15 @@ public class LampeView extends BasicLayout implements LampObserver {
     public void updateLampState() throws IOException {
         ui.access(() -> {
             try {
+                Color color = lampAdapter.getColor();
+                float intensity = lampAdapter.getIntensity();
+                boolean isOn = lampAdapter.getState();
+                virtualLampComponent.updateLampState(isOn, color, (int) intensity);
                 updateGUI();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            updateCommandHistoryDropdown();
         });
     }
 
