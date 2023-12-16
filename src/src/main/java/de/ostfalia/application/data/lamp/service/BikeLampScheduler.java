@@ -23,22 +23,26 @@ public class BikeLampScheduler {
     private BikeService bikeService;
 
     @Autowired
-    private Java2NodeRedLampAdapter lampAdapter; //es muss genau gleiches lampAdapter hier geben, wie LampView hat und andere Command krigen
+    private Java2NodeRedLampAdapter lampAdapter;
     @Autowired
     private RemoteController remoteController;
     private volatile boolean raceCommandEnabled = false;
 
     private volatile boolean driveCommandEnabled = false;
 
-    // Konfiguriere die Fahrradkanäle und Farben
-    private final int bikeChannel1 = 1; // Beispielkanal
-    private final int bikeChannel2 = 2; // Beispielkanal
     private final Color colorBike1 = Color.RED;
-    private Command currentCommand;
     private final Color colorBike2 = Color.BLUE;
 
-    // In der BikeLampScheduler Klasse
+
     private Integer selectedChannel;
+
+    private Integer bikeChannelForBike1;
+    private Integer bikeChannelForBike2;
+
+    public void setBikeChannels(Integer channel1, Integer channel2) {
+        this.bikeChannelForBike1 = channel1;
+        this.bikeChannelForBike2 = channel2;
+    }
 
 
 
@@ -55,8 +59,7 @@ public class BikeLampScheduler {
         }
 
         if (this.raceCommandEnabled) {
-            RaceCommand raceCommand = new RaceCommand(lampAdapter, bikeService, bikeChannel1, bikeChannel2, colorBike1, colorBike2);
-            //remoteController.executeCommand(raceCommand);
+            RaceCommand raceCommand = new RaceCommand(lampAdapter, bikeService, bikeChannelForBike1, bikeChannelForBike2, colorBike1, colorBike2);
             raceCommand.execute();
         }
 

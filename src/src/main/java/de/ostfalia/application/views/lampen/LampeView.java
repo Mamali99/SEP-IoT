@@ -117,7 +117,7 @@ public class LampeView extends BasicLayout implements LampObserver {
         partyModeButton.addClassName("button");
 
         Button raceButton = createButton("Race", VaadinIcon.MUSIC);
-        raceButton.addClickListener(e -> bikeLampScheduler.enableRaceCommand());
+        raceButton.addClickListener(e -> createRaceDialog());
         raceButton.addClassName("button");
 
 
@@ -126,12 +126,7 @@ public class LampeView extends BasicLayout implements LampObserver {
         undoButton.addClickListener(e -> openUndoDialog());
         undoButton.addClassName("button");
 
-        /*
-        Button delayedCommandButton = createButton("Delayed", VaadinIcon.HOURGLASS);
-        delayedCommandButton.addClickListener(e -> executeDelayedCommands());
-        delayedCommandButton.addClassName("button");
 
-         */
 
         Button setColor = createButton("Set Color", VaadinIcon.ACADEMY_CAP);
         setColor.addClickListener(e -> {
@@ -247,6 +242,30 @@ public class LampeView extends BasicLayout implements LampObserver {
         HorizontalLayout mainLayout = new HorizontalLayout(buttonLayout, virtualLampLayout, customCommandLayout);
         mainLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER); // Horizontales Zentrieren
         this.setContent(mainLayout);
+    }
+
+    private void createRaceDialog() {
+        Dialog raceDialog = new Dialog();
+        VerticalLayout layout = new VerticalLayout();
+
+        ComboBox<Integer> bikeChannelSelect1 = new ComboBox<>("Select Bike 1 Channel");
+        ComboBox<Integer> bikeChannelSelect2 = new ComboBox<>("Select Bike 2 Channel");
+        List<Integer> availableChannels = bikeService.getAvailableChannels();
+        bikeChannelSelect1.setItems(availableChannels);
+        bikeChannelSelect2.setItems(availableChannels);
+
+        Button applyButton = new Button("Start Race", click -> {
+            Integer selectedChannel1 = bikeChannelSelect1.getValue();
+            Integer selectedChannel2 = bikeChannelSelect2.getValue();
+            bikeLampScheduler.setBikeChannels(selectedChannel1, selectedChannel2);
+            bikeLampScheduler.enableRaceCommand();
+            raceDialog.close();
+        });
+        applyButton.addClassName("button");
+
+        layout.add(bikeChannelSelect1, bikeChannelSelect2, applyButton);
+        raceDialog.add(layout);
+        raceDialog.open();
     }
 
     private Div undoDialog;
