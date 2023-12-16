@@ -16,8 +16,8 @@ public class PartyModeCommand implements Command {
     private LampState previousState;
     private volatile boolean running;
     private Thread partyModeThread;
-   // private final UI ui;
-    int i = 0;
+    //private final UI ui;
+    private int i = 0;
 
     public PartyModeCommand(Java2NodeRedLampAdapter lamp, int blinkCount, Color[] colors, int[] intensities) {
         this.lamp = lamp;
@@ -32,7 +32,6 @@ public class PartyModeCommand implements Command {
     public void execute() throws IOException {
         saveCurrentState();
         if (partyModeThread == null || !partyModeThread.isAlive()) {
-            //running = true;
             partyModeThread = new Thread(this::performPartyMode);
             partyModeThread.start();
         } else {

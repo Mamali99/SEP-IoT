@@ -15,8 +15,8 @@ public class RemoteController {
 
 
     public void executeCommand(Command command) throws IOException {
-        command.execute();
         addCommandToHistory(command);
+        command.execute();
 
     }
 

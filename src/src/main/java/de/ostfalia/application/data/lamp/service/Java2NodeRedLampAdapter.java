@@ -8,10 +8,12 @@ import com.vaadin.flow.component.UI;
 import de.ostfalia.application.data.lamp.model.ILamp;
 import de.ostfalia.application.data.lamp.model.LampObserver;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -75,9 +77,7 @@ public class Java2NodeRedLampAdapter implements ILamp {
             }
         }
     }
-
-     */
-
+*/
 
     @Override
     public void switchOn() throws IOException {
@@ -186,7 +186,6 @@ public class Java2NodeRedLampAdapter implements ILamp {
             Color color = Color.getHSBColor(hue / 65535.0f, sat / 254.0f, bri / 254.0f);
             return color;
         }
-
         return null;
     }
 

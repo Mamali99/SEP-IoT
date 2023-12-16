@@ -1,13 +1,16 @@
 package de.ostfalia.application.views.lampen;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.listbox.ListBox;
 import com.vaadin.flow.component.listbox.MultiSelectListBox;
@@ -15,6 +18,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.router.Route;
 import de.ostfalia.application.data.lamp.commandImp.*;
@@ -23,6 +27,7 @@ import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.lamp.model.LampObserver;
 import de.ostfalia.application.data.lamp.service.BikeLampScheduler;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
+import de.ostfalia.application.data.service.BikeService;
 import de.ostfalia.application.views.BasicLayout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.addons.tatu.ColorPicker;
@@ -35,14 +40,15 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+
 @Route("/SE/LightAdapter")
 public class LampeView extends BasicLayout implements LampObserver {
     @Autowired
     private Java2NodeRedLampAdapter lampAdapter;
-
     @Autowired
     private BikeLampScheduler bikeLampScheduler;
     private final RemoteController remoteController;
+    private BikeService bikeService;
 
 
     private ListBox<String> commandListBox;
@@ -50,7 +56,7 @@ public class LampeView extends BasicLayout implements LampObserver {
     private List<Button> possibleButtons = new ArrayList<>();
     private HorizontalLayout buttonLayout = new HorizontalLayout();
     private HorizontalLayout virtualLampLayout = new HorizontalLayout();
-    private HorizontalLayout customCommandLayout = new HorizontalLayout();
+    private VerticalLayout customCommandLayout = new VerticalLayout();
 
     private VerticalLayout rightLayoutFirstRow = new VerticalLayout();
     private VerticalLayout initialButtonLayout = new VerticalLayout();
@@ -62,13 +68,25 @@ public class LampeView extends BasicLayout implements LampObserver {
     // Aktuelles BlinkCommand speichern
     private BlinkCommand currentBlinkCommand;
 
+    private UI ui;
     private PartyModeCommand currentPartyModeCommand;
+    private VirtualLampComponent virtualLampComponent;
 
-    public LampeView(RemoteController remoteController, Java2NodeRedLampAdapter lampAdapter) throws IOException {
+
+
+    public LampeView(BikeService bikeService, RemoteController remoteController, Java2NodeRedLampAdapter lampAdapter, BikeLampScheduler bikeLampScheduler) throws IOException {
         this.remoteController = remoteController;
         this.lampAdapter = lampAdapter;
         this.lampAdapter.addObserver(this); // Registrieren als Observer
+        this.bikeService = bikeService;
+        this.bikeLampScheduler = bikeLampScheduler;
         setupLayout();
+    }
+
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        ui = attachEvent.getUI();
     }
 
 
@@ -76,6 +94,7 @@ public class LampeView extends BasicLayout implements LampObserver {
 
 
     private void setupLayout() throws IOException {
+
 
         // Initialisiere die Buttons und ColorPicker
         Button turnOnButton = createButton("Turn On", VaadinIcon.POWER_OFF);
@@ -102,7 +121,6 @@ public class LampeView extends BasicLayout implements LampObserver {
         raceButton.addClassName("button");
 
 
-
         Button undoButton = createButton("Undo", VaadinIcon.ADJUST);
         undoButton.getElement().getStyle().set("background-color", "rgba(255, 255, 0, 0.2)"); // Gelb und transparent
         undoButton.addClickListener(e -> openUndoDialog());
@@ -123,10 +141,41 @@ public class LampeView extends BasicLayout implements LampObserver {
                 throw new RuntimeException(ex);
             }
         });
+        //Small spedup for channel select when not in the button, fetch is done while initialising the component
+        List<Integer> availableChannels = bikeService.getAvailableChannels();
+
+        Button setDrive = createButton("Drive", VaadinIcon.ABACUS);
+        setDrive.addClassName("button");
+        setDrive.addClickListener(e -> {
+            Dialog driveDialog = new Dialog();
+            VerticalLayout layout = new VerticalLayout();
+            ComboBox<Integer> channelSelect = new ComboBox<>("Select bike channel");
+            channelSelect.setLabel("Choose a Bike");
+
+
+            channelSelect.setItems(availableChannels);
+            layout.add(channelSelect);
+
+            // Erstellen Sie eine Schaltfläche zum Übernehmen der ausgewählten Intensität
+            Button applyButton = new Button("Run", click -> {
+                Integer selectedChannel = channelSelect.getValue();
+                bikeLampScheduler.setSelectedChannel(selectedChannel);
+                bikeLampScheduler.enableDriveCommand();
+                driveDialog.close();
+            });
+            applyButton.addClassName("button");
+            layout.add(applyButton);
+
+            driveDialog.add(layout);
+            driveDialog.open();
+        });
+        possibleButtons.add(setDrive);
+        possibleButtons.add(setColor);
+        setColor.addClassName("button");
+
         this.addClassName("dark");
         // Füge die initialen Buttons zum Layout hinzu
-        //initialButtonLayout.add(turnOnButton,raceButton, turnOffButton, blinkButton, delayedCommandButton, partyModeButton, undoButton);
-        initialButtonLayout.add(turnOnButton, turnOffButton, blinkButton, partyModeButton,raceButton, undoButton);
+        initialButtonLayout.add(turnOnButton, turnOffButton, raceButton, setDrive, blinkButton, partyModeButton, undoButton);
 
         // Initialisiere die zusätzlichen Buttons
         Button setIntensity = createButton("Set Intensity", VaadinIcon.ABACUS);
@@ -186,10 +235,10 @@ public class LampeView extends BasicLayout implements LampObserver {
         newButtonLayout.getStyle().set("margin", "2px");
 
         //virtuelle lampe
-        VerticalLayout virtualLamp = new VerticalLayout(createLamp());
+        virtualLampComponent = new VirtualLampComponent();
+        rightLayoutFirstRow.add(virtualLampComponent);
 
         buttonLayout.add(initialButtonLayout, newButtonLayout);
-        rightLayoutFirstRow.add(virtualLamp);
         virtualLampLayout.add(rightLayoutFirstRow);
         customCommandLayout.add(setupCustomCommandCreation());
 
@@ -361,68 +410,8 @@ public class LampeView extends BasicLayout implements LampObserver {
     }
 
 
-    Div lampBox;
-    Span statusLabel;
-    Span intensityLvl;
-    Icon lampIcon;
-
-    private Component createLamp() throws IOException {
-        lampIcon = new Icon(VaadinIcon.LIGHTBULB);
-        lampIcon.setSize("100px");
-        lampIcon.setColor("black");
-
-        intensityLvl = new Span("Intensity: " + lampAdapter.getIntensity());
-        intensityLvl.getStyle().set("font-size", "larger");
-
-
-        statusLabel = new Span();
-        statusLabel.getStyle().set("font-size", "larger");
-
-
-        updateStatusLabel();
-
-        lampBox = new Div();
-        lampBox.getStyle()
-                .set("background-color", "rgba(" + lampAdapter.getColor().getRed() + ", " + lampAdapter.getColor().getGreen() + ", " + lampAdapter.getColor().getBlue() + ", 0.5)")
-                .set("border-radius", "25px")
-                .set("padding", "10px")
-                .set("width", "250px")
-                .set("height", "250px")
-                .set("display", "flex")
-                .set("justify-content", "center")
-                .set("align-items", "center")
-                .set("box-shadow", "0px 0px 10px rgba(255, 255, 255, 0.1)")
-                .set("position", "relative");
-        lampBox.add(lampIcon);
-
-        VerticalLayout lampLayout = new VerticalLayout();
-        lampLayout.add(lampBox, statusLabel, intensityLvl);
-        lampLayout.setAlignItems(FlexComponent.Alignment.CENTER);
-
-        return lampLayout;
-    }
-
-    private void updateStatusLabel() throws IOException {
-        if (lampAdapter.getState()) {
-            statusLabel.setText("The lamp is: ON");
-            lampIcon.setColor("white");
-
-        } else {
-            statusLabel.setText("The lamp is: OFF");
-            lampIcon.setColor("black");
-        }
-        intensityLvl.setText("Intensity: " + lampAdapter.getIntensity());
-    }
-
-    private void updateLampColor(Color color) {
-        // Update the Div background color
-        lampBox.getStyle().set("background-color", "rgba(" + color.getRed() + ", " + color.getGreen() + ", " + color.getBlue() + ", 0.5)");
-    }
-
     private void updateGUI() throws IOException {
         updateCommandHistoryDropdown();
-        updateLampColor(lampAdapter.getColor());
-        updateStatusLabel();
     }
 
     private Button createButton(String text, VaadinIcon icon) {
@@ -460,7 +449,6 @@ public class LampeView extends BasicLayout implements LampObserver {
     private void addButton(Button button) {
         newButtonLayout.addComponentAtIndex(newButtonLayout.getComponentCount() - 1, button);
     }
-
 
 
     private void executeCommand(Command command) {
@@ -505,11 +493,9 @@ public class LampeView extends BasicLayout implements LampObserver {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         updateCommandHistoryDropdown();
     }
-
-
-
 
 
     private void updateCommandHistoryDropdown() {
@@ -539,12 +525,22 @@ public class LampeView extends BasicLayout implements LampObserver {
             try {
                 remoteController.undoCommand(commandIndex);
                 Notification.show("Undo operation performed for: " + commandDescription);
+                bikeLampScheduler.disableDriveCommand();
                 updateGUI();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
+
+    private Button createStopDriveButton() {
+        Button stopDriveButton = new Button("Stop Drive");
+        stopDriveButton.addClickListener(e -> {
+            bikeLampScheduler.disableDriveCommand();
+        });
+        return stopDriveButton;
+    }
+
 
     private void activatePartyMode() {
         Color[] colors = {Color.RED, Color.GREEN, Color.BLUE};
@@ -579,8 +575,20 @@ public class LampeView extends BasicLayout implements LampObserver {
                 color.getRed(), color.getGreen(), color.getBlue());
     }
 
+
     @Override
     public void updateLampState() throws IOException {
-        updateGUI();
+        ui.access(() -> {
+            try {
+                Color color = lampAdapter.getColor();
+                float intensity = lampAdapter.getIntensity();
+                boolean isOn = lampAdapter.getState();
+                virtualLampComponent.updateLampState(isOn, color, (int) intensity);
+                updateGUI();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            updateCommandHistoryDropdown();
+        });
     }
 }
