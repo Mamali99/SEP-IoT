@@ -16,7 +16,7 @@ public class PartyModeCommand implements Command {
     private LampState previousState;
     private volatile boolean running;
     private Thread partyModeThread;
-    private final UI ui;
+   // private final UI ui;
     int i = 0;
 
     public PartyModeCommand(Java2NodeRedLampAdapter lamp, int blinkCount, Color[] colors, int[] intensities) {
@@ -24,7 +24,7 @@ public class PartyModeCommand implements Command {
         this.blinkCount = Integer.MAX_VALUE;
         this.colors = colors;
         this.intensities = intensities;
-        this.ui = UI.getCurrent();
+        //this.ui = UI.getCurrent();
         this.running = true;
     }
 
@@ -52,7 +52,7 @@ public class PartyModeCommand implements Command {
     }
 
     private void changeLampSettings(Color color, int intensity) {
-        ui.access(() -> {
+        /*ui.access(() -> {
             try {
                 lamp.switchOn(color, intensity);
                 //lamp.setIntensity(intensity);
@@ -61,6 +61,14 @@ public class PartyModeCommand implements Command {
                 throw new RuntimeException(e);
             }
         });
+
+         */
+        try {
+            lamp.switchOn(color, intensity);
+            System.out.println("Party mode " + i);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
     private void sleepBlinkDuration() {
         try {

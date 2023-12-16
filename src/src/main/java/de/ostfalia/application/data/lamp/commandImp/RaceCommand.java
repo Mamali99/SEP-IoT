@@ -71,6 +71,7 @@ public class RaceCommand implements Command {
 
                 try {
                     lamp.setColor(winningColor);
+                    //lamp.notifyObservers();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

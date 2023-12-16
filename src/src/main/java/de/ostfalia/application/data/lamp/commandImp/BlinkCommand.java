@@ -18,13 +18,14 @@ public class BlinkCommand implements Command {
 
     private volatile boolean running;
     private Thread blinkThread;
-    private final UI ui;
+    //private final UI ui;
+
 
     public BlinkCommand(Java2NodeRedLampAdapter lamp, int blinkCount, long blinkDuration) {
         this.lamp = lamp;
         this.blinkCount = Integer.MAX_VALUE;
         this.blinkDuration = 2000;
-        this.ui = UI.getCurrent();
+        //this.ui = UI.getCurrent();
         this.running = true;
     }
 
@@ -49,6 +50,7 @@ public class BlinkCommand implements Command {
     }
 
     private void blinkLamp(boolean on) {
+        /*
         ui.access(() -> {
             try {
                 if (on) {
@@ -65,6 +67,21 @@ public class BlinkCommand implements Command {
                 throw new RuntimeException(e);
             }
         });
+
+         */
+        try {
+            if (on) {
+                lamp.switchOn();
+
+                System.out.println("Lampe is On...");
+            } else {
+                System.out.println("Lampe is Off...");
+                lamp.switchOff();
+
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void sleepBlinkDuration() {

@@ -21,6 +21,8 @@ public class BikeLampScheduler {
     @Autowired
     private Java2NodeRedLampAdapter lampAdapter; //es muss genau gleiches lampAdapter hier geben, wie LampView hat und andere Command krigen
 
+
+
     private volatile boolean raceCommandEnabled = false;
 
     private volatile boolean driveCommandEnabled = false;
@@ -44,6 +46,8 @@ public class BikeLampScheduler {
         if (this.raceCommandEnabled) {
             RaceCommand raceCommand = new RaceCommand(lampAdapter, bikeService, bikeChannel1, bikeChannel2, colorBike1, colorBike2);
             raceCommand.execute();
+
+
         }
 
     }

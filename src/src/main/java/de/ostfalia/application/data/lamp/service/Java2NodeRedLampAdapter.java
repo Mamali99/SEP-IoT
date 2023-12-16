@@ -4,6 +4,7 @@ package de.ostfalia.application.data.lamp.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vaadin.flow.component.UI;
 import de.ostfalia.application.data.lamp.model.ILamp;
 import de.ostfalia.application.data.lamp.model.LampObserver;
 import org.springframework.context.annotation.Primary;
@@ -34,14 +35,36 @@ public class Java2NodeRedLampAdapter implements ILamp {
     // Observer Pattern
     private List<LampObserver> observers = new ArrayList<LampObserver>();
 
+
     public void addObserver(LampObserver observer) {
         observers.add(observer);
+
     }
 
     public void removeObserver(LampObserver observer) {
         observers.remove(observer);
     }
 
+    // In Ihrer Java2NodeRedLampAdapter-Klasse
+    public void notifyObservers() {
+        UI ui = UI.getCurrent();
+        if (ui != null) {
+            for (LampObserver observer : observers) {
+                ui.access(() -> {
+                    try {
+                        observer.updateLampState();
+                    } catch (IOException e) {
+                        System.out.println("Observer Issue im Lamp Adapter");
+                    }
+                });
+            }
+        }
+    }
+
+
+
+
+    /*
     // Benachrichtige alle Observers über eine Änderung
     public void notifyObservers() {
         for (LampObserver observer : observers) {
@@ -52,6 +75,8 @@ public class Java2NodeRedLampAdapter implements ILamp {
             }
         }
     }
+
+     */
 
 
     @Override
@@ -131,7 +156,7 @@ public class Java2NodeRedLampAdapter implements ILamp {
         jsonObject.put("sat", (int) (hsb[1] * 254));
         jsonObject.put("bri", (int) (hsb[2] * 254));
         restTemplate.put(url, jsonObject.toString());
-        //notifyObservers();
+        notifyObservers();
     }
 
     @Override
@@ -161,6 +186,7 @@ public class Java2NodeRedLampAdapter implements ILamp {
             Color color = Color.getHSBColor(hue / 65535.0f, sat / 254.0f, bri / 254.0f);
             return color;
         }
+
         return null;
     }
 

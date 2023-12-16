@@ -1,6 +1,8 @@
 package de.ostfalia.application.data.lamp.controller;
 
 import de.ostfalia.application.data.lamp.model.Command;
+import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,9 +13,11 @@ public class RemoteController {
     private static final int MAX_COMMAND_HISTORY = 5;
     private Command[] commandHistory = new Command[MAX_COMMAND_HISTORY];
 
+
     public void executeCommand(Command command) throws IOException {
         command.execute();
         addCommandToHistory(command);
+
     }
 
     private void addCommandToHistory(Command command) {

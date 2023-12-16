@@ -1,6 +1,7 @@
 package de.ostfalia.application.views.lampen;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
@@ -69,6 +70,8 @@ public class LampeView extends BasicLayout implements LampObserver {
         this.lampAdapter.addObserver(this); // Registrieren als Observer
         setupLayout();
     }
+
+
 
 
 
