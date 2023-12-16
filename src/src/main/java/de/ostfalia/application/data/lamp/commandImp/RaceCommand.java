@@ -31,7 +31,7 @@ public class RaceCommand implements Command {
     private static final BigDecimal CIRCUMFERENCE = new BigDecimal("2.111");
     private static final int ROTATION_DIVISOR = 4;
 
-    private LampState lampState;
+    private LampState previousState;
 
     private BigDecimal distanceBike1;
     private BigDecimal distanceBike2;
@@ -51,7 +51,11 @@ public class RaceCommand implements Command {
         this.colorBike1 = colorBike1;
         this.colorBike2 = colorBike2;
         this.duration = Duration.ofMinutes(1);
-
+        try {
+            saveCurrentState();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
@@ -68,14 +72,12 @@ public class RaceCommand implements Command {
 
                 float intensity = calculateIntensity(distanceBike1, distanceBike2);
 
-                lampState = new LampState(winningColor, intensity, true);
-
 
                 System.out.println(this.getRaceSummary());
 
 
                 try {
-                    lamp.setColor(winningColor);
+                    lamp.switchOn(winningColor, intensity);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -92,13 +94,22 @@ public class RaceCommand implements Command {
     }
 
     @Override
-    public void saveCurrentState() {
-
+    public void saveCurrentState() throws IOException {
+        previousState = new LampState(lamp.getColor(), lamp.getIntensity(), lamp.getState());
     }
 
     @Override
     public void undo() throws IOException {
 
+        if (previousState != null) {
+            lamp.setColor(previousState.getColor());
+            lamp.setIntensity(previousState.getIntensity());
+            if (previousState.isOn()) {
+                lamp.switchOn();
+            } else {
+                lamp.switchOff();
+            }
+        }
     }
 
     private BigDecimal calculateTotalDistance(List<Bicycle> bikeData) {
@@ -126,6 +137,11 @@ public class RaceCommand implements Command {
         // Maximaler Intensitätswert, z.B. 254
         float maxIntensity = 254;
         return Math.min(maxIntensity, difference.floatValue());
+    }
+
+    @Override
+    public String toString(){
+        return "Race Mode";
     }
 
 }

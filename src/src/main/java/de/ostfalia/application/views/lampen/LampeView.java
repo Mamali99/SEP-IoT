@@ -591,17 +591,6 @@ public class LampeView extends BasicLayout implements LampObserver {
 
         executeCommand(new PartyModeCommand(lampAdapter, blinkCount, colors, intensities));
     }
-/*
-    private void executeDelayedCommands() {
-        Command turnOnCommand = new TurnOnCommand(lampAdapter);
-        Command turnOffCommand = new TurnOffCommand(lampAdapter);
-        Command[] commands = {turnOnCommand, turnOffCommand};
-        long delay = 5000;
-
-        executeCommand(new DelayedCommands(lampAdapter, commands, delay));
-    }
-
- */
 
     private Color hex2Rgb(String colorStr) {
         return new Color(

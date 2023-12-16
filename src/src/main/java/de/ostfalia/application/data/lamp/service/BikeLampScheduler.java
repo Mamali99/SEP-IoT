@@ -60,7 +60,8 @@ public class BikeLampScheduler {
 
         if (this.raceCommandEnabled) {
             RaceCommand raceCommand = new RaceCommand(lampAdapter, bikeService, bikeChannelForBike1, bikeChannelForBike2, colorBike1, colorBike2);
-            raceCommand.execute();
+            //raceCommand.execute();
+            remoteController.executeCommand(raceCommand);
         }
 
     }
