@@ -260,15 +260,23 @@ public class LampeView extends BasicLayout implements LampObserver {
         Button applyButton = new Button("Start Race", click -> {
             Integer selectedChannel1 = bikeChannelSelect1.getValue();
             Integer selectedChannel2 = bikeChannelSelect2.getValue();
-            bikeLampScheduler.setBikeChannels(selectedChannel1, selectedChannel2);
-            bikeLampScheduler.enableRaceCommand();
-            raceDialog.close();
+            if (isValidRaceSelection(selectedChannel1, selectedChannel2)) {
+                bikeLampScheduler.setBikeChannels(selectedChannel1, selectedChannel2);
+                bikeLampScheduler.enableRaceCommand();
+                raceDialog.close();
+            } else {
+                Notification.show("Select different channels for each bike", 3000, Notification.Position.MIDDLE);
+            }
         });
         applyButton.addClassName("button");
 
         layout.add(bikeChannelSelect1, bikeChannelSelect2, applyButton);
         raceDialog.add(layout);
         raceDialog.open();
+    }
+
+    private boolean isValidRaceSelection(Integer channel1, Integer channel2) {
+        return channel1 != null && channel2 != null && !channel1.equals(channel2);
     }
 
     private void toggleRaceMode() {
