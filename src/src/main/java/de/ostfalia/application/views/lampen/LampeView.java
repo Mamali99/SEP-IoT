@@ -469,6 +469,12 @@ public class LampeView extends BasicLayout implements LampObserver {
                 if (currentBlinkCommand != null) {
                     // Stoppt das aktuelle Blinken, bevor ein neues gestartet wird
                     currentBlinkCommand.stopBlinking();
+
+
+                }
+                if(currentPartyModeCommand != null){
+                    currentPartyModeCommand.stopPartyMode();
+
                 }
                 // Führe das neue BlinkCommand aus und speichere es als das aktuelle
                 remoteController.executeCommand(command);
@@ -477,6 +483,9 @@ public class LampeView extends BasicLayout implements LampObserver {
                 if (currentPartyModeCommand != null) {
                     // Stoppt den aktuellen Party-Modus, bevor ein neuer gestartet wird
                     currentPartyModeCommand.stopPartyMode();
+                }
+                if(currentBlinkCommand != null){
+                    currentBlinkCommand.stopBlinking();
                 }
                 // Führe das neue PartyModeCommand aus und speichere es als das aktuelle
                 remoteController.executeCommand(command);
