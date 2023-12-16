@@ -72,6 +72,9 @@ public class LampeView extends BasicLayout implements LampObserver {
     private PartyModeCommand currentPartyModeCommand;
     private VirtualLampComponent virtualLampComponent;
 
+    private boolean isRaceModeActive = false;
+    Button raceButton;
+
 
 
     public LampeView(BikeService bikeService, RemoteController remoteController, Java2NodeRedLampAdapter lampAdapter, BikeLampScheduler bikeLampScheduler) throws IOException {
@@ -116,8 +119,8 @@ public class LampeView extends BasicLayout implements LampObserver {
         partyModeButton.addClickListener(e -> activatePartyMode());
         partyModeButton.addClassName("button");
 
-        Button raceButton = createButton("Race", VaadinIcon.MUSIC);
-        raceButton.addClickListener(e -> createRaceDialog());
+        raceButton = createButton("Race", VaadinIcon.ABACUS);
+        raceButton.addClickListener(e -> toggleRaceMode());
         raceButton.addClassName("button");
 
 
@@ -266,6 +269,18 @@ public class LampeView extends BasicLayout implements LampObserver {
         layout.add(bikeChannelSelect1, bikeChannelSelect2, applyButton);
         raceDialog.add(layout);
         raceDialog.open();
+    }
+
+    private void toggleRaceMode() {
+        if (!isRaceModeActive) {
+            createRaceDialog();
+            isRaceModeActive = true;
+            raceButton.setText("Stop Race");
+        } else {
+            bikeLampScheduler.disableRaceCommand();
+            isRaceModeActive = false;
+            raceButton.setText("Race");
+        }
     }
 
     private Div undoDialog;
