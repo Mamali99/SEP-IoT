@@ -131,7 +131,7 @@ public class Java2NodeRedLampAdapter implements ILamp {
         jsonObject.put("sat", (int) (hsb[1] * 254));
         jsonObject.put("bri", (int) (hsb[2] * 254));
         restTemplate.put(url, jsonObject.toString());
-        notifyObservers();
+        //notifyObservers();
     }
 
     @Override

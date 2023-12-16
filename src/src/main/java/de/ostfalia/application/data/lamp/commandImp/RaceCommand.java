@@ -20,6 +20,7 @@ import java.util.List;
 public class RaceCommand implements Command {
 
 
+
     private Java2NodeRedLampAdapter lamp;
     private BikeService bikeService;
     private int bikeChannel1;
@@ -44,7 +45,7 @@ public class RaceCommand implements Command {
         this.bikeChannel2 = bikeChannel2;
         this.colorBike1 = colorBike1;
         this.colorBike2 = colorBike2;
-        this.duration = Duration.ofMinutes(5);
+        this.duration = Duration.ofMinutes(1);
 
 
     }
@@ -68,17 +69,11 @@ public class RaceCommand implements Command {
                 lampState = new LampState(winningColor, intensity, true);
                 System.out.println(lampState.toString());
 
-
-
-                /*
                 try {
                     lamp.setColor(winningColor);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-
-                 */
-
 
     }
 

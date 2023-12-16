@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 public class LampeView extends BasicLayout implements LampObserver {
     @Autowired
     private Java2NodeRedLampAdapter lampAdapter;
+
     @Autowired
     private BikeLampScheduler bikeLampScheduler;
     private final RemoteController remoteController;
@@ -459,34 +460,42 @@ public class LampeView extends BasicLayout implements LampObserver {
 
 
 
-
     private void executeCommand(Command command) {
-        // If the new command is a BlinkCommand and a current BlinkCommand is running, stop it
-        if (!(command instanceof BlinkCommand) && currentBlinkCommand != null) {
-            currentBlinkCommand.stopBlinking();
-            currentBlinkCommand = null;
-        }
-
-        // If the new command is a PartyModeCommand and a current PartyModeCommand is running, stop it
-        if (!(command instanceof PartyModeCommand) && currentPartyModeCommand != null) {
-            currentPartyModeCommand.stopPartyMode();
-            currentPartyModeCommand = null;
-        }
-
-        // Execute the new command and set it as the current command
         try {
-            remoteController.executeCommand(command);
             if (command instanceof BlinkCommand) {
+                if (currentBlinkCommand != null) {
+                    // Stoppt das aktuelle Blinken, bevor ein neues gestartet wird
+                    currentBlinkCommand.stopBlinking();
+                }
+                // Führe das neue BlinkCommand aus und speichere es als das aktuelle
+                remoteController.executeCommand(command);
                 currentBlinkCommand = (BlinkCommand) command;
             } else if (command instanceof PartyModeCommand) {
+                if (currentPartyModeCommand != null) {
+                    // Stoppt den aktuellen Party-Modus, bevor ein neuer gestartet wird
+                    currentPartyModeCommand.stopPartyMode();
+                }
+                // Führe das neue PartyModeCommand aus und speichere es als das aktuelle
+                remoteController.executeCommand(command);
                 currentPartyModeCommand = (PartyModeCommand) command;
+            } else {
+                // Für alle anderen Befehle, stoppe laufende Befehle und führe den neuen aus
+                if (currentBlinkCommand != null) {
+                    currentBlinkCommand.stopBlinking();
+                    currentBlinkCommand = null;
+                }
+                if (currentPartyModeCommand != null) {
+                    currentPartyModeCommand.stopPartyMode();
+                    currentPartyModeCommand = null;
+                }
+                remoteController.executeCommand(command);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         updateCommandHistoryDropdown();
     }
+
 
 
 
