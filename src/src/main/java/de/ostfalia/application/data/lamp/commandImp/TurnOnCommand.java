@@ -32,6 +32,7 @@ public class TurnOnCommand implements Command {
 
         if (previousState.isOn()) {
             lamp.switchOn();
+            System.out.println("Lampe ist On..");
         } else {
             lamp.switchOff();
         }

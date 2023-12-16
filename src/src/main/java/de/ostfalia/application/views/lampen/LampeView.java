@@ -104,9 +104,12 @@ public class LampeView extends BasicLayout implements LampObserver {
         undoButton.addClickListener(e -> openUndoDialog());
         undoButton.addClassName("button");
 
+        /*
         Button delayedCommandButton = createButton("Delayed", VaadinIcon.HOURGLASS);
         delayedCommandButton.addClickListener(e -> executeDelayedCommands());
         delayedCommandButton.addClassName("button");
+
+         */
 
         Button setColor = createButton("Set Color", VaadinIcon.ACADEMY_CAP);
         setColor.addClickListener(e -> {
@@ -118,7 +121,8 @@ public class LampeView extends BasicLayout implements LampObserver {
         });
         this.addClassName("dark");
         // Füge die initialen Buttons zum Layout hinzu
-        initialButtonLayout.add(turnOnButton,raceButton, turnOffButton, blinkButton, delayedCommandButton, partyModeButton, undoButton);
+        //initialButtonLayout.add(turnOnButton,raceButton, turnOffButton, blinkButton, delayedCommandButton, partyModeButton, undoButton);
+        initialButtonLayout.add(turnOnButton, turnOffButton, blinkButton, partyModeButton,raceButton, undoButton);
 
         // Initialisiere die zusätzlichen Buttons
         Button setIntensity = createButton("Set Intensity", VaadinIcon.ABACUS);
@@ -457,32 +461,33 @@ public class LampeView extends BasicLayout implements LampObserver {
 
 
     private void executeCommand(Command command) {
-        // Stoppe das aktuelle BlinkCommand oder PartyModeCommand, falls es läuft
-        if (currentBlinkCommand != null) {
+        // If the new command is a BlinkCommand and a current BlinkCommand is running, stop it
+        if (!(command instanceof BlinkCommand) && currentBlinkCommand != null) {
             currentBlinkCommand.stopBlinking();
             currentBlinkCommand = null;
         }
-        if (currentPartyModeCommand != null) {
+
+        // If the new command is a PartyModeCommand and a current PartyModeCommand is running, stop it
+        if (!(command instanceof PartyModeCommand) && currentPartyModeCommand != null) {
             currentPartyModeCommand.stopPartyMode();
             currentPartyModeCommand = null;
         }
 
-        // Überprüfe das neue Command und setze es als aktuelles Command
-        if (command instanceof BlinkCommand) {
-            currentBlinkCommand = (BlinkCommand) command;
-        } else if (command instanceof PartyModeCommand) {
-            currentPartyModeCommand = (PartyModeCommand) command;
-        }
-
-        // Führe das neue Command aus
+        // Execute the new command and set it as the current command
         try {
             remoteController.executeCommand(command);
+            if (command instanceof BlinkCommand) {
+                currentBlinkCommand = (BlinkCommand) command;
+            } else if (command instanceof PartyModeCommand) {
+                currentPartyModeCommand = (PartyModeCommand) command;
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         updateCommandHistoryDropdown();
     }
+
 
 
 
@@ -501,6 +506,15 @@ public class LampeView extends BasicLayout implements LampObserver {
                 .collect(Collectors.toList())
                 .indexOf(commandDescription);
         if (commandIndex != -1) {
+            // Stoppt das aktuelle BlinkCommand und PartyModeCommand, falls sie laufen
+            if (currentBlinkCommand != null) {
+                currentBlinkCommand.stopBlinking();
+                currentBlinkCommand = null;
+            }
+            if (currentPartyModeCommand != null) {
+                currentPartyModeCommand.stopPartyMode();
+                currentPartyModeCommand = null;
+            }
             try {
                 remoteController.undoCommand(commandIndex);
                 Notification.show("Undo operation performed for: " + commandDescription);
@@ -518,7 +532,7 @@ public class LampeView extends BasicLayout implements LampObserver {
 
         executeCommand(new PartyModeCommand(lampAdapter, blinkCount, colors, intensities));
     }
-
+/*
     private void executeDelayedCommands() {
         Command turnOnCommand = new TurnOnCommand(lampAdapter);
         Command turnOffCommand = new TurnOffCommand(lampAdapter);
@@ -527,6 +541,8 @@ public class LampeView extends BasicLayout implements LampObserver {
 
         executeCommand(new DelayedCommands(lampAdapter, commands, delay));
     }
+
+ */
 
     private Color hex2Rgb(String colorStr) {
         return new Color(

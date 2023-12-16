@@ -91,6 +91,29 @@ public class Java2NodeRedLampAdapter implements ILamp {
         notifyObservers();
     }
 
+    public void switchOn(Color color, float intensity) throws IOException {
+
+        if (intensity < 0 || intensity > 254) {
+            throw new IllegalArgumentException("Intensität muss zwischen 0 und 254 liegen.");
+        }
+
+
+        float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
+
+
+        ObjectNode jsonObject = objectMapper.createObjectNode();
+        jsonObject.put("on", true);
+        jsonObject.put("hue", (int) (hsb[0] * 65535));
+        jsonObject.put("sat", (int) (hsb[1] * 254));
+        jsonObject.put("bri", (int) intensity);
+
+
+        restTemplate.put(url, jsonObject.toString());
+
+        notifyObservers();
+    }
+
+
     @Override
     public void switchOff() throws IOException {
         ObjectNode jsonObject = objectMapper.createObjectNode();
