@@ -1,6 +1,6 @@
 package de.ostfalia.application.data.lamp.commandImp;
 
-import com.vaadin.flow.component.UI;
+
 import de.ostfalia.application.data.entity.Bicycle;
 import de.ostfalia.application.data.entity.LampState;
 import de.ostfalia.application.data.lamp.model.Command;

@@ -47,6 +47,7 @@ public class Java2NodeRedLampAdapter implements ILamp {
         observers.remove(observer);
     }
 
+    /*
     // In Ihrer Java2NodeRedLampAdapter-Klasse
     public void notifyObservers() {
         UI ui = UI.getCurrent();
@@ -63,10 +64,12 @@ public class Java2NodeRedLampAdapter implements ILamp {
         }
     }
 
+     */
 
 
 
-    /*
+
+
     // Benachrichtige alle Observers über eine Änderung
     public void notifyObservers() {
         for (LampObserver observer : observers) {
@@ -77,7 +80,7 @@ public class Java2NodeRedLampAdapter implements ILamp {
             }
         }
     }
-*/
+
 
     @Override
     public void switchOn() throws IOException {

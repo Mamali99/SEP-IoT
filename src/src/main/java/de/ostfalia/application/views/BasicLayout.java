@@ -9,7 +9,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.RouterLink;
 import de.ostfalia.application.views.fahrrad.DashboardView;
-import de.ostfalia.application.views.lampen.LampRemoteControlView;
 import de.ostfalia.application.views.lampen.LampeView;
 import de.ostfalia.application.views.talsperren.ListTalsperren;
 import de.ostfalia.application.views.testecke.WebInhaltDynamisch;
