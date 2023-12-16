@@ -33,6 +33,11 @@ public class RaceCommand implements Command {
 
     private LampState lampState;
 
+    private BigDecimal distanceBike1;
+    private BigDecimal distanceBike2;
+    private int winningChannel;
+    private Color winningColor;
+
 
 
 
@@ -55,27 +60,35 @@ public class RaceCommand implements Command {
         LocalDateTime endTime = LocalDateTime.now();
         LocalDateTime startTime = endTime.minus(duration);
 
-                BigDecimal distanceBike1 = calculateTotalDistance(bikeService.getDataWithTimeSpan(bikeChannel1, startTime, endTime));
-                System.out.println("Distance of Bike: " + bikeChannel1 + " is: " + distanceBike1);
-                BigDecimal distanceBike2 = calculateTotalDistance(bikeService.getDataWithTimeSpan(bikeChannel2, startTime, endTime));
-                System.out.println("Distance of Bike: " + bikeChannel2 + " is: " + distanceBike2);
-                Color winningColor = distanceBike1.compareTo(distanceBike2) >= 0 ? colorBike1 : colorBike2;
-                System.out.println("The winning color: " + winningColor.getRed());
-                System.out.println(distanceBike1.compareTo(distanceBike2) >= 0 ? bikeChannel1 : bikeChannel2);
+                distanceBike1 = calculateTotalDistance(bikeService.getDataWithTimeSpan(bikeChannel1, startTime, endTime));
+                distanceBike2 = calculateTotalDistance(bikeService.getDataWithTimeSpan(bikeChannel2, startTime, endTime));
+                winningChannel = distanceBike1.compareTo(distanceBike2) >= 0 ? bikeChannel1 : bikeChannel2;
+                winningColor = distanceBike1.compareTo(distanceBike2) >= 0 ? colorBike1 : colorBike2;
+
 
                 float intensity = calculateIntensity(distanceBike1, distanceBike2);
-                System.out.println("Intensität: " + intensity);
 
                 lampState = new LampState(winningColor, intensity, true);
-                System.out.println(lampState.toString());
+
+
+                System.out.println(this.getRaceSummary());
+
 
                 try {
                     lamp.setColor(winningColor);
-                    //lamp.notifyObservers();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
 
+    }
+
+    public String getRaceSummary() {
+        String summary = "Race Summary:\n";
+        summary += "Distance Bike 1: " + distanceBike1 + " units\n";
+        summary += "Distance Bike 2: " + distanceBike2 + " units\n";
+        summary += "Winning Bike: Channel " + winningChannel + "\n";
+        summary += "Winning Color: " + winningColor + "\n";
+        return summary;
     }
 
     @Override
