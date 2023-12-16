@@ -56,7 +56,6 @@ public class LampeView extends BasicLayout implements LampObserver {
     private HorizontalLayout buttonLayout = new HorizontalLayout();
     private HorizontalLayout virtualLampLayout = new HorizontalLayout();
     private VerticalLayout customCommandLayout = new VerticalLayout();
-    private VerticalLayout bikeDriveAndRaceLayout = new VerticalLayout();
 
     private VerticalLayout rightLayoutFirstRow = new VerticalLayout();
     private VerticalLayout initialButtonLayout = new VerticalLayout();
@@ -72,6 +71,8 @@ public class LampeView extends BasicLayout implements LampObserver {
     private PartyModeCommand currentPartyModeCommand;
     private VirtualLampComponent virtualLampComponent;
 
+
+
     public LampeView(BikeService bikeService, RemoteController remoteController, Java2NodeRedLampAdapter lampAdapter, BikeLampScheduler bikeLampScheduler) throws IOException {
         this.remoteController = remoteController;
         this.lampAdapter = lampAdapter;
@@ -81,6 +82,7 @@ public class LampeView extends BasicLayout implements LampObserver {
         setupLayout();
     }
 
+
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         ui = attachEvent.getUI();
@@ -89,6 +91,7 @@ public class LampeView extends BasicLayout implements LampObserver {
 
 
     private void setupLayout() throws IOException {
+
 
         // Initialisiere die Buttons und ColorPicker
         Button turnOnButton = createButton("Turn On", VaadinIcon.POWER_OFF);
@@ -133,6 +136,8 @@ public class LampeView extends BasicLayout implements LampObserver {
                 throw new RuntimeException(ex);
             }
         });
+        //Small spedup for channel select when not in the button, fetch is done while initialising the component
+        List<Integer> availableChannels = bikeService.getAvailableChannels();
 
         Button setDrive = createButton("Drive", VaadinIcon.ABACUS);
         setDrive.addClassName("button");
@@ -142,13 +147,15 @@ public class LampeView extends BasicLayout implements LampObserver {
             ComboBox<Integer> channelSelect = new ComboBox<>("Select bike channel");
             channelSelect.setLabel("Choose a Bike");
 
-            List<Integer> availableChannels = bikeService.getAvailableChannels();
+
             channelSelect.setItems(availableChannels);
             layout.add(channelSelect);
 
             // Erstellen Sie eine Schaltfläche zum Übernehmen der ausgewählten Intensität
             Button applyButton = new Button("Run", click -> {
-                executeCommand(new BikeDriveCommand(lampAdapter, bikeService, channelSelect.getValue()));
+                Integer selectedChannel = channelSelect.getValue();
+                bikeLampScheduler.setSelectedChannel(selectedChannel);
+                bikeLampScheduler.enableDriveCommand();
                 driveDialog.close();
             });
             applyButton.addClassName("button");
@@ -342,7 +349,6 @@ public class LampeView extends BasicLayout implements LampObserver {
                         newCommand.addCommand(new SetColorCommand(lampAdapter, selectedColor));
                         buttonName.append("Color:").append(colorPicker.getValue()).append(" ");
                         break;
-                    // Add remaining cases for the rest of your commands
                 }
             }
 
@@ -404,8 +410,6 @@ public class LampeView extends BasicLayout implements LampObserver {
 
     private void updateGUI() throws IOException {
         updateCommandHistoryDropdown();
-
-
     }
 
     private Button createButton(String text, VaadinIcon icon) {
@@ -492,6 +496,7 @@ public class LampeView extends BasicLayout implements LampObserver {
             try {
                 remoteController.undoCommand(commandIndex);
                 Notification.show("Undo operation performed for: " + commandDescription);
+                bikeLampScheduler.disableDriveCommand();
                 updateGUI();
             } catch (IOException e) {
                 e.printStackTrace();

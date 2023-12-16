@@ -20,8 +20,6 @@ public class BikeDriveCommand implements Command {
     private Java2NodeRedLampAdapter lamp;
     private BikeService bikeService;
 
-    private Duration duration;
-
     private int previousIntensity;
 
     private  boolean bikeDriveCommand = true;
@@ -30,21 +28,13 @@ public class BikeDriveCommand implements Command {
     private static final BigDecimal ROTATION_DIVISOR = new BigDecimal(4);
     private static final int MAX_INTENSITY = 254;
     private int bikeChannel;
-    private Integer selectedChannel;
     private static final BigDecimal MAX_SPEED = BigDecimal.valueOf(50); // Maximalgeschwindigkeit laut pdf
 
     public BikeDriveCommand(Java2NodeRedLampAdapter lamp, BikeService bikeService, int bikeChannel) {
         this.lamp = lamp;
         this.bikeService = bikeService;
         this.bikeChannel = bikeChannel;
-        this.duration = Duration.ofMinutes(1);
     }
-
-    public void setSelectedChannel(Integer selectedChannel) {
-        this.selectedChannel = selectedChannel;
-    }
-
-    @Scheduled(fixedRate = 60_000) // alle 60 Sekunden
     @Override
     public void execute() throws IOException {
         bikeDriveCommand = true;

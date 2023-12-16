@@ -41,20 +41,22 @@ public class BikeLampScheduler {
     private Integer selectedChannel;
 
 
+
     public void setSelectedChannel(Integer selectedChannel) {
         this.selectedChannel = selectedChannel;
     }
 
-    @Scheduled(fixedRate = 60_000) // alle 60 Sekunden
+    @Scheduled(fixedRate = 60_000, initialDelay = 0) // alle 60 Sekunden
     public void scheduleTaskUsingFixedRate() throws IOException {
 
         if (this.selectedChannel != null && this.driveCommandEnabled) {
-            currentCommand = new BikeDriveCommand(lampAdapter, bikeService, selectedChannel);
+            BikeDriveCommand currentCommand = new BikeDriveCommand(lampAdapter, bikeService, selectedChannel);
             remoteController.executeCommand(currentCommand);
         }
+
         if (this.raceCommandEnabled) {
             RaceCommand raceCommand = new RaceCommand(lampAdapter, bikeService, bikeChannel1, bikeChannel2, colorBike1, colorBike2);
-            raceCommand.execute();
+            remoteController.executeCommand(raceCommand);
         }
 
     }
