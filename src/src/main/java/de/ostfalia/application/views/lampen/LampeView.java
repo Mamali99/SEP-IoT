@@ -112,6 +112,20 @@ public class LampeView extends BasicLayout implements LampObserver {
         blinkButton.addClickListener(e -> executeCommand(new BlinkCommand(lampAdapter, 3, 2000)));
         blinkButton.addClassName("button");
 
+        Button turnOnWithColorRed = createButton("Turn On Color Red", VaadinIcon.LIGHTBULB);
+        CustomCommand turnOnWithRed = new CustomCommand();
+        turnOnWithRed.addCommand(new TurnOnCommand(lampAdapter));
+        turnOnWithRed.addCommand(new SetColorCommand(lampAdapter, Color.RED));
+        turnOnWithColorRed.addClickListener(e -> executeCommand(turnOnWithRed));
+        turnOnWithColorRed.addClassName("button");
+
+        Button turnOnWithMaxIntenstiy = createButton("Turn On Max Intensity", VaadinIcon.ARROW_UP);
+        CustomCommand turnOnMaxIntenstiy = new CustomCommand();
+        turnOnMaxIntenstiy.addCommand(new TurnOnCommand(lampAdapter));
+        turnOnMaxIntenstiy.addCommand(new SetIntensityCommand(lampAdapter, 254));
+        turnOnWithMaxIntenstiy.addClickListener(e -> executeCommand(turnOnMaxIntenstiy));
+        turnOnWithMaxIntenstiy.addClassName("button");
+
         Button partyModeButton = createButton("Party Mode", VaadinIcon.MUSIC);
         partyModeButton.addClickListener(e -> activatePartyMode());
         partyModeButton.addClassName("button");
@@ -174,7 +188,7 @@ public class LampeView extends BasicLayout implements LampObserver {
         setColor.addClassName("button");
 
 
-        newButtonLayout.add(setIntensity, setColor);
+        newButtonLayout.add(setIntensity, setColor, turnOnWithColorRed, turnOnWithMaxIntenstiy);
 
 
         // Dropdown-Menü für die Befehlshistorie
@@ -215,8 +229,9 @@ public class LampeView extends BasicLayout implements LampObserver {
         Dialog raceDialog = new Dialog();
         VerticalLayout layout = new VerticalLayout();
 
-        ComboBox<Integer> bikeChannelSelect1 = new ComboBox<>("Select Bike 1 Channel");
-        ComboBox<Integer> bikeChannelSelect2 = new ComboBox<>("Select Bike 2 Channel");
+        ComboBox<Integer> bikeChannelSelect1 = new ComboBox<>("Bike 1 Channel (RED)");
+        ComboBox<Integer> bikeChannelSelect2 = new ComboBox<>("Bike 2 Channel (BLUE)");
+
         bikeChannelSelect1.setItems(availableChannels);
         bikeChannelSelect2.setItems(availableChannels);
 
@@ -253,7 +268,7 @@ public class LampeView extends BasicLayout implements LampObserver {
             bikeLampScheduler.resumeScheduler();
             raceButton.setText("Stop Race");
             bikeStatusText.setVisible(true);
-            bikeStatusText.setText("Bike Race is ON");
+            bikeStatusText.setText("Bike Race is On");
         } else {
             bikeLampScheduler.disableRaceCommand();
             bikeLampScheduler.pauseScheduler();
@@ -605,7 +620,7 @@ public class LampeView extends BasicLayout implements LampObserver {
 
 
     private void activatePartyMode() {
-        Color[] colors = {Color.RED, Color.GREEN, Color.BLUE};
+        Color[] colors = {Color.RED, Color.GREEN, Color.BLUE, Color.MAGENTA, Color.YELLOW, Color.CYAN, Color.PINK};
         int[] intensities = {100, 200, 254};
         int blinkCount = 5;
 
