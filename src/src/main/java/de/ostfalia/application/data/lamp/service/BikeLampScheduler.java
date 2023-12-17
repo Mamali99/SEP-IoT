@@ -87,7 +87,7 @@ public class BikeLampScheduler {
         return raceCommandEnabled;
     }
 
-    private BigDecimal getBikeDriveSpeed() {
+    public BigDecimal getBikeDriveSpeed() {
         return bikeDriveCommand.getBikeSpeed();
     }
 
