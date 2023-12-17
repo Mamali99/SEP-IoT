@@ -36,7 +36,7 @@ public class BikeLampScheduler {
 
     private Integer bikeChannelForBike1;
     private Integer bikeChannelForBike2;
-    private volatile boolean schedulerPaused = false; // Add this flag
+    private volatile boolean schedulerPaused = false;
 
     public void setBikeChannels(Integer channel1, Integer channel2) {
         this.bikeChannelForBike1 = channel1;
@@ -60,7 +60,6 @@ public class BikeLampScheduler {
             if (schedulerPaused) {
                 return; // Exit the method if the scheduler is paused
             }
-
             if (this.selectedChannel != null && this.driveCommandEnabled) {
                 bikeDriveCommand = new BikeDriveCommand(lampAdapter, bikeService, selectedChannel);
                 remoteController.executeCommand(bikeDriveCommand);
@@ -71,7 +70,6 @@ public class BikeLampScheduler {
                 remoteController.executeCommand(raceCommand);
             }
         } catch (Exception e) {
-            // Log the stack trace for debugging
             e.printStackTrace();
         }
 

@@ -44,7 +44,6 @@ public class BikeDriveCommand implements Command {
         } else {
             System.out.println("Ja die daten sind da");
         }
-        System.out.println("BikeDriveCommand's lampAdapter Identity Hash Code: " + System.identityHashCode(lamp));
         BigDecimal speedInKmph = calculateSpeed(bikeData); // speed in kmh
         System.out.println("Speed in Kmph " + speedInKmph);
         BigDecimal ratio = speedInKmph.divide(MAX_SPEED, 2, RoundingMode.HALF_UP);
@@ -68,10 +67,8 @@ public class BikeDriveCommand implements Command {
 
     @Override
     public void undo() throws IOException {
-        System.out.println("Trying to stop bikeDrive");
         bikeDriveCommand = false;
         lamp.setIntensity(previousIntensity);
-        System.out.println("Previous intensity set" + "this is bikeDriveCommand " + bikeDriveCommand);
     }
 
 
@@ -80,7 +77,6 @@ public class BikeDriveCommand implements Command {
             System.out.println("bikedata is empty");
             return BigDecimal.ZERO;
         }
-
         BigDecimal totalSpeed = BigDecimal.ZERO;
         int bikeDataCount = bikeData.size();
 
