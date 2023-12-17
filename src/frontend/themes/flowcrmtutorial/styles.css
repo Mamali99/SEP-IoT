@@ -23,12 +23,16 @@
 }
 
 .common-style {
-    background-color: rgba(128, 128, 128, 0.2); /* Transparent Grau */
-    border-radius: 20px; /* Abgerundete Kanten */
+    background-color: rgba(128, 128, 128, 0.2); /* Transparent Gray */
+    border-radius: 20px;
     padding: 20px;
     margin: 5px;
 }
 
 .margin-left {
     margin-left: 10px;
+}
+
+.white-title {
+    color: white;
 }

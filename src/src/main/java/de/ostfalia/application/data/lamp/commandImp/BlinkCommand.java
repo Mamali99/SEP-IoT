@@ -1,12 +1,10 @@
 package de.ostfalia.application.data.lamp.commandImp;
 
 import com.vaadin.flow.component.UI;
-import de.ostfalia.application.data.entity.BlinkSettings;
 import de.ostfalia.application.data.entity.LampState;
 import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
 
-import java.awt.*;
 import java.io.IOException;
 
 public class BlinkCommand implements Command {
@@ -24,7 +22,7 @@ public class BlinkCommand implements Command {
     public BlinkCommand(Java2NodeRedLampAdapter lamp, int blinkCount, long blinkDuration) {
         this.lamp = lamp;
         this.blinkCount = Integer.MAX_VALUE;
-        this.blinkDuration = 5000;
+        this.blinkDuration = 2000;
         this.ui = UI.getCurrent();
         this.running = true;
     }
@@ -55,7 +53,6 @@ public class BlinkCommand implements Command {
             try {
                 if (on) {
                     lamp.switchOn();
-
                     System.out.println("Lampe is On...");
                 } else {
                     System.out.println("Lampe is Off...");

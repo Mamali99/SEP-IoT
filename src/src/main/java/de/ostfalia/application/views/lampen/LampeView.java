@@ -2,9 +2,6 @@ package de.ostfalia.application.views.lampen;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -18,7 +15,6 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.router.Route;
 import de.ostfalia.application.data.lamp.commandImp.*;
@@ -49,11 +45,7 @@ public class LampeView extends BasicLayout implements LampObserver {
     private BikeLampScheduler bikeLampScheduler;
     private final RemoteController remoteController;
     private BikeService bikeService;
-
-
     private ListBox<String> commandListBox;
-
-    private List<Button> possibleButtons = new ArrayList<>();
     private HorizontalLayout buttonLayout = new HorizontalLayout();
     private HorizontalLayout virtualLampLayout = new HorizontalLayout();
     private VerticalLayout customCommandLayout = new VerticalLayout();
@@ -74,7 +66,8 @@ public class LampeView extends BasicLayout implements LampObserver {
 
     private boolean isRaceModeActive = false;
     Button raceButton;
-
+    Button setDrive;
+    List<Integer> availableChannels;
 
 
     public LampeView(BikeService bikeService, RemoteController remoteController, Java2NodeRedLampAdapter lampAdapter, BikeLampScheduler bikeLampScheduler) throws IOException {
@@ -93,11 +86,10 @@ public class LampeView extends BasicLayout implements LampObserver {
     }
 
 
-
-
-
     private void setupLayout() throws IOException {
 
+        //Small speedup for channel select when not in the button, fetch is done while initialising the component
+        availableChannels = bikeService.getAvailableChannels();
 
         // Initialisiere die Buttons und ColorPicker
         Button turnOnButton = createButton("Turn On", VaadinIcon.POWER_OFF);
@@ -130,7 +122,6 @@ public class LampeView extends BasicLayout implements LampObserver {
         undoButton.addClassName("button");
 
 
-
         Button setColor = createButton("Set Color", VaadinIcon.ACADEMY_CAP);
         setColor.addClickListener(e -> {
             try {
@@ -139,41 +130,12 @@ public class LampeView extends BasicLayout implements LampObserver {
                 throw new RuntimeException(ex);
             }
         });
-        //Small spedup for channel select when not in the button, fetch is done while initialising the component
-        List<Integer> availableChannels = bikeService.getAvailableChannels();
-
-        Button setDrive = createButton("Drive", VaadinIcon.ABACUS);
-        setDrive.addClassName("button");
-        setDrive.addClickListener(e -> {
-            Dialog driveDialog = new Dialog();
-            VerticalLayout layout = new VerticalLayout();
-            ComboBox<Integer> channelSelect = new ComboBox<>("Select bike channel");
-            channelSelect.setLabel("Choose a Bike");
-
-
-            channelSelect.setItems(availableChannels);
-            layout.add(channelSelect);
-
-            // Erstellen Sie eine Schaltfläche zum Übernehmen der ausgewählten Intensität
-            Button applyButton = new Button("Run", click -> {
-                Integer selectedChannel = channelSelect.getValue();
-                bikeLampScheduler.setSelectedChannel(selectedChannel);
-                bikeLampScheduler.enableDriveCommand();
-                driveDialog.close();
-            });
-            applyButton.addClassName("button");
-            layout.add(applyButton);
-
-            driveDialog.add(layout);
-            driveDialog.open();
-        });
-        possibleButtons.add(setDrive);
-        possibleButtons.add(setColor);
         setColor.addClassName("button");
+
 
         this.addClassName("dark");
         // Füge die initialen Buttons zum Layout hinzu
-        initialButtonLayout.add(turnOnButton, turnOffButton, raceButton, setDrive, blinkButton, partyModeButton, undoButton);
+        initialButtonLayout.add(turnOnButton, turnOffButton, blinkButton, partyModeButton, undoButton);
 
         // Initialisiere die zusätzlichen Buttons
         Button setIntensity = createButton("Set Intensity", VaadinIcon.ABACUS);
@@ -204,16 +166,10 @@ public class LampeView extends BasicLayout implements LampObserver {
             intensityDialog.add(layout);
             intensityDialog.open();
         });
-        possibleButtons.add(setIntensity);
-        possibleButtons.add(setColor);
         setColor.addClassName("button");
 
 
-        // Erstelle den "Plus"-Button
-        Button plusButton = new Button("Plus", e -> openButtonDialog());
-        plusButton.setIcon(VaadinIcon.PLUS.create());
-        plusButton.addClassName("button");
-        newButtonLayout.add(plusButton);
+        newButtonLayout.add(setIntensity, setColor);
 
 
         // Dropdown-Menü für die Befehlshistorie
@@ -238,8 +194,10 @@ public class LampeView extends BasicLayout implements LampObserver {
 
         buttonLayout.add(initialButtonLayout, newButtonLayout);
         virtualLampLayout.add(rightLayoutFirstRow);
-        customCommandLayout.add(setupCustomCommandCreation());
-
+        Component bikeCommandsComponent = createBikeCommandsComponent();
+        // Add buttons and the bikeCommandsComponent to the customCommandLayout
+        customCommandLayout.add(setupCustomCommandCreation(), bikeCommandsComponent);
+        customCommandLayout.getStyle().set("max-width", "460px");
 
 
         HorizontalLayout mainLayout = new HorizontalLayout(buttonLayout, virtualLampLayout, customCommandLayout);
@@ -253,10 +211,16 @@ public class LampeView extends BasicLayout implements LampObserver {
 
         ComboBox<Integer> bikeChannelSelect1 = new ComboBox<>("Select Bike 1 Channel");
         ComboBox<Integer> bikeChannelSelect2 = new ComboBox<>("Select Bike 2 Channel");
-        List<Integer> availableChannels = bikeService.getAvailableChannels();
         bikeChannelSelect1.setItems(availableChannels);
         bikeChannelSelect2.setItems(availableChannels);
 
+        Button applyButton = getButton(bikeChannelSelect1, bikeChannelSelect2, raceDialog);
+        layout.add(bikeChannelSelect1, bikeChannelSelect2, applyButton);
+        raceDialog.add(layout);
+        raceDialog.open();
+    }
+
+    private Button getButton(ComboBox<Integer> bikeChannelSelect1, ComboBox<Integer> bikeChannelSelect2, Dialog raceDialog) {
         Button applyButton = new Button("Start Race", click -> {
             Integer selectedChannel1 = bikeChannelSelect1.getValue();
             Integer selectedChannel2 = bikeChannelSelect2.getValue();
@@ -269,10 +233,7 @@ public class LampeView extends BasicLayout implements LampObserver {
             }
         });
         applyButton.addClassName("button");
-
-        layout.add(bikeChannelSelect1, bikeChannelSelect2, applyButton);
-        raceDialog.add(layout);
-        raceDialog.open();
+        return applyButton;
     }
 
     private boolean isValidRaceSelection(Integer channel1, Integer channel2) {
@@ -325,22 +286,6 @@ public class LampeView extends BasicLayout implements LampObserver {
         rightLayoutFirstRow.add(undoDialog);
     }
 
-
-    // Select Buttons to Add Option
-    private void openButtonDialog() {
-        buttonDialog.removeAll();
-
-        for (Button button : possibleButtons) {
-            button.addClickListener(e -> {
-                addButton(button);
-                possibleButtons.remove(button);
-                buttonDialog.close();
-            });
-            buttonDialog.add(button);
-        }
-
-        buttonDialog.open();
-    }
 
     private Component setupCustomCommandCreation() {
         List<String> availableCommands = Arrays.asList("Turn On", "Turn Off", "Set Intensity", "Set Color");
@@ -415,6 +360,57 @@ public class LampeView extends BasicLayout implements LampObserver {
         return new VerticalLayout(commandSelect, inputContainer, submitButton);
     }
 
+    private Component createBikeCommandsComponent() {
+        // Create a container for bike commands
+        VerticalLayout bikeCommandsLayout = new VerticalLayout();
+        bikeCommandsLayout.setSpacing(false);
+        bikeCommandsLayout.setMargin(false);
+
+        // Title for the bike commands section
+        H4 bikeCommandsTitle = new H4("Bike Commands");
+        bikeCommandsTitle.getStyle().set("margin", "0");
+        bikeCommandsTitle.addClassName("white-title");
+
+        // Button for "Race"
+        raceButton = createButton("Race", VaadinIcon.ABACUS);
+        raceButton.addClickListener(e -> toggleRaceMode());
+
+        // Button for "Set Drive"
+        setDrive = createButton("Drive", VaadinIcon.ACADEMY_CAP);
+        setDrive.addClickListener(e -> openSetDriveDialog());
+
+        // Add title and buttons to the bikeCommandsLayout
+        HorizontalLayout bikeButtonsLayout = new HorizontalLayout(raceButton, setDrive);
+        bikeCommandsLayout.add(bikeCommandsTitle, bikeButtonsLayout);
+
+        // Style the layout
+        bikeCommandsLayout.addClassName("common-style");
+        return bikeCommandsLayout;
+    }
+
+    private void openSetDriveDialog() {
+        Dialog driveDialog = new Dialog();
+        VerticalLayout layout = new VerticalLayout();
+        ComboBox<Integer> channelSelect = new ComboBox<>("Select bike channel");
+        channelSelect.setLabel("Choose a Bike");
+
+        channelSelect.setItems(availableChannels);
+        layout.add(channelSelect);
+
+        // Create a button to apply the selected intensity
+        Button applyButton = new Button("Run", click -> {
+            Integer selectedChannel = channelSelect.getValue();
+            bikeLampScheduler.setSelectedChannel(selectedChannel);
+            bikeLampScheduler.enableDriveCommand();
+            driveDialog.close();
+        });
+        applyButton.addClassName("button");
+        layout.add(applyButton);
+
+        driveDialog.add(layout);
+        driveDialog.open();
+    }
+
 
     private void openIntensityDialog(Consumer<Integer> intensityConsumer) {
         Dialog intensityDialog = new Dialog();
@@ -451,10 +447,6 @@ public class LampeView extends BasicLayout implements LampObserver {
         colorDialog.open();
     }
 
-
-    private void updateGUI() throws IOException {
-        updateCommandHistoryDropdown();
-    }
 
     private Button createButton(String text, VaadinIcon icon) {
         Button button = new Button(text);
@@ -502,7 +494,7 @@ public class LampeView extends BasicLayout implements LampObserver {
 
 
                 }
-                if(currentPartyModeCommand != null){
+                if (currentPartyModeCommand != null) {
                     currentPartyModeCommand.stopPartyMode();
 
                 }
@@ -514,7 +506,7 @@ public class LampeView extends BasicLayout implements LampObserver {
                     // Stoppt den aktuellen Party-Modus, bevor ein neuer gestartet wird
                     currentPartyModeCommand.stopPartyMode();
                 }
-                if(currentBlinkCommand != null){
+                if (currentBlinkCommand != null) {
                     currentBlinkCommand.stopBlinking();
                 }
                 // Führe das neue PartyModeCommand aus und speichere es als das aktuelle
@@ -568,7 +560,7 @@ public class LampeView extends BasicLayout implements LampObserver {
                 remoteController.undoCommand(commandIndex);
                 Notification.show("Undo operation performed for: " + commandDescription);
                 bikeLampScheduler.disableDriveCommand();
-                updateGUI();
+                updateCommandHistoryDropdown();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -615,7 +607,6 @@ public class LampeView extends BasicLayout implements LampObserver {
                 float intensity = lampAdapter.getIntensity();
                 boolean isOn = lampAdapter.getState();
                 virtualLampComponent.updateLampState(isOn, color, (int) intensity);
-                updateGUI();
             } catch (IOException e) {
                 e.printStackTrace();
             }
