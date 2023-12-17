@@ -54,6 +54,7 @@ public class LampeView extends BasicLayout implements LampObserver {
     private HorizontalLayout buttonLayout = new HorizontalLayout();
     private HorizontalLayout virtualLampLayout = new HorizontalLayout();
     private VerticalLayout customCommandLayout = new VerticalLayout();
+    private VerticalLayout customButtonsLayout = new VerticalLayout();
 
     private VerticalLayout rightLayoutFirstRow = new VerticalLayout();
     private VerticalLayout initialButtonLayout = new VerticalLayout();
@@ -187,8 +188,7 @@ public class LampeView extends BasicLayout implements LampObserver {
         });
         setColor.addClassName("button");
 
-
-        newButtonLayout.add(setIntensity, setColor, turnOnWithColorRed, turnOnWithMaxIntenstiy);
+        newButtonLayout.add(setIntensity, setColor, turnOnWithColorRed, turnOnWithMaxIntenstiy, customButtonsLayout);
 
 
         // Dropdown-Menü für die Befehlshistorie
@@ -206,6 +206,8 @@ public class LampeView extends BasicLayout implements LampObserver {
         initialButtonLayout.getStyle().set("padding", "2px");
         newButtonLayout.getStyle().set("padding", "2px");
         newButtonLayout.getStyle().set("margin", "2px");
+        customButtonsLayout.getStyle().set("padding", "2px");
+        customCommandLayout.getStyle().set("margin", "2px");
 
         //virtuelle lampe
         virtualLampComponent = new VirtualLampComponent();
@@ -214,6 +216,8 @@ public class LampeView extends BasicLayout implements LampObserver {
 
         buttonLayout.add(initialButtonLayout, newButtonLayout);
         virtualLampLayout.add(rightLayoutFirstRow);
+
+
         Component bikeCommandsComponent = createBikeCommandsComponent();
         // Add buttons and the bikeCommandsComponent to the customCommandLayout
         customCommandLayout.add(setupCustomCommandCreation(), bikeCommandsComponent);
@@ -383,14 +387,20 @@ public class LampeView extends BasicLayout implements LampObserver {
                     }
                 });
                 customCommandButtons.add(newCustomCommandButton);
-                newButtonLayout.add(newCustomCommandButton);
+                customButtonsLayout.add(newCustomCommandButton);
             }
 
             commandSelect.clear();
         });
 
-        return new VerticalLayout(commandSelect, inputContainer, submitButton);
+        Button clearCustomCommands = new Button("Remove Custom Commands", e -> {
+            customButtonsLayout.removeAll();
+        });
+        clearCustomCommands.addClassName("button");
+
+        return new VerticalLayout(commandSelect, inputContainer, submitButton, clearCustomCommands);
     }
+
 
     private Component createBikeCommandsComponent() {
         // Create a container for bike commands
