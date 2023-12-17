@@ -79,7 +79,9 @@ public class BikeLampScheduler {
 
 
     public void enableRaceCommand() {
-        this.raceCommandEnabled = true;
+        if(!driveCommandEnabled) {
+            this.raceCommandEnabled = true;
+        }
     }
 
     public void disableRaceCommand() {
@@ -88,11 +90,12 @@ public class BikeLampScheduler {
     }
 
     public void enableDriveCommand() {
-        this.driveCommandEnabled = true;
+        if(!raceCommandEnabled) {
+            this.driveCommandEnabled = true;
+        }
     }
 
     public void disableDriveCommand() {
-        System.out.println("Set this Drive to false");
         this.driveCommandEnabled = false;
     }
 

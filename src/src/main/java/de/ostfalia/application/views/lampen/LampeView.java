@@ -4,6 +4,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
@@ -266,7 +267,7 @@ public class LampeView extends BasicLayout implements LampObserver {
     }
 
     private void toggleRaceMode() {
-        if (!bikeLampScheduler.isRaceCommandEnabled()) {
+        if (!bikeLampScheduler.isRaceCommandEnabled() && !bikeLampScheduler.isDriveCommandEnabled()) {
             createRaceDialog();
             bikeLampScheduler.enableRaceCommand();
             bikeLampScheduler.resumeScheduler();
@@ -274,10 +275,15 @@ public class LampeView extends BasicLayout implements LampObserver {
             bikeStatusText.setVisible(true);
             bikeStatusText.setText("Bike Race is On");
         } else {
-            bikeLampScheduler.disableRaceCommand();
-            bikeLampScheduler.pauseScheduler();
-            raceButton.setText("Race");
-            bikeStatusText.setVisible(false);
+            if(bikeLampScheduler.isDriveCommandEnabled()) {
+                Notification.show("Bitte erst Drive Stoppen oder Undo benutzen", 2000, Notification.Position.MIDDLE);
+            } else {
+                bikeLampScheduler.disableRaceCommand();
+                bikeLampScheduler.pauseScheduler();
+                raceButton.setText("Race");
+                bikeStatusText.setVisible(false);
+            }
+
         }
     }
 
@@ -298,7 +304,7 @@ public class LampeView extends BasicLayout implements LampObserver {
 
         // Style the Div
         dialogDiv.getStyle().set("width", "250px"); // Set the width
-        dialogDiv.addClassName("common-style");
+        dialogDiv.addClassName("popup-style");
         closeButton.addClickListener(event -> dialogDiv.setVisible(false));
 
         return dialogDiv;
@@ -381,7 +387,7 @@ public class LampeView extends BasicLayout implements LampObserver {
                 Button newCustomCommandButton = createButton(buttonName.toString(), VaadinIcon.ABACUS);
                 newCustomCommandButton.addClickListener(e -> {
                     try {
-                        newCommand.execute();
+                        remoteController.executeCommand(newCommand);
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -462,22 +468,27 @@ public class LampeView extends BasicLayout implements LampObserver {
     }
 
     private void toggleDriveModeAndButtonText() {
-
-        if (bikeLampScheduler.isDriveCommandEnabled()) {
-            bikeLampScheduler.disableDriveCommand();
-            bikeLampScheduler.pauseScheduler();
-            bikeStatusText.setVisible(false);
-            setDrive.setText("Drive");
-        } else {
+        if (!bikeLampScheduler.isRaceCommandEnabled() && !bikeLampScheduler.isDriveCommandEnabled()) {
             openSetDriveDialog();
-            bikeStatusText.setText("Bike Drive is On");
+            bikeLampScheduler.enableDriveCommand();
+            bikeLampScheduler.resumeScheduler();
             setDrive.setText("Stop Drive");
+            setDrive.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
             bikeStatusText.setVisible(true);
+            bikeStatusText.setText("Bike Drive is On");
+        } else {
+            if(bikeLampScheduler.isRaceCommandEnabled()) {
+                Notification.show("Bitte erst Bike Race Stoppen oder Undo Benutzen", 2000, Notification.Position.MIDDLE);
+            } else {
+                bikeLampScheduler.disableDriveCommand();
+                bikeLampScheduler.pauseScheduler();
+                setDrive.setText("Drive");
+                bikeStatusText.setVisible(false);
+            }
 
         }
 
     }
-
 
     private void openColorPickerDialog(Consumer<Color> colorConsumer) throws IOException {
         Dialog colorDialog = new Dialog();
@@ -620,7 +631,12 @@ public class LampeView extends BasicLayout implements LampObserver {
             try {
                 remoteController.undoCommand(commandIndex);
                 Notification.show("Undo operation performed for: " + commandDescription);
-                bikeLampScheduler.disableDriveCommand();
+                if(bikeLampScheduler.isDriveCommandEnabled()) {
+                    toggleDriveModeAndButtonText();
+                }
+                if(bikeLampScheduler.isRaceCommandEnabled()) {
+                    toggleRaceMode();
+                }
                 updateCommandHistoryDropdown();
             } catch (IOException e) {
                 e.printStackTrace();
