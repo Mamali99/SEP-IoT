@@ -28,6 +28,8 @@ public class BikeDriveCommand implements Command {
     private static final BigDecimal ROTATION_DIVISOR = new BigDecimal(4);
     private static final int MAX_INTENSITY = 254;
     private int bikeChannel;
+
+    private BigDecimal bikeSpeed;
     private static final BigDecimal MAX_SPEED = BigDecimal.valueOf(50); // Maximalgeschwindigkeit laut pdf
 
     public BikeDriveCommand(Java2NodeRedLampAdapter lamp, BikeService bikeService, int bikeChannel) {
@@ -92,10 +94,12 @@ public class BikeDriveCommand implements Command {
             totalSpeed = totalSpeed.add(calculateSpeedPerBike(bike));
         }
 
-        return totalSpeed.divide(BigDecimal.valueOf(bikeDataCount), BigDecimal.ROUND_HALF_UP);
+        bikeSpeed = totalSpeed.divide(BigDecimal.valueOf(bikeDataCount), BigDecimal.ROUND_HALF_UP);
+
+        return bikeSpeed;
     }
 
-    private BigDecimal calculateSpeedPerBike(Bicycle bike) {
+    public BigDecimal calculateSpeedPerBike(Bicycle bike) {
         // zunächst in m/s
         BigDecimal speedInMps = bike.getRotations().divide(ROTATION_DIVISOR, 2, RoundingMode.HALF_UP).multiply(CIRCUMFERENCE);
         // Umwandlung von m/s in km/h
@@ -105,5 +109,9 @@ public class BikeDriveCommand implements Command {
 
     public String toString() {
         return "Bike Drive";
+    }
+
+    public BigDecimal getBikeSpeed() {
+        return bikeSpeed;
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.io.IOException;
+import java.math.BigDecimal;
 
 
 @Component
@@ -28,7 +29,7 @@ public class BikeLampScheduler {
 
     private final Color colorBike1 = Color.RED;
     private final Color colorBike2 = Color.BLUE;
-
+    private BikeDriveCommand bikeDriveCommand;
 
     private Integer selectedChannel;
 
@@ -49,8 +50,8 @@ public class BikeLampScheduler {
     public void scheduleTaskUsingFixedRate() throws IOException {
 
         if (this.selectedChannel != null && this.driveCommandEnabled) {
-            BikeDriveCommand currentCommand = new BikeDriveCommand(lampAdapter, bikeService, selectedChannel);
-            remoteController.executeCommand(currentCommand);
+            bikeDriveCommand = new BikeDriveCommand(lampAdapter, bikeService, selectedChannel);
+            remoteController.executeCommand(bikeDriveCommand);
         }
 
         if (this.raceCommandEnabled) {
@@ -84,6 +85,10 @@ public class BikeLampScheduler {
 
     public boolean isRaceCommandEnabled() {
         return raceCommandEnabled;
+    }
+
+    private BigDecimal getBikeDriveSpeed() {
+        return bikeDriveCommand.getBikeSpeed();
     }
 
 
