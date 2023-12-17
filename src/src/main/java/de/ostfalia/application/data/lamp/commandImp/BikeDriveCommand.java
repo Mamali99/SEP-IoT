@@ -1,18 +1,12 @@
 package de.ostfalia.application.data.lamp.commandImp;
 
 import de.ostfalia.application.data.entity.Bicycle;
-import de.ostfalia.application.data.fahrrad.impl.SpeedDataProcessor;
-import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
 import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
 import de.ostfalia.application.data.service.BikeService;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 

@@ -3,7 +3,6 @@ package de.ostfalia.application.data.fahrrad.processing;
 import de.ostfalia.application.data.entity.Bicycle;
 import de.ostfalia.application.data.service.BikeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;

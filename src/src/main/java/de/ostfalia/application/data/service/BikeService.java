@@ -2,13 +2,7 @@ package de.ostfalia.application.data.service;
 
 import de.ostfalia.application.data.entity.Bicycle;
 import de.ostfalia.application.data.repository.bikes.BicycleRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
-
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

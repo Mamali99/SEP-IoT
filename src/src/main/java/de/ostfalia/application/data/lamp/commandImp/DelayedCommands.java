@@ -1,6 +1,5 @@
 package de.ostfalia.application.data.lamp.commandImp;
 
-import de.ostfalia.application.data.entity.DelayedSettings;
 import de.ostfalia.application.data.entity.LampState;
 import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
