@@ -34,5 +34,5 @@
 }
 
 .white-title {
-    color: white;
+    color: white !important;
 }
