@@ -1,16 +1,12 @@
 package de.ostfalia.application.data.lamp.service;
 
-import com.vaadin.flow.component.UI;
 import de.ostfalia.application.data.lamp.commandImp.BikeDriveCommand;
 import de.ostfalia.application.data.lamp.commandImp.RaceCommand;
 import de.ostfalia.application.data.lamp.controller.RemoteController;
-import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.service.BikeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-
 
 import java.awt.*;
 import java.io.IOException;
@@ -43,7 +39,6 @@ public class BikeLampScheduler {
         this.bikeChannelForBike1 = channel1;
         this.bikeChannelForBike2 = channel2;
     }
-
 
 
     public void setSelectedChannel(Integer selectedChannel) {
@@ -83,6 +78,13 @@ public class BikeLampScheduler {
         this.driveCommandEnabled = false;
     }
 
+    public boolean isDriveCommandEnabled() {
+        return driveCommandEnabled;
+    }
+
+    public boolean isRaceCommandEnabled() {
+        return raceCommandEnabled;
+    }
 
 
 }

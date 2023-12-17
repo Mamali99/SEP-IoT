@@ -8,6 +8,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.listbox.ListBox;
 import com.vaadin.flow.component.listbox.MultiSelectListBox;
@@ -65,9 +66,10 @@ public class LampeView extends BasicLayout implements LampObserver {
     private VirtualLampComponent virtualLampComponent;
 
     private boolean isRaceModeActive = false;
-    Button raceButton;
-    Button setDrive;
-    List<Integer> availableChannels;
+    private Button raceButton;
+    private Button setDrive;
+    private List<Integer> availableChannels;
+    private Span bikeStatusText;
 
 
     public LampeView(BikeService bikeService, RemoteController remoteController, Java2NodeRedLampAdapter lampAdapter, BikeLampScheduler bikeLampScheduler) throws IOException {
@@ -190,6 +192,7 @@ public class LampeView extends BasicLayout implements LampObserver {
 
         //virtuelle lampe
         virtualLampComponent = new VirtualLampComponent();
+        virtualLampComponent.updateLampState(lampAdapter.getState(), lampAdapter.getColor(), (int) lampAdapter.getIntensity());
         rightLayoutFirstRow.add(virtualLampComponent);
 
         buttonLayout.add(initialButtonLayout, newButtonLayout);
@@ -245,10 +248,13 @@ public class LampeView extends BasicLayout implements LampObserver {
             createRaceDialog();
             isRaceModeActive = true;
             raceButton.setText("Stop Race");
+            bikeStatusText.setVisible(true);
+            bikeStatusText.setText("Bike Race is ON");
         } else {
             bikeLampScheduler.disableRaceCommand();
             isRaceModeActive = false;
             raceButton.setText("Race");
+            bikeStatusText.setVisible(false);
         }
     }
 
@@ -366,6 +372,11 @@ public class LampeView extends BasicLayout implements LampObserver {
         bikeCommandsLayout.setSpacing(false);
         bikeCommandsLayout.setMargin(false);
 
+        bikeStatusText = new Span();
+        bikeStatusText.getStyle().set("color", "white"); // Set text color to white
+        bikeStatusText.setVisible(false);
+
+
         // Title for the bike commands section
         H4 bikeCommandsTitle = new H4("Bike Commands");
         bikeCommandsTitle.getStyle().set("margin", "0");
@@ -377,11 +388,11 @@ public class LampeView extends BasicLayout implements LampObserver {
 
         // Button for "Set Drive"
         setDrive = createButton("Drive", VaadinIcon.ACADEMY_CAP);
-        setDrive.addClickListener(e -> openSetDriveDialog());
+        setDrive.addClickListener(e -> toggleDriveModeAndButtonText());
 
         // Add title and buttons to the bikeCommandsLayout
         HorizontalLayout bikeButtonsLayout = new HorizontalLayout(raceButton, setDrive);
-        bikeCommandsLayout.add(bikeCommandsTitle, bikeButtonsLayout);
+        bikeCommandsLayout.add(bikeCommandsTitle, bikeButtonsLayout, bikeStatusText);
 
         // Style the layout
         bikeCommandsLayout.addClassName("common-style");
@@ -409,6 +420,22 @@ public class LampeView extends BasicLayout implements LampObserver {
 
         driveDialog.add(layout);
         driveDialog.open();
+    }
+
+    private void toggleDriveModeAndButtonText() {
+
+        if (bikeLampScheduler.isDriveCommandEnabled()) {
+            bikeLampScheduler.disableDriveCommand();
+            bikeStatusText.setVisible(false);
+            setDrive.setText("Drive");
+        } else {
+            openSetDriveDialog();
+            bikeStatusText.setText("Bike Drive is On");
+            setDrive.setText("Stop Drive");
+            bikeStatusText.setVisible(true);
+
+        }
+
     }
 
 
