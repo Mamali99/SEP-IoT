@@ -268,10 +268,17 @@ public class LampeView extends BasicLayout implements LampObserver {
 
     private void toggleRaceMode() {
         if (!bikeLampScheduler.isRaceCommandEnabled() && !bikeLampScheduler.isDriveCommandEnabled()) {
+            if (currentBlinkCommand != null) {
+                currentBlinkCommand.stopBlinking();
+            }
+            if (currentPartyModeCommand != null) {
+                currentPartyModeCommand.stopPartyMode();
+            }
             createRaceDialog();
             bikeLampScheduler.enableRaceCommand();
             bikeLampScheduler.resumeScheduler();
             raceButton.setText("Stop Race");
+            raceButton.addClassName("red-button");
             bikeStatusText.setVisible(true);
             bikeStatusText.setText("Bike Race is On");
         } else {
@@ -280,6 +287,7 @@ public class LampeView extends BasicLayout implements LampObserver {
             } else {
                 bikeLampScheduler.disableRaceCommand();
                 bikeLampScheduler.pauseScheduler();
+                raceButton.removeClassName("red-button");
                 raceButton.setText("Race");
                 bikeStatusText.setVisible(false);
             }
@@ -288,7 +296,6 @@ public class LampeView extends BasicLayout implements LampObserver {
     }
 
     private Div undoDialog;
-
 
     private Div createUndoDialog() {
         // Create the title, list box, and close button
@@ -469,11 +476,17 @@ public class LampeView extends BasicLayout implements LampObserver {
 
     private void toggleDriveModeAndButtonText() {
         if (!bikeLampScheduler.isRaceCommandEnabled() && !bikeLampScheduler.isDriveCommandEnabled()) {
+            if (currentBlinkCommand != null) {
+                currentBlinkCommand.stopBlinking();
+            }
+            if (currentPartyModeCommand != null) {
+                currentPartyModeCommand.stopPartyMode();
+            }
             openSetDriveDialog();
             bikeLampScheduler.enableDriveCommand();
             bikeLampScheduler.resumeScheduler();
             setDrive.setText("Stop Drive");
-            setDrive.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+            setDrive.addClassName("red-button");
             bikeStatusText.setVisible(true);
             bikeStatusText.setText("Bike Drive is On");
         } else {
@@ -482,6 +495,7 @@ public class LampeView extends BasicLayout implements LampObserver {
             } else {
                 bikeLampScheduler.disableDriveCommand();
                 bikeLampScheduler.pauseScheduler();
+                setDrive.removeClassName("red-button");
                 setDrive.setText("Drive");
                 bikeStatusText.setVisible(false);
             }
@@ -547,11 +561,15 @@ public class LampeView extends BasicLayout implements LampObserver {
     private void executeCommand(Command command) {
         try {
             if (command instanceof BlinkCommand) {
+                if(bikeLampScheduler.isRaceCommandEnabled()) {
+                    toggleRaceMode();
+                }
+                if(bikeLampScheduler.isDriveCommandEnabled()) {
+                    toggleDriveModeAndButtonText();
+                }
                 if (currentBlinkCommand != null) {
                     // Stoppt das aktuelle Blinken, bevor ein neues gestartet wird
                     currentBlinkCommand.stopBlinking();
-
-
                 }
                 if (currentPartyModeCommand != null) {
                     currentPartyModeCommand.stopPartyMode();
@@ -561,6 +579,12 @@ public class LampeView extends BasicLayout implements LampObserver {
                 remoteController.executeCommand(command);
                 currentBlinkCommand = (BlinkCommand) command;
             } else if (command instanceof PartyModeCommand) {
+                if(bikeLampScheduler.isRaceCommandEnabled()) {
+                    toggleRaceMode();
+                }
+                if(bikeLampScheduler.isDriveCommandEnabled()) {
+                    toggleDriveModeAndButtonText();
+                }
                 if (currentPartyModeCommand != null) {
                     // Stoppt den aktuellen Party-Modus, bevor ein neuer gestartet wird
                     currentPartyModeCommand.stopPartyMode();
