@@ -17,6 +17,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import de.ostfalia.application.data.lamp.commandImp.*;
 import de.ostfalia.application.data.lamp.controller.RemoteController;
@@ -27,7 +28,9 @@ import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
 import de.ostfalia.application.data.service.BikeService;
 import de.ostfalia.application.views.BasicLayout;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.vaadin.addons.componentfactory.PaperSlider;
 import org.vaadin.addons.tatu.ColorPicker;
+import org.vaadin.addons.tatu.ColorPickerVariant;
 
 import java.awt.*;
 import java.io.IOException;
@@ -39,6 +42,7 @@ import java.util.stream.Collectors;
 
 
 @Route("/SE/LightAdapter")
+@PreserveOnRefresh
 public class LampeView extends BasicLayout implements LampObserver {
     @Autowired
     private Java2NodeRedLampAdapter lampAdapter;
@@ -54,8 +58,6 @@ public class LampeView extends BasicLayout implements LampObserver {
     private VerticalLayout rightLayoutFirstRow = new VerticalLayout();
     private VerticalLayout initialButtonLayout = new VerticalLayout();
     private VerticalLayout newButtonLayout = new VerticalLayout();
-    private Dialog buttonDialog = new Dialog();
-
     private List<Button> customCommandButtons = new ArrayList<>();
 
     // Aktuelles BlinkCommand speichern
@@ -64,8 +66,6 @@ public class LampeView extends BasicLayout implements LampObserver {
     private UI ui;
     private PartyModeCommand currentPartyModeCommand;
     private VirtualLampComponent virtualLampComponent;
-
-    private boolean isRaceModeActive = false;
     private Button raceButton;
     private Button setDrive;
     private List<Integer> availableChannels;
@@ -92,6 +92,9 @@ public class LampeView extends BasicLayout implements LampObserver {
 
         //Small speedup for channel select when not in the button, fetch is done while initialising the component
         availableChannels = bikeService.getAvailableChannels();
+        bikeLampScheduler.disableRaceCommand();
+        bikeLampScheduler.disableDriveCommand();
+        bikeLampScheduler.pauseScheduler();
 
         // Initialisiere die Buttons und ColorPicker
         Button turnOnButton = createButton("Turn On", VaadinIcon.POWER_OFF);
@@ -108,6 +111,20 @@ public class LampeView extends BasicLayout implements LampObserver {
         Button blinkButton = createButton("Blink", VaadinIcon.LIGHTBULB);
         blinkButton.addClickListener(e -> executeCommand(new BlinkCommand(lampAdapter, 3, 2000)));
         blinkButton.addClassName("button");
+
+        Button turnOnWithColorRed = createButton("Turn On Color Red", VaadinIcon.LIGHTBULB);
+        CustomCommand turnOnWithRed = new CustomCommand();
+        turnOnWithRed.addCommand(new TurnOnCommand(lampAdapter));
+        turnOnWithRed.addCommand(new SetColorCommand(lampAdapter, Color.RED));
+        turnOnWithColorRed.addClickListener(e -> executeCommand(turnOnWithRed));
+        turnOnWithColorRed.addClassName("button");
+
+        Button turnOnWithMaxIntenstiy = createButton("Turn On Max Intensity", VaadinIcon.ARROW_UP);
+        CustomCommand turnOnMaxIntenstiy = new CustomCommand();
+        turnOnMaxIntenstiy.addCommand(new TurnOnCommand(lampAdapter));
+        turnOnMaxIntenstiy.addCommand(new SetIntensityCommand(lampAdapter, 254));
+        turnOnWithMaxIntenstiy.addClickListener(e -> executeCommand(turnOnMaxIntenstiy));
+        turnOnWithMaxIntenstiy.addClassName("button");
 
         Button partyModeButton = createButton("Party Mode", VaadinIcon.MUSIC);
         partyModeButton.addClickListener(e -> activatePartyMode());
@@ -171,7 +188,7 @@ public class LampeView extends BasicLayout implements LampObserver {
         setColor.addClassName("button");
 
 
-        newButtonLayout.add(setIntensity, setColor);
+        newButtonLayout.add(setIntensity, setColor, turnOnWithColorRed, turnOnWithMaxIntenstiy);
 
 
         // Dropdown-Menü für die Befehlshistorie
@@ -212,8 +229,9 @@ public class LampeView extends BasicLayout implements LampObserver {
         Dialog raceDialog = new Dialog();
         VerticalLayout layout = new VerticalLayout();
 
-        ComboBox<Integer> bikeChannelSelect1 = new ComboBox<>("Select Bike 1 Channel");
-        ComboBox<Integer> bikeChannelSelect2 = new ComboBox<>("Select Bike 2 Channel");
+        ComboBox<Integer> bikeChannelSelect1 = new ComboBox<>("Bike 1 Channel (RED)");
+        ComboBox<Integer> bikeChannelSelect2 = new ComboBox<>("Bike 2 Channel (BLUE)");
+
         bikeChannelSelect1.setItems(availableChannels);
         bikeChannelSelect2.setItems(availableChannels);
 
@@ -244,15 +262,16 @@ public class LampeView extends BasicLayout implements LampObserver {
     }
 
     private void toggleRaceMode() {
-        if (!isRaceModeActive) {
+        if (!bikeLampScheduler.isRaceCommandEnabled()) {
             createRaceDialog();
-            isRaceModeActive = true;
+            bikeLampScheduler.enableRaceCommand();
+            bikeLampScheduler.resumeScheduler();
             raceButton.setText("Stop Race");
             bikeStatusText.setVisible(true);
-            bikeStatusText.setText("Bike Race is ON");
+            bikeStatusText.setText("Bike Race is On");
         } else {
             bikeLampScheduler.disableRaceCommand();
-            isRaceModeActive = false;
+            bikeLampScheduler.pauseScheduler();
             raceButton.setText("Race");
             bikeStatusText.setVisible(false);
         }
@@ -293,7 +312,7 @@ public class LampeView extends BasicLayout implements LampObserver {
     }
 
 
-    private Component setupCustomCommandCreation() {
+    private Component setupCustomCommandCreation() throws IOException {
         List<String> availableCommands = Arrays.asList("Turn On", "Turn Off", "Set Intensity", "Set Color");
         MultiSelectListBox<String> commandSelect = new MultiSelectListBox<>();
         commandSelect.setItems(availableCommands);
@@ -301,18 +320,25 @@ public class LampeView extends BasicLayout implements LampObserver {
         CustomCommand newCommand = new CustomCommand();
 
         // Create input fields
-        IntegerField intensityField = new IntegerField("Intensity");
-        intensityField.setMin(0);
-        intensityField.setMax(100);
+        PaperSlider intensityField = new PaperSlider("Intensity");
+        intensityField.setMin(1);
+        intensityField.setMax(254);
+        intensityField.setWidth("200px");
+        intensityField.setSnaps(true);
+        intensityField.setPinned(true);
+        intensityField.setHelperText("Max Intensity 254");
         intensityField.setVisible(false);
 
         ColorPicker colorPicker = new ColorPicker();
         colorPicker.setVisible(false);
+        colorPicker.setHelperText("Choose a Color");
+        colorPicker.addThemeVariants(ColorPickerVariant.COMPACT);
+        colorPicker.setValue(colorToCss(lampAdapter.getColor()));
 
         // Create container for inputs
         Div inputContainer = new Div(intensityField, colorPicker);
-        inputContainer.addClassName("common-style");
-
+        intensityField.addClassName("white-title");
+        colorPicker.addClassName("white-title");
         commandSelect.addValueChangeListener(event -> {
             intensityField.setVisible(event.getValue().contains("Set Intensity"));
             colorPicker.setVisible(event.getValue().contains("Set Color"));
@@ -374,12 +400,14 @@ public class LampeView extends BasicLayout implements LampObserver {
 
         bikeStatusText = new Span();
         bikeStatusText.getStyle().set("color", "white"); // Set text color to white
+        bikeStatusText.getStyle().set("padding", "10px");
         bikeStatusText.setVisible(false);
 
 
         // Title for the bike commands section
         H4 bikeCommandsTitle = new H4("Bike Commands");
         bikeCommandsTitle.getStyle().set("margin", "0");
+        bikeCommandsTitle.getStyle().set("padding", "10px");
         bikeCommandsTitle.addClassName("white-title");
 
         // Button for "Race"
@@ -413,6 +441,7 @@ public class LampeView extends BasicLayout implements LampObserver {
             Integer selectedChannel = channelSelect.getValue();
             bikeLampScheduler.setSelectedChannel(selectedChannel);
             bikeLampScheduler.enableDriveCommand();
+            bikeLampScheduler.resumeScheduler();
             driveDialog.close();
         });
         applyButton.addClassName("button");
@@ -426,6 +455,7 @@ public class LampeView extends BasicLayout implements LampObserver {
 
         if (bikeLampScheduler.isDriveCommandEnabled()) {
             bikeLampScheduler.disableDriveCommand();
+            bikeLampScheduler.pauseScheduler();
             bikeStatusText.setVisible(false);
             setDrive.setText("Drive");
         } else {
@@ -439,27 +469,13 @@ public class LampeView extends BasicLayout implements LampObserver {
     }
 
 
-    private void openIntensityDialog(Consumer<Integer> intensityConsumer) {
-        Dialog intensityDialog = new Dialog();
-        IntegerField intensityField = new IntegerField("Intensity");
-        intensityField.setMin(0);
-        intensityField.setMax(100); // Set appropriate max value
-
-        Button applyButton = new Button("Apply", e -> {
-            intensityConsumer.accept(intensityField.getValue());
-            intensityDialog.close();
-        });
-
-        intensityDialog.add(new VerticalLayout(intensityField, applyButton));
-        intensityDialog.open();
-    }
-
     private void openColorPickerDialog(Consumer<Color> colorConsumer) throws IOException {
         Dialog colorDialog = new Dialog();
         VerticalLayout layout = new VerticalLayout();
 
         ColorPicker colorPicker = new ColorPicker();
         colorPicker.setValue(colorToCss(lampAdapter.getColor()));
+        colorPicker.addThemeVariants(ColorPickerVariant.COMPACT);
         layout.add(colorPicker);
 
         Button applyButton = new Button("Apply", click -> {
@@ -504,11 +520,6 @@ public class LampeView extends BasicLayout implements LampObserver {
         button.getElement().getStyle().set("white-space", "normal");
 
         return button;
-    }
-
-
-    private void addButton(Button button) {
-        newButtonLayout.addComponentAtIndex(newButtonLayout.getComponentCount() - 1, button);
     }
 
 
@@ -558,6 +569,19 @@ public class LampeView extends BasicLayout implements LampObserver {
         updateCommandHistoryDropdown();
     }
 
+    private void updateBikeStatusText() {
+        if (bikeLampScheduler.isRaceCommandEnabled()) {
+            bikeStatusText.setVisible(true);
+            bikeStatusText.setText("Bike " + bikeLampScheduler.getBikeRaceWinnerInt() + " is in lead.");
+
+        } else if (bikeLampScheduler.isDriveCommandEnabled()) {
+            bikeStatusText.setVisible(true);
+            bikeStatusText.setText("The Bike is driving " + bikeLampScheduler.getBikeDriveSpeed().intValue() + "km/h");
+
+        } else {
+            bikeStatusText.setVisible(false);
+        }
+    }
 
     private void updateCommandHistoryDropdown() {
         List<String> historyItems = remoteController.getLastFiveCommands()
@@ -594,17 +618,9 @@ public class LampeView extends BasicLayout implements LampObserver {
         }
     }
 
-    private Button createStopDriveButton() {
-        Button stopDriveButton = new Button("Stop Drive");
-        stopDriveButton.addClickListener(e -> {
-            bikeLampScheduler.disableDriveCommand();
-        });
-        return stopDriveButton;
-    }
-
 
     private void activatePartyMode() {
-        Color[] colors = {Color.RED, Color.GREEN, Color.BLUE};
+        Color[] colors = {Color.RED, Color.GREEN, Color.BLUE, Color.MAGENTA, Color.YELLOW, Color.CYAN, Color.PINK};
         int[] intensities = {100, 200, 254};
         int blinkCount = 5;
 
@@ -638,6 +654,7 @@ public class LampeView extends BasicLayout implements LampObserver {
                 e.printStackTrace();
             }
             updateCommandHistoryDropdown();
+            updateBikeStatusText();
         });
     }
 }

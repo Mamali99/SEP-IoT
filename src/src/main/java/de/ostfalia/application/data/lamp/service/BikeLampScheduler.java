@@ -4,12 +4,12 @@ import de.ostfalia.application.data.lamp.commandImp.BikeDriveCommand;
 import de.ostfalia.application.data.lamp.commandImp.RaceCommand;
 import de.ostfalia.application.data.lamp.controller.RemoteController;
 import de.ostfalia.application.data.service.BikeService;
+import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
-import java.io.IOException;
 import java.math.BigDecimal;
 
 
@@ -30,11 +30,13 @@ public class BikeLampScheduler {
     private final Color colorBike1 = Color.RED;
     private final Color colorBike2 = Color.BLUE;
     private BikeDriveCommand bikeDriveCommand;
+    private RaceCommand raceCommand;
 
     private Integer selectedChannel;
 
     private Integer bikeChannelForBike1;
     private Integer bikeChannelForBike2;
+    private volatile boolean schedulerPaused = false; // Add this flag
 
     public void setBikeChannels(Integer channel1, Integer channel2) {
         this.bikeChannelForBike1 = channel1;
@@ -46,27 +48,42 @@ public class BikeLampScheduler {
         this.selectedChannel = selectedChannel;
     }
 
-    @Scheduled(fixedRate = 10_000, initialDelay = 0) // alle 60 Sekunden
-    public void scheduleTaskUsingFixedRate() throws IOException {
+    @PreDestroy
+    public void stopScheduledTasks() {
+        this.driveCommandEnabled = false;
+        this.raceCommandEnabled = false;
+    }
 
-        if (this.selectedChannel != null && this.driveCommandEnabled) {
-            bikeDriveCommand = new BikeDriveCommand(lampAdapter, bikeService, selectedChannel);
-            remoteController.executeCommand(bikeDriveCommand);
-        }
+    @Scheduled(fixedRate = 60_000, initialDelay = 0) // alle 60 Sekunden
+    public void scheduleTaskUsingFixedRate() {
+        try {
+            if (schedulerPaused) {
+                return; // Exit the method if the scheduler is paused
+            }
 
-        if (this.raceCommandEnabled) {
-            RaceCommand raceCommand = new RaceCommand(lampAdapter, bikeService, bikeChannelForBike1, bikeChannelForBike2, colorBike1, colorBike2);
-            //raceCommand.execute();
-            remoteController.executeCommand(raceCommand);
+            if (this.selectedChannel != null && this.driveCommandEnabled) {
+                bikeDriveCommand = new BikeDriveCommand(lampAdapter, bikeService, selectedChannel);
+                remoteController.executeCommand(bikeDriveCommand);
+            }
+
+            if (this.raceCommandEnabled) {
+                raceCommand = new RaceCommand(lampAdapter, bikeService, bikeChannelForBike1, bikeChannelForBike2, colorBike1, colorBike2);
+                remoteController.executeCommand(raceCommand);
+            }
+        } catch (Exception e) {
+            // Log the stack trace for debugging
+            e.printStackTrace();
         }
 
     }
+
 
     public void enableRaceCommand() {
         this.raceCommandEnabled = true;
     }
 
     public void disableRaceCommand() {
+        System.out.println("Set this Race to false");
         this.raceCommandEnabled = false;
     }
 
@@ -91,5 +108,24 @@ public class BikeLampScheduler {
         return bikeDriveCommand.getBikeSpeed();
     }
 
+    public int getBikeRaceWinnerInt() {
+        return raceCommand.getWinningChannel();
+    }
+
+    public Color getBikeRaceWinnerColor() {
+        return raceCommand.getWinningColor();
+    }
+
+    // Method to pause the scheduler
+    public void pauseScheduler() {
+        this.schedulerPaused = true;
+        System.out.println("Scheduler is on Pause");
+    }
+
+    // Method to resume the scheduler
+    public void resumeScheduler() {
+        this.schedulerPaused = false;
+        System.out.println("Scheduler is Resumed");
+    }
 
 }
