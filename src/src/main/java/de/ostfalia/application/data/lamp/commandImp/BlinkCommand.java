@@ -40,9 +40,9 @@ public class BlinkCommand implements Command {
 
     private void performBlinking() {
         for (int i = 0; i < blinkCount && running; i++) {
-            blinkLamp(true); // Blinken ein
+            blinkLamp(true);
             sleepBlinkDuration();
-            blinkLamp(false); // Blinken aus
+            blinkLamp(false);
             sleepBlinkDuration();
         }
     }
@@ -53,34 +53,14 @@ public class BlinkCommand implements Command {
             try {
                 if (on) {
                     lamp.switchOn();
-                    System.out.println("Lampe is On...");
                 } else {
-                    System.out.println("Lampe is Off...");
                     lamp.switchOff();
 
                 }
-                //lamp.notifyObservers();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });
-
-         /*
-        try {
-            if (on) {
-                lamp.switchOn();
-
-                System.out.println("Lampe is On...");
-            } else {
-                System.out.println("Lampe is Off...");
-                lamp.switchOff();
-
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-          */
     }
 
     private void sleepBlinkDuration() {
@@ -110,7 +90,7 @@ public class BlinkCommand implements Command {
 
     @Override
     public void undo() throws IOException {
-        stopBlinking(); // Stellt sicher, dass das Blinken gestoppt wird
+        stopBlinking();
         lamp.setColor(previousState.getColor());
         lamp.setIntensity(previousState.getIntensity());
         if (previousState.isOn()) {

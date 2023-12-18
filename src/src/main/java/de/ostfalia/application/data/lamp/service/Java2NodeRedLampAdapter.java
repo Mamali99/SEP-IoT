@@ -47,29 +47,6 @@ public class Java2NodeRedLampAdapter implements ILamp {
         observers.remove(observer);
     }
 
-    /*
-    // In Ihrer Java2NodeRedLampAdapter-Klasse
-    public void notifyObservers() {
-        UI ui = UI.getCurrent();
-        if (ui != null) {
-            for (LampObserver observer : observers) {
-                ui.access(() -> {
-                    try {
-                        observer.updateLampState();
-                    } catch (IOException e) {
-                        System.out.println("Observer Issue im Lamp Adapter");
-                    }
-                });
-            }
-        }
-    }
-
-     */
-
-
-
-
-
     // Benachrichtige alle Observers über eine Änderung
     public void notifyObservers() {
         for (LampObserver observer : observers) {

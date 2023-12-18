@@ -69,12 +69,7 @@ public class RaceCommand implements Command {
                 winningChannel = distanceBike1.compareTo(distanceBike2) >= 0 ? bikeChannel1 : bikeChannel2;
                 winningColor = distanceBike1.compareTo(distanceBike2) >= 0 ? colorBike1 : colorBike2;
 
-
                 float intensity = calculateIntensity(distanceBike1, distanceBike2);
-
-
-                System.out.println(this.getRaceSummary());
-
 
                 try {
                     lamp.switchOn(winningColor, intensity);
@@ -134,7 +129,6 @@ public class RaceCommand implements Command {
 
     private float calculateIntensity(BigDecimal distance1, BigDecimal distance2) {
         BigDecimal difference = distance1.subtract(distance2).abs();
-        // Maximaler Intensitätswert, z.B. 254
         float maxIntensity = 254;
         return Math.min(maxIntensity, difference.floatValue());
     }

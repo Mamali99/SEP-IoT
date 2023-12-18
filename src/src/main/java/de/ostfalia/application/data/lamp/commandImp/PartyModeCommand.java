@@ -1,6 +1,5 @@
 package de.ostfalia.application.data.lamp.commandImp;
 
-import com.vaadin.flow.component.UI;
 import de.ostfalia.application.data.entity.LampState;
 import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
@@ -16,7 +15,6 @@ public class PartyModeCommand implements Command {
     private LampState previousState;
     private volatile boolean running;
     private Thread partyModeThread;
-    //private final UI ui;
     private int i = 0;
 
     public PartyModeCommand(Java2NodeRedLampAdapter lamp, int blinkCount, Color[] colors, int[] intensities) {
@@ -24,7 +22,6 @@ public class PartyModeCommand implements Command {
         this.blinkCount = Integer.MAX_VALUE;
         this.colors = colors;
         this.intensities = intensities;
-        //this.ui = UI.getCurrent();
         this.running = true;
     }
 
@@ -51,20 +48,8 @@ public class PartyModeCommand implements Command {
     }
 
     private void changeLampSettings(Color color, int intensity) {
-        /*ui.access(() -> {
-            try {
-                lamp.switchOn(color, intensity);
-                //lamp.setIntensity(intensity);
-                System.out.println("Party mode " + i);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-         */
         try {
             lamp.switchOn(color, intensity);
-            System.out.println("Party mode " + i);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

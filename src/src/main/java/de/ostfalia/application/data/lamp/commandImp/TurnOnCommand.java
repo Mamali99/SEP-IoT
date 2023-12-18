@@ -26,13 +26,11 @@ public class TurnOnCommand implements Command {
         previousState = new LampState(lamp.getColor(), lamp.getIntensity(), lamp.getState());
 
     }
-    // Methode zum Rückgängigmachen des Befehls
     @Override
     public void undo() throws IOException {
 
         if (previousState.isOn()) {
             lamp.switchOn();
-            System.out.println("Lampe ist On..");
         } else {
             lamp.switchOff();
         }
