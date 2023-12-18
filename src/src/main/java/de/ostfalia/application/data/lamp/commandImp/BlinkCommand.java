@@ -22,7 +22,7 @@ public class BlinkCommand implements Command {
     public BlinkCommand(Java2NodeRedLampAdapter lamp, int blinkCount, long blinkDuration) {
         this.lamp = lamp;
         this.blinkCount = Integer.MAX_VALUE;
-        this.blinkDuration = 2000;
+        this.blinkDuration = 5000;
         this.ui = UI.getCurrent();
         this.running = true;
     }

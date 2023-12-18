@@ -62,6 +62,10 @@ public class VirtualLampComponent extends Composite<Div> {
             lampBox.getStyle().set("background-color", "rgba(" + color.getRed() + ", " + color.getGreen() + ", " + color.getBlue() + ", 0.1)");
         }
 
-        intensityLvl.setText("Intensity: " + intensity);
+        if (intensity >= 254) {
+            intensityLvl.setText("Intensity: MAX (254)");
+        } else {
+            intensityLvl.setText("Intensity: " + intensity);
+        }
     }
 }
