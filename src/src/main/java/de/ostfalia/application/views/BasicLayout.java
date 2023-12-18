@@ -16,11 +16,12 @@ import de.ostfalia.application.views.testecke.WebInhaltDynamisch;
 
 public class BasicLayout extends AppLayout {
 
-    H1 title = new H1("Bike Dashboard");
+    H1 title = new H1("Dashboard");
 
 
     public BasicLayout() {
         this.addToDrawer(createNav());
+        setDrawerOpened(false);
 
         DrawerToggle toggle = new DrawerToggle();
 
@@ -42,7 +43,6 @@ public class BasicLayout extends AppLayout {
         verticalLayout.add(new RouterLink("Testecke", WebInhaltDynamisch.class));
         verticalLayout.add(new RouterLink("Lampen", LampeView.class));
         verticalLayout.add(new RouterLink("Fahrrad", DashboardView.class));
-
         return verticalLayout;
     }
 

@@ -1,21 +1,18 @@
 package de.ostfalia.application.views.testecke;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-import de.ostfalia.application.data.lamp.adapter.Java2NodeRedLampAdapter;
-import de.ostfalia.application.data.lamp.lampController.LampController;
-import de.ostfalia.application.data.lamp.model.ILamp;
 import de.ostfalia.application.views.BasicLayout;
 
 import java.io.IOException;
 
 @Route("/dynamisch")
 public class WebInhaltDynamisch extends BasicLayout {
+    /*
     private VerticalLayout colorfulBox = new VerticalLayout();
     LampController adapter;
     public WebInhaltDynamisch(LampController lamp) {
@@ -89,6 +86,8 @@ public class WebInhaltDynamisch extends BasicLayout {
     private void clearBox() {
         this.colorfulBox.removeAll();
     }
+
+     */
 
 
 }

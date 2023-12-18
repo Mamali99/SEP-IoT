@@ -1,0 +1,50 @@
+/* styles.css */
+:root {
+    --dark-background: #282c34;
+    --transparent-background: rgba(255, 255, 255, 0.1);
+    --button-background: rgba(50, 50, 50, 0.7);
+    --text-color: #ffffff;
+    --icon-color: #61dafb;
+}
+
+.dark {
+    background-color: var(--dark-background);
+    color: var(--text-color);
+}
+
+.button {
+    background-color: var(--button-background);
+    color: var(--text-color);
+    white-space: normal;
+}
+.red-button {
+    background-color: var(--button-background);
+    color: red;
+    white-space: normal;
+}
+
+.icon {
+    color: var(--icon-color);
+}
+
+.common-style {
+    background-color: rgba(128, 128, 128, 0.2); /* Transparent Gray */
+    border-radius: 20px;
+    padding: 20px;
+    margin: 5px;
+}
+
+.popup-style {
+    background-color: rgba(255, 255, 255, 0.2); /* Transparent Gray */
+    border-radius: 20px;
+    padding: 20px;
+    margin: 5px;
+}
+
+.margin-left {
+    margin-left: 10px;
+}
+
+.white-title {
+    color: white !important;
+}

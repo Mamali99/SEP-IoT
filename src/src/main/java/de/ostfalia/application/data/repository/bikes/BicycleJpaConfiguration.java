@@ -38,6 +38,4 @@ public class BicycleJpaConfiguration {
         return new JpaTransactionManager(Objects.requireNonNull(bicycleEntityManagerFactory.getObject()));
     }
 
-
-
 }

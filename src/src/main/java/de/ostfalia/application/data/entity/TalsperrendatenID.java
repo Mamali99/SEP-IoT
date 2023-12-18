@@ -1,8 +1,5 @@
 package de.ostfalia.application.data.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
