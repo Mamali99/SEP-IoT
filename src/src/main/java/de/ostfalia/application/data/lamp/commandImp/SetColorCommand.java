@@ -36,6 +36,7 @@ public class SetColorCommand implements Command {
 
     }
 
+
     @Override
     public String toString() {
         return "Set Color";

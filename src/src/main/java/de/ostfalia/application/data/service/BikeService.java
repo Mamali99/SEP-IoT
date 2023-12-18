@@ -3,7 +3,6 @@ package de.ostfalia.application.data.service;
 import de.ostfalia.application.data.entity.Bicycle;
 import de.ostfalia.application.data.repository.bikes.BicycleRepository;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

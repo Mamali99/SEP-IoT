@@ -28,7 +28,8 @@ public class Java2NodeRedLampAdapter implements ILamp {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private String baseUrl = "http://172.28.24.10/hue/lights/1";
-
+    // lock object for synchronization
+    private final Object lock = new Object();
 
     // Observer Pattern
     private List<LampObserver> observers = new ArrayList<LampObserver>();
@@ -42,8 +43,6 @@ public class Java2NodeRedLampAdapter implements ILamp {
     public void removeObserver(LampObserver observer) {
         observers.remove(observer);
     }
-
-
 
     // Benachrichtige alle Observers über eine Änderung
     public void notifyObservers() {

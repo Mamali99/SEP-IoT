@@ -42,7 +42,7 @@ public class PartyModeCommand implements Command {
             final Color color = colors[i % colors.length];
             final int intensity = intensities[i % intensities.length];
             changeLampSettings(color, intensity);
-           sleepBlinkDuration();
+            sleepBlinkDuration();
             i++;
         }
     }
@@ -50,11 +50,11 @@ public class PartyModeCommand implements Command {
     private void changeLampSettings(Color color, int intensity) {
         try {
             lamp.switchOn(color, intensity);
-            System.out.println("Party mode " + i);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
     private void sleepBlinkDuration() {
         try {
             Thread.sleep(1000);

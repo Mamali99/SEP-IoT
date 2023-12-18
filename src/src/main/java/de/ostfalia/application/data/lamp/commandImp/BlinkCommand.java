@@ -53,7 +53,6 @@ public class BlinkCommand implements Command {
             try {
                 if (on) {
                     lamp.switchOn();
-
                 } else {
                     lamp.switchOff();
 

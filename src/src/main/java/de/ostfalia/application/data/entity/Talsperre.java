@@ -3,9 +3,6 @@ package de.ostfalia.application.data.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 
-import java.math.BigDecimal;
-import java.util.List;
-
 @Entity
 @Table(name = "Talsperren")
 public class Talsperre {

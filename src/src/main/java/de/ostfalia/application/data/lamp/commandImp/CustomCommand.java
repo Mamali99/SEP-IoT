@@ -13,6 +13,7 @@ public class CustomCommand implements Command {
     public CustomCommand() {
         this.commandList = new ArrayList<>();
     }
+
     @Override
     public void execute() throws IOException {
         for (Command command : commandList) {
@@ -36,5 +37,14 @@ public class CustomCommand implements Command {
         for (int i = commandList.size() - 1; i >= 0; i--) {
             commandList.get(i).undo();
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder fullName = new StringBuilder();
+        for (Command command : commandList) {
+            fullName.append(command.toString()).append(" ");
+        }
+        return fullName.toString();
     }
 }

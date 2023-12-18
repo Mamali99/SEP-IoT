@@ -16,9 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 
-
 public class RaceCommand implements Command {
-
 
 
     private Java2NodeRedLampAdapter lamp;
@@ -37,8 +35,6 @@ public class RaceCommand implements Command {
     private BigDecimal distanceBike2;
     private int winningChannel;
     private Color winningColor;
-
-
 
 
     public RaceCommand(Java2NodeRedLampAdapter lamp, BikeService bikeService,
@@ -64,13 +60,14 @@ public class RaceCommand implements Command {
         LocalDateTime endTime = LocalDateTime.now();
         LocalDateTime startTime = endTime.minus(duration);
 
-                distanceBike1 = calculateTotalDistance(bikeService.getDataWithTimeSpan(bikeChannel1, startTime, endTime));
-                distanceBike2 = calculateTotalDistance(bikeService.getDataWithTimeSpan(bikeChannel2, startTime, endTime));
-                winningChannel = distanceBike1.compareTo(distanceBike2) >= 0 ? bikeChannel1 : bikeChannel2;
-                winningColor = distanceBike1.compareTo(distanceBike2) >= 0 ? colorBike1 : colorBike2;
+        distanceBike1 = calculateTotalDistance(bikeService.getDataWithTimeSpan(bikeChannel1, startTime, endTime));
+        distanceBike2 = calculateTotalDistance(bikeService.getDataWithTimeSpan(bikeChannel2, startTime, endTime));
+        winningChannel = distanceBike1.compareTo(distanceBike2) >= 0 ? bikeChannel1 : bikeChannel2;
+        winningColor = distanceBike1.compareTo(distanceBike2) >= 0 ? colorBike1 : colorBike2;
 
 
-                float intensity = calculateIntensity(distanceBike1, distanceBike2);
+        float intensity = calculateIntensity(distanceBike1, distanceBike2);
+
                 try {
                     lamp.switchOn(winningColor, intensity);
                 } catch (IOException e) {
@@ -134,8 +131,16 @@ public class RaceCommand implements Command {
         return Math.min(maxIntensity, difference.floatValue());
     }
 
+    public int getWinningChannel() {
+        return this.winningChannel;
+    }
+
+    public Color getWinningColor() {
+        return this.winningColor;
+    }
+
     @Override
-    public String toString(){
+    public String toString() {
         return "Race Mode";
     }
 

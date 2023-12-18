@@ -26,7 +26,6 @@ public class TurnOnCommand implements Command {
         previousState = new LampState(lamp.getColor(), lamp.getIntensity(), lamp.getState());
 
     }
-
     @Override
     public void undo() throws IOException {
 

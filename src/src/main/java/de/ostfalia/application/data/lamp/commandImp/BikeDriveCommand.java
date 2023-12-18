@@ -1,7 +1,6 @@
 package de.ostfalia.application.data.lamp.commandImp;
 
 import de.ostfalia.application.data.entity.Bicycle;
-import de.ostfalia.application.data.entity.LampState;
 import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
 import de.ostfalia.application.data.service.BikeService;
@@ -23,9 +22,9 @@ public class BikeDriveCommand implements Command {
     private static final BigDecimal ROTATION_DIVISOR = new BigDecimal(4);
     private static final int MAX_INTENSITY = 254;
     private int bikeChannel;
-    private static final BigDecimal MAX_SPEED = BigDecimal.valueOf(50);
 
-    private LampState pre;
+    private BigDecimal bikeSpeed;
+    private static final BigDecimal MAX_SPEED = BigDecimal.valueOf(50); // Maximalgeschwindigkeit laut pdf
 
     public BikeDriveCommand(Java2NodeRedLampAdapter lamp, BikeService bikeService, int bikeChannel) {
         this.lamp = lamp;
@@ -45,7 +44,6 @@ public class BikeDriveCommand implements Command {
         } else {
             System.out.println("Ja die daten sind da");
         }
-        System.out.println("BikeDriveCommand's lampAdapter Identity Hash Code: " + System.identityHashCode(lamp));
         BigDecimal speedInKmph = calculateSpeed(bikeData); // speed in kmh
         System.out.println("Speed in Kmph " + speedInKmph);
         BigDecimal ratio = speedInKmph.divide(MAX_SPEED, 2, RoundingMode.HALF_UP);
@@ -64,20 +62,13 @@ public class BikeDriveCommand implements Command {
 
     @Override
     public void saveCurrentState() {
-        try {
-            pre = new LampState(lamp.getColor(), lamp.getIntensity(), lamp.getState());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
 
     }
 
     @Override
     public void undo() throws IOException {
-        System.out.println("Trying to stop bikeDrive");
         bikeDriveCommand = false;
         lamp.setIntensity(previousIntensity);
-        System.out.println("Previous intensity set" + "this is bikeDriveCommand " + bikeDriveCommand);
     }
 
 
@@ -86,7 +77,6 @@ public class BikeDriveCommand implements Command {
             System.out.println("bikedata is empty");
             return BigDecimal.ZERO;
         }
-
         BigDecimal totalSpeed = BigDecimal.ZERO;
         int bikeDataCount = bikeData.size();
 
@@ -94,10 +84,12 @@ public class BikeDriveCommand implements Command {
             totalSpeed = totalSpeed.add(calculateSpeedPerBike(bike));
         }
 
-        return totalSpeed.divide(BigDecimal.valueOf(bikeDataCount), BigDecimal.ROUND_HALF_UP);
+        bikeSpeed = totalSpeed.divide(BigDecimal.valueOf(bikeDataCount), BigDecimal.ROUND_HALF_UP);
+
+        return bikeSpeed;
     }
 
-    private BigDecimal calculateSpeedPerBike(Bicycle bike) {
+    public BigDecimal calculateSpeedPerBike(Bicycle bike) {
         // zunächst in m/s
         BigDecimal speedInMps = bike.getRotations().divide(ROTATION_DIVISOR, 2, RoundingMode.HALF_UP).multiply(CIRCUMFERENCE);
         // Umwandlung von m/s in km/h
@@ -107,5 +99,9 @@ public class BikeDriveCommand implements Command {
 
     public String toString() {
         return "Bike Drive";
+    }
+
+    public BigDecimal getBikeSpeed() {
+        return bikeSpeed;
     }
 }
