@@ -74,7 +74,6 @@ public class BikeDriveCommand implements Command {
 
     private BigDecimal calculateSpeed(List<Bicycle> bikeData) {
         if (bikeData.isEmpty()) {
-            System.out.println("bikedata is empty");
             return BigDecimal.ZERO;
         }
         BigDecimal totalSpeed = BigDecimal.ZERO;

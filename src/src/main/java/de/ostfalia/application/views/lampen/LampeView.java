@@ -4,7 +4,6 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
@@ -77,7 +76,7 @@ public class LampeView extends BasicLayout implements LampObserver {
     public LampeView(BikeService bikeService, RemoteController remoteController, Java2NodeRedLampAdapter lampAdapter, BikeLampScheduler bikeLampScheduler) throws IOException {
         this.remoteController = remoteController;
         this.lampAdapter = lampAdapter;
-        this.lampAdapter.addObserver(this); // Registrieren als Observer
+        this.lampAdapter.addObserver(this);
         this.bikeService = bikeService;
         this.bikeLampScheduler = bikeLampScheduler;
         setupLayout();
