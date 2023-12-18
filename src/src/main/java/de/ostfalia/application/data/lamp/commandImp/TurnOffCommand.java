@@ -17,7 +17,6 @@ public class TurnOffCommand implements Command {
     public void execute() throws IOException {
         saveCurrentState();
         this.lamp.switchOff();
-        System.out.println("Lampe ist Off....");
     }
 
     @Override

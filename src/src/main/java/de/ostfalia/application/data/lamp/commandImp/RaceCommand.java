@@ -71,11 +71,6 @@ public class RaceCommand implements Command {
 
 
                 float intensity = calculateIntensity(distanceBike1, distanceBike2);
-
-
-                System.out.println(this.getRaceSummary());
-
-
                 try {
                     lamp.switchOn(winningColor, intensity);
                 } catch (IOException e) {

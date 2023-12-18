@@ -1,10 +1,8 @@
 package de.ostfalia.application.data.lamp.service;
 
-import com.vaadin.flow.component.UI;
 import de.ostfalia.application.data.lamp.commandImp.BikeDriveCommand;
 import de.ostfalia.application.data.lamp.commandImp.RaceCommand;
 import de.ostfalia.application.data.lamp.controller.RemoteController;
-import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.service.BikeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -50,7 +48,7 @@ public class BikeLampScheduler {
         this.selectedChannel = selectedChannel;
     }
 
-    @Scheduled(fixedRate = 10_000, initialDelay = 0) // alle 60 Sekunden
+    @Scheduled(fixedRate = 60_000, initialDelay = 0) // alle 60 Sekunden
     public void scheduleTaskUsingFixedRate() throws IOException {
 
         if (this.selectedChannel != null && this.driveCommandEnabled) {
@@ -60,7 +58,6 @@ public class BikeLampScheduler {
 
         if (this.raceCommandEnabled) {
             RaceCommand raceCommand = new RaceCommand(lampAdapter, bikeService, bikeChannelForBike1, bikeChannelForBike2, colorBike1, colorBike2);
-            //raceCommand.execute();
             remoteController.executeCommand(raceCommand);
         }
 
@@ -79,7 +76,6 @@ public class BikeLampScheduler {
     }
 
     public void disableDriveCommand() {
-        System.out.println("Set this Drive to false");
         this.driveCommandEnabled = false;
     }
 

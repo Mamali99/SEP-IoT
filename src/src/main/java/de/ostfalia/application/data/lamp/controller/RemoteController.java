@@ -1,8 +1,6 @@
 package de.ostfalia.application.data.lamp.controller;
 
 import de.ostfalia.application.data.lamp.model.Command;
-import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.ArrayList;

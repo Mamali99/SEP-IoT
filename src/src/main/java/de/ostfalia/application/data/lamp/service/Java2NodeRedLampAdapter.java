@@ -4,16 +4,13 @@ package de.ostfalia.application.data.lamp.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.vaadin.flow.component.UI;
 import de.ostfalia.application.data.lamp.model.ILamp;
 import de.ostfalia.application.data.lamp.model.LampObserver;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -31,8 +28,7 @@ public class Java2NodeRedLampAdapter implements ILamp {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private String baseUrl = "http://172.28.24.10/hue/lights/1";
-    // lock object for synchronization
-    private final Object lock = new Object();
+
 
     // Observer Pattern
     private List<LampObserver> observers = new ArrayList<LampObserver>();
@@ -46,27 +42,6 @@ public class Java2NodeRedLampAdapter implements ILamp {
     public void removeObserver(LampObserver observer) {
         observers.remove(observer);
     }
-
-    /*
-    // In Ihrer Java2NodeRedLampAdapter-Klasse
-    public void notifyObservers() {
-        UI ui = UI.getCurrent();
-        if (ui != null) {
-            for (LampObserver observer : observers) {
-                ui.access(() -> {
-                    try {
-                        observer.updateLampState();
-                    } catch (IOException e) {
-                        System.out.println("Observer Issue im Lamp Adapter");
-                    }
-                });
-            }
-        }
-    }
-
-     */
-
-
 
 
 

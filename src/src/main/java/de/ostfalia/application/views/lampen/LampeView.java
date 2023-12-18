@@ -94,8 +94,6 @@ public class LampeView extends BasicLayout implements LampObserver {
 
 
 
-
-
     private void setupLayout() throws IOException {
 
 

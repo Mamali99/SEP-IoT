@@ -1,18 +1,13 @@
 package de.ostfalia.application.data.lamp.commandImp;
 
 import de.ostfalia.application.data.entity.Bicycle;
-import de.ostfalia.application.data.fahrrad.impl.SpeedDataProcessor;
-import de.ostfalia.application.data.fahrrad.processing.AbstractDataProcessor;
+import de.ostfalia.application.data.entity.LampState;
 import de.ostfalia.application.data.lamp.model.Command;
 import de.ostfalia.application.data.lamp.service.Java2NodeRedLampAdapter;
 import de.ostfalia.application.data.service.BikeService;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -28,7 +23,9 @@ public class BikeDriveCommand implements Command {
     private static final BigDecimal ROTATION_DIVISOR = new BigDecimal(4);
     private static final int MAX_INTENSITY = 254;
     private int bikeChannel;
-    private static final BigDecimal MAX_SPEED = BigDecimal.valueOf(50); // Maximalgeschwindigkeit laut pdf
+    private static final BigDecimal MAX_SPEED = BigDecimal.valueOf(50);
+
+    private LampState pre;
 
     public BikeDriveCommand(Java2NodeRedLampAdapter lamp, BikeService bikeService, int bikeChannel) {
         this.lamp = lamp;
@@ -67,6 +64,11 @@ public class BikeDriveCommand implements Command {
 
     @Override
     public void saveCurrentState() {
+        try {
+            pre = new LampState(lamp.getColor(), lamp.getIntensity(), lamp.getState());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 

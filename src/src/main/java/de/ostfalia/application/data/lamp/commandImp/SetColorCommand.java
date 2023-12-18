@@ -36,7 +36,6 @@ public class SetColorCommand implements Command {
 
     }
 
-    //Es muss alte Zustand angezeigt werden
     @Override
     public String toString() {
         return "Set Color";
